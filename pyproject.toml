@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sol-reality-check"
+version = "1.0.0"
+description = "SOL Reality Check: transparent Solana market evidence dashboard"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{name = "Jan-Willem Blank"}]
+dependencies = [
+  "jsonschema>=4.22",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "PyYAML>=6.0",
+  "requests>=2.32",
+  "scipy>=1.13"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2", "ruff>=0.5", "mypy>=1.10"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]
+files = ["src/sol_reality_check", "scripts"]

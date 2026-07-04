@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self';">
+    <title>SOL Reality Check</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-0saKbD0TnJpSgec4A/mR3dNqzQ4JkQq7RkAE4YfYu0N53XyVyYnCzV8ALpSgS3ii" crossorigin="anonymous"></script>
+    <script defer src="./charts.js"></script>
+    <script defer src="./glossary.js"></script>
+    <script defer src="./position.js"></script>
+    <script defer src="./accessibility.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <p class="eyebrow">SOL Reality Check</p>
+        <h1>SOL Reality Check</h1>
+        <p class="subtitle">Niet alleen wat Solana doet, maar hoe sterk het bewijs is.</p>
+      </div>
+      <dl class="meta" aria-label="Actuele metadata">
+        <div><dt>SOL</dt><dd id="sol-price">...</dd></div>
+        <div><dt>Update</dt><dd id="updated-at">...</dd></div>
+        <div><dt>Datacutoff</dt><dd id="data-cutoff">...</dd></div>
+        <div><dt>Methode</dt><dd id="method-version">...</dd></div>
+      </dl>
+    </header>
+
+    <main>
+      <p id="demo-notice" class="notice" hidden></p>
+      <nav class="tabs" aria-label="Hoofdnavigatie">
+        <button class="tab active" data-tab="today">Vandaag</button>
+        <button class="tab" data-tab="evidence">Bewijs</button>
+        <button class="tab" data-tab="backtest">Backtest</button>
+        <button class="tab" data-tab="ledger">Open logboek</button>
+        <button class="tab" data-tab="method">Zo werkt het</button>
+      </nav>
+
+      <section id="today" class="panel active">
+        <div class="conclusion">
+          <div>
+            <p class="eyebrow">Actuele conclusie</p>
+            <h2 id="regime">...</h2>
+            <p id="conclusion-text"></p>
+          </div>
+          <div class="score-pair">
+            <div><span>Marktsignaal</span><strong id="market-score">...</strong><small id="market-label"></small></div>
+            <div><span>Bewijskwaliteit</span><strong id="evidence-score">...</strong><small id="evidence-label"></small></div>
+          </div>
+        </div>
+        <p class="plain">De marktscore is een samenvatting van indicatoren en geen kanspercentage.</p>
+        <div class="grid" id="cards"></div>
+        <section class="wide">
+          <h3>Historische vergelijkingen</h3>
+          <p id="analog-summary"></p>
+          <canvas id="analog-chart" height="120" aria-label="Verdeling van analoge uitkomsten"></canvas>
+          <ul id="change-list" class="clean"></ul>
+        </section>
+        <section class="wide" id="my-sol">
+          <h3>Mijn SOL</h3>
+          <div class="inputs">
+            <label>Gemiddelde aankoopkoers <input id="buy-price" type="number" min="0" step="0.01"></label>
+            <label>Aantal SOL <input id="amount-sol" type="number" min="0" step="0.01"></label>
+            <label>Horizon <select id="position-horizon"><option>7</option><option>30</option><option>90</option></select></label>
+          </div>
+          <p id="position-output" class="plain"></p>
+        </section>
+      </section>
+
+      <section id="evidence" class="panel">
+        <h2>Bewijsroute</h2>
+        <div id="evidence-route" class="table-wrap"></div>
+        <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
+      </section>
+
+      <section id="backtest" class="panel">
+        <h2>Backtest</h2>
+        <p id="edge-warning" class="notice"></p>
+        <div id="backtest-table" class="table-wrap"></div>
+      </section>
+
+      <section id="ledger" class="panel">
+        <h2>Open logboek</h2>
+        <div id="ledger-table" class="table-wrap"></div>
+      </section>
+
+      <section id="method" class="panel">
+        <h2>Zo werkt het</h2>
+        <div class="method-copy">
+          <p>Dit dashboard vergelijkt SOL met eerdere marktdagen die statistisch op vandaag lijken. Het gebruikt prijs, activiteit en kapitaaldata, en test de methode walk-forward zodat toekomstige informatie buiten beeld blijft.</p>
+          <p>Een sterk marktsignaal betekent niet automatisch sterk bewijs. Daarom staan marktsignaal en bewijskwaliteit altijd los van elkaar.</p>
+          <p>SOL Reality Check is een educatief en analytisch dataproduct. Het geeft geen financieel advies en doet geen garantie over toekomstige rendementen.</p>
+        </div>
+        <h3>Woordenlijst</h3>
+        <div id="glossary"></div>
+      </section>
+    </main>
+  </body>
+</html>
+

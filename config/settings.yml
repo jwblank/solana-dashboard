@@ -1,0 +1,32 @@
+project:
+  name: "SOL Reality Check"
+  subtitle: "Niet alleen wat Solana doet, maar hoe sterk het bewijs is."
+  method_version: "1.0.0"
+  timezone_display: "Europe/Amsterdam"
+  default_horizon_days: 7
+history:
+  minimum_warmup_days: 365
+  robust_window_days: 730
+  minimum_robust_observations: 180
+analogs:
+  maximum_count: 40
+  minimum_count: 20
+  minimum_spacing_days: 7
+  minimum_feature_coverage: 0.80
+backtest:
+  horizons_days: [1, 7, 30]
+  bootstrap_iterations: 1000
+  random_seed: 20260704
+publication:
+  maximum_core_data_age_hours: 48
+  one_official_prediction_per_utc_day: true
+breadth:
+  number_of_tokens: 25
+  minimum_history_days_for_validation: 180
+  include_in_validated_score: false
+probability_language:
+  minimum_oos_predictions: 200
+  minimum_brier_skill: 0.02
+  maximum_calibration_error: 0.08
+  minimum_evidence_quality: 65
+

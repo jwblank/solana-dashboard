@@ -1,0 +1,31 @@
+sources:
+  coinbase:
+    publication_lag_days: 0
+    base_url: "https://api.exchange.coinbase.com"
+  coingecko:
+    publication_lag_days: 0
+    base_url: "https://api.coingecko.com/api/v3"
+    stale_after_hours: 24
+  defillama_tvl:
+    publication_lag_days: 1
+    url: "https://api.llama.fi/v2/historicalChainTvl/Solana"
+  defillama_stablecoins:
+    publication_lag_days: 1
+    url: "https://stablecoins.llama.fi/stablecoincharts/Solana"
+  defillama_dex:
+    publication_lag_days: 1
+    url: "https://api.llama.fi/overview/dexs/Solana"
+  defillama_fees:
+    publication_lag_days: 1
+    url: "https://api.llama.fi/overview/fees/Solana"
+  solana_rpc:
+    publication_lag_days: 0
+    fallback_url: "https://api.mainnet-beta.solana.com"
+cross_source:
+  max_price_difference_pct: 2.0
+fills:
+  tvl: 3
+  stablecoins: 3
+  dex_volume: 2
+  fees: 2
+
