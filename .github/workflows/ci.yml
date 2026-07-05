@@ -32,5 +32,4 @@ jobs:
       - run: python -m sol_reality_check ledger-check
       - run: python scripts/build_site.py
       - run: python scripts/smoke_test.py
-      - run: '! grep -R "COINGECKO_API_KEY=.*[A-Za-z0-9]" -n . --exclude-dir=.git'
-
+      - run: '! grep -R "COINGECKO_API_KEY=.*[A-Za-z0-9]" -n . --exclude-dir=.git --exclude-dir=.github'
