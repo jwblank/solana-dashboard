@@ -2,8 +2,6 @@
 
 SOL Reality Check is een statisch dataproduct voor Solana. Het laat niet alleen zien wat de actuele data suggereert, maar ook hoe sterk het bewijs voor die conclusie is.
 
-Auteur: Jan-Willem Blank, Senior Data Scientist.
-
 ## Kern
 
 - Marktsignaal en bewijskwaliteit blijven gescheiden.
