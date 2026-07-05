@@ -283,7 +283,7 @@ def _date_from_timestamp(value: Any) -> str:
 
 
 def fetch_rpc_context() -> dict[str, Any]:
-    url = os.getenv("SOLANA_RPC_URL", "https://api.mainnet-beta.solana.com")
+    url = os.getenv("SOLANA_RPC_URL") or "https://api.mainnet-beta.solana.com"
     client = HttpClient(retries=2)
     tx_count = client.post_json(
         url, json={"jsonrpc": "2.0", "id": 1, "method": "getTransactionCount"}
