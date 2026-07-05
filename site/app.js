@@ -2,7 +2,8 @@ const fmtPct = (x) => x === null || x === undefined ? "n.v.t." : `${(x * 100).to
 const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
 
 async function loadJson(path) {
-  const response = await fetch(path);
+  const separator = path.includes("?") ? "&" : "?";
+  const response = await fetch(`${path}${separator}v=${Date.now()}`, {cache: "no-store"});
   if (!response.ok) throw new Error(`Kon ${path} niet laden`);
   return response.json();
 }
@@ -125,4 +126,3 @@ async function main() {
 main().catch((error) => {
   document.body.prepend(Object.assign(document.createElement("p"), {className: "notice", textContent: error.message}));
 });
-

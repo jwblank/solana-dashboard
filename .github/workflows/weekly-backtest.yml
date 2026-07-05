@@ -35,6 +35,7 @@ jobs:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
       - run: python -m sol_reality_check validate
+      - run: python -c "import json; d=json.load(open('site/data/dashboard.json')); assert d['mode'] == 'production' and d.get('demo_notice') is None, d"
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

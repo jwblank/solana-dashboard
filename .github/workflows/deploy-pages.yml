@@ -8,6 +8,7 @@ on:
       - "src/**"
       - "config/**"
       - "scripts/**"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -39,6 +40,7 @@ jobs:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
       - run: python -m sol_reality_check validate
       - run: python -m sol_reality_check ledger-check
+      - run: python -c "import json; d=json.load(open('site/data/dashboard.json')); assert d['mode'] == 'production' and d.get('demo_notice') is None, d"
       - run: python scripts/build_site.py
       - uses: actions/configure-pages@v5
         with:
