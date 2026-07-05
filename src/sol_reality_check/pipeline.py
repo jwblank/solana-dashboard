@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,11 +19,14 @@ from sol_reality_check.analytics import (
     weighted_average,
 )
 from sol_reality_check.clients import (
+    ApiError,
     fetch_coinbase_daily,
+    fetch_coingecko_breadth,
+    fetch_coingecko_current,
     fetch_defillama_series,
     fetch_rpc_context,
 )
-from sol_reality_check.config import ROOT, indicators, settings
+from sol_reality_check.config import ROOT, indicators, load_yaml, settings
 from sol_reality_check.demo import demo_history
 from sol_reality_check.ledger import append_unique, read_jsonl
 from sol_reality_check.utils import iso_z, utc_now, write_json
@@ -39,22 +43,54 @@ def load_or_fetch_history(mode: str) -> pd.DataFrame:
         df.to_csv(path, index=False)
         return df
     if path.exists():
-        return pd.read_csv(path)
-    end = utc_now()
+        cached = pd.read_csv(path)
+        if mode != "production":
+            return cached
+        try:
+            refreshed = fetch_history_window(cached)
+            refreshed.to_csv(path, index=False)
+            return refreshed
+        except ApiError:
+            return cached
+    end = last_completed_utc_day_end()
     start = end - pd.Timedelta(days=1400)
+    merged = fetch_history_window(None, start=start, end=end)
+    CURATED.mkdir(parents=True, exist_ok=True)
+    merged.to_csv(path, index=False)
+    return merged
+
+
+def fetch_history_window(
+    existing: pd.DataFrame | None,
+    start: datetime | pd.Timestamp | None = None,
+    end: datetime | pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    end = end or last_completed_utc_day_end()
+    end_date = pd.Timestamp(end).date().isoformat()
+    if existing is not None and not existing.empty:
+        last_date = pd.to_datetime(existing["date"].max(), utc=True)
+        start = max(last_date - pd.Timedelta(days=7), end - pd.Timedelta(days=90))
+    start = start or end - pd.Timedelta(days=1400)
     sol = fetch_coinbase_daily("SOL-USD", start, end).rename(
         columns={"close": "sol_close", "volume": "sol_volume"}
     )
     btc = fetch_coinbase_daily("BTC-USD", start, end).rename(columns={"close": "btc_close"})
-    tvl = fetch_defillama_series()
+    defi = fetch_defillama_series()
     merged = sol[["date", "sol_close", "sol_volume"]].merge(btc[["date", "btc_close"]], on="date")
-    merged = merged.merge(tvl, on="date", how="left")
-    merged["stablecoins"] = merged["tvl"].ffill() * 1.1
-    merged["dex_volume"] = merged["sol_volume"].rolling(7, min_periods=1).mean() * 20
-    merged["fees"] = merged["dex_volume"] * 0.0025
-    CURATED.mkdir(parents=True, exist_ok=True)
-    merged.to_csv(path, index=False)
-    return merged
+    merged = merged.merge(defi, on="date", how="left")
+    for column in ["tvl", "stablecoins", "dex_volume", "fees"]:
+        if column not in merged:
+            merged[column] = pd.NA
+    if existing is not None and not existing.empty:
+        merged = pd.concat([existing, merged], ignore_index=True)
+        merged = merged.drop_duplicates("date", keep="last")
+    merged = merged[merged["date"] < end_date]
+    return merged.sort_values("date")
+
+
+def last_completed_utc_day_end() -> datetime:
+    now = pd.Timestamp(utc_now())
+    return datetime(now.year, now.month, now.day, tzinfo=UTC)
 
 
 def prepare_dataset(mode: str) -> pd.DataFrame:
@@ -90,6 +126,12 @@ def prepare_dataset(mode: str) -> pd.DataFrame:
         regimes.append(reg)
     for block, block_values in block_scores.items():
         scored[f"{block}_score"] = block_values
+    signal_scores: list[float | None] = []
+    for _, row in scored.iterrows():
+        current_blocks = {block: row.get(f"{block}_score") for block in ind["blocks"]}
+        signal, _ = weighted_average(current_blocks, ind["validated_market_signal"])
+        signal_scores.append(signal)
+    scored["market_signal_score"] = signal_scores
     scored["regime"] = regimes
     CURATED.mkdir(parents=True, exist_ok=True)
     scored.to_csv(CURATED / "features.csv", index=False)
@@ -116,8 +158,16 @@ def build_outputs(mode: str) -> dict[str, Any]:
         df, last_index, ind["analog_features"], cfg["project"]["default_horizon_days"]
     )
     analog_stats = analog_summary(analogs, cfg["project"]["default_horizon_days"])
-    data_quality = 100.0 if mode == "production" else 82.0
-    quality = evidence_quality(data_quality, analog_stats, backtest.summary, stability=70.0)
+    source_status = build_source_status(mode, generated=iso_z(now), latest=latest)
+    data_quality = source_status["data_quality_score"]
+    quality = evidence_quality(
+        data_quality,
+        analog_stats,
+        backtest.summary,
+        stability=70.0,
+        missing_sources=source_status["missing_validated_sources"],
+        critical_error=source_status["critical_error"],
+    )
     generated = iso_z(now)
     cutoff = f"{latest['date']}T23:59:59Z"
     probability_allowed = (
@@ -130,22 +180,6 @@ def build_outputs(mode: str) -> dict[str, Any]:
     language_label = (
         "Gekalibreerde historische schatting" if probability_allowed else "Historische frequentie"
     )
-    source_status: dict[str, Any] = {
-        "schema_version": "1.0",
-        "generated_at_utc": generated,
-        "sources": {
-            "coinbase": {"available": mode == "production", "role": "historical prices"},
-            "coingecko": {"available": False, "role": "current cross-check and breadth"},
-            "defillama": {"available": mode == "production", "role": "historical DeFi data"},
-            "solana_rpc": {"available": False, "role": "current network context"},
-        },
-    }
-    if mode == "production":
-        try:
-            source_status["sources"]["solana_rpc"]["context"] = fetch_rpc_context()
-            source_status["sources"]["solana_rpc"]["available"] = True
-        except Exception as exc:  # pragma: no cover
-            source_status["sources"]["solana_rpc"]["warning"] = str(exc)
     dashboard = {
         "schema_version": "1.0",
         "generated_at_utc": generated,
@@ -180,7 +214,11 @@ def build_outputs(mode: str) -> dict[str, Any]:
             "risk": {
                 "volatility_30d": round(float(latest["realized_volatility_30d"]), 4),
                 "drawdown_90d": round(float(latest["drawdown_90d"]), 4),
+                "price_source_difference_pct": source_status["price_difference_pct"],
+                "warnings": source_status["warnings"],
             },
+            "ecosystem_breadth": source_status["ecosystem_breadth"],
+            "network_context": source_status["sources"]["solana_rpc"].get("context"),
         },
         "analog_summary": analog_stats,
         "source_status": source_status["sources"],
@@ -196,6 +234,114 @@ def build_outputs(mode: str) -> dict[str, Any]:
     )
     maybe_append_prediction(dashboard, latest)
     return dashboard
+
+
+def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[str, Any]:
+    breadth_notice = (
+        "Experimentele indicator — nog onvoldoende historische waarnemingen voor een "
+        "betrouwbare backtest."
+    )
+    status: dict[str, Any] = {
+        "schema_version": "1.0",
+        "generated_at_utc": generated,
+        "sources": {
+            "coinbase": {
+                "available": True,
+                "role": "historical prices",
+                "validated_signal_source": True,
+            },
+            "coingecko": {
+                "available": False,
+                "role": "current cross-check and ecosystem breadth",
+                "validated_signal_source": False,
+            },
+            "defillama": {
+                "available": mode == "production",
+                "role": "historical DeFi data",
+                "validated_signal_source": True,
+            },
+            "solana_rpc": {
+                "available": False,
+                "role": "current network context",
+                "validated_signal_source": False,
+            },
+        },
+        "warnings": [],
+        "price_difference_pct": None,
+        "ecosystem_breadth": {
+            "available": False,
+            "historically_validated": False,
+            "notice": breadth_notice,
+        },
+        "missing_validated_sources": 0,
+        "critical_error": False,
+        "data_quality_score": 82.0 if mode == "demo" else 100.0,
+    }
+    if mode == "demo":
+        status["sources"]["coinbase"]["available"] = False
+        status["sources"]["coinbase"]["note"] = "Demomodus gebruikt synthetische testdata."
+        status["sources"]["defillama"]["available"] = False
+        status["sources"]["defillama"]["note"] = "Demomodus gebruikt synthetische testdata."
+        status["warnings"].append("Demodata — dit zijn geen actuele marktgegevens.")
+        return status
+
+    try:
+        current = fetch_coingecko_current()
+        status["sources"]["coingecko"]["available"] = True
+        status["sources"]["coingecko"]["current_prices"] = current
+        sol_price = float(current["solana"]["usd"])
+        coinbase_price = float(latest["sol_close"])
+        diff = abs(sol_price - coinbase_price) / coinbase_price * 100
+        status["price_difference_pct"] = round(diff, 2)
+        source_cfg = load_yaml("config/sources.yml")
+        max_diff = float(source_cfg["cross_source"]["max_price_difference_pct"])
+        if diff > max_diff:
+            status["warnings"].append(
+                "De actuele prijsbronnen wijken meer dan gebruikelijk van elkaar af."
+            )
+            status["data_quality_score"] -= 12
+    except Exception as exc:  # pragma: no cover - network dependent
+        status["sources"]["coingecko"]["warning"] = str(exc)
+        status["warnings"].append("CoinGecko is niet beschikbaar voor actuele prijscontrole.")
+        status["data_quality_score"] -= 10
+
+    try:
+        breadth = fetch_coingecko_breadth(CURATED, settings()["breadth"]["number_of_tokens"])
+        status["ecosystem_breadth"] = {
+            key: value for key, value in breadth.items() if key != "tokens"
+        }
+        append_unique(
+            CURATED / "breadth_snapshots.jsonl",
+            {"snapshot_at_utc": generated, **breadth},
+            ["snapshot_at_utc"],
+        )
+    except Exception as exc:  # pragma: no cover - network dependent
+        status["ecosystem_breadth"]["warning"] = str(exc)
+
+    for column, source_name in [
+        ("tvl", "defillama"),
+        ("stablecoins", "defillama"),
+        ("dex_volume", "defillama"),
+        ("fees", "defillama"),
+    ]:
+        if column not in latest or pd.isna(latest[column]):
+            status["warnings"].append(f"Ontbrekende gevalideerde bronwaarde: {column}.")
+            status["data_quality_score"] -= 8
+            status["sources"][source_name]["available"] = False
+
+    if not status["sources"]["defillama"]["available"]:
+        status["missing_validated_sources"] += 1
+    if not status["sources"]["coinbase"]["available"]:
+        status["missing_validated_sources"] += 1
+
+    try:
+        status["sources"]["solana_rpc"]["context"] = fetch_rpc_context()
+        status["sources"]["solana_rpc"]["available"] = True
+    except Exception as exc:  # pragma: no cover - network dependent
+        status["sources"]["solana_rpc"]["warning"] = str(exc)
+
+    status["data_quality_score"] = max(0.0, round(status["data_quality_score"], 2))
+    return status
 
 
 def deterministic_conclusion(reg: str, signal: float | None, quality: float) -> str:

@@ -14,7 +14,7 @@ def pct_change(series: pd.Series, days: int) -> pd.Series:
 
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.sort_values("date").copy()
+    out = df.sort_values("date").reset_index(drop=True).copy()
     out["sol_return_1d"] = pct_change(out["sol_close"], 1)
     out["sol_return_7d"] = pct_change(out["sol_close"], 7)
     out["sol_return_30d"] = pct_change(out["sol_close"], 30)
