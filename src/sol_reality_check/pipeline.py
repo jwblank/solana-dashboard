@@ -25,6 +25,7 @@ from sol_reality_check.clients import (
     fetch_coingecko_current,
     fetch_defillama_series,
     fetch_rpc_context,
+    repair_daily_price_outliers,
 )
 from sol_reality_check.config import ROOT, indicators, load_yaml, settings
 from sol_reality_check.demo import demo_history
@@ -43,7 +44,8 @@ def load_or_fetch_history(mode: str) -> pd.DataFrame:
         df.to_csv(path, index=False)
         return df
     if path.exists():
-        cached = pd.read_csv(path)
+        cached = repair_history_prices(pd.read_csv(path))
+        cached.to_csv(path, index=False)
         if mode != "production":
             return cached
         try:
@@ -85,7 +87,22 @@ def fetch_history_window(
         merged = pd.concat([existing, merged], ignore_index=True)
         merged = merged.drop_duplicates("date", keep="last")
     merged = merged[merged["date"] < end_date]
-    return merged.sort_values("date")
+    return repair_history_prices(merged.sort_values("date"))
+
+
+def repair_history_prices(df: pd.DataFrame) -> pd.DataFrame:
+    repaired = df.sort_values("date").reset_index(drop=True).copy()
+    repairs: list[dict[str, Any]] = []
+    for column, label in [("sol_close", "SOL-USD history"), ("btc_close", "BTC-USD history")]:
+        if column not in repaired:
+            continue
+        single = repaired[["date", column]].rename(columns={column: "close"})
+        fixed = repair_daily_price_outliers(single, ["close"], label)
+        repaired[column] = fixed["close"]
+        repairs.extend(fixed.attrs.get("price_repairs", []))
+    if repairs:
+        repaired.attrs["price_repairs"] = repairs
+    return repaired
 
 
 def last_completed_utc_day_end() -> datetime:
@@ -96,7 +113,9 @@ def last_completed_utc_day_end() -> datetime:
 def prepare_dataset(mode: str) -> pd.DataFrame:
     cfg = settings()
     ind = indicators()
-    df = add_features(load_or_fetch_history(mode))
+    history = load_or_fetch_history(mode)
+    df = add_features(history)
+    df.attrs.update(history.attrs)
     feature_cols = list(set(ind["orientation"]) | set(ind["analog_features"]))
     z = robust_z_scores(
         df,
@@ -133,6 +152,7 @@ def prepare_dataset(mode: str) -> pd.DataFrame:
         signal_scores.append(signal)
     scored["market_signal_score"] = signal_scores
     scored["regime"] = regimes
+    scored.attrs.update(df.attrs)
     CURATED.mkdir(parents=True, exist_ok=True)
     scored.to_csv(CURATED / "features.csv", index=False)
     return scored
@@ -151,7 +171,13 @@ def build_outputs(mode: str) -> dict[str, Any]:
         df, last_index, ind["analog_features"], cfg["project"]["default_horizon_days"]
     )
     analog_stats = analog_summary(analogs, cfg["project"]["default_horizon_days"])
-    source_status = build_source_status(mode, generated=iso_z(now), latest=latest)
+    price_repairs = df.attrs.get("price_repairs", [])
+    source_status = build_source_status(
+        mode,
+        generated=iso_z(now),
+        latest=latest,
+        price_repairs=price_repairs,
+    )
     breadth_score, breadth_summary, breadth_drivers = score_ecosystem_breadth(
         source_status["ecosystem_breadth"]
     )
@@ -301,7 +327,12 @@ def build_outputs(mode: str) -> dict[str, Any]:
     return dashboard
 
 
-def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[str, Any]:
+def build_source_status(
+    mode: str,
+    generated: str,
+    latest: pd.Series,
+    price_repairs: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     breadth_notice = (
         "Experimentele indicator — nog onvoldoende historische waarnemingen voor een "
         "betrouwbare backtest."
@@ -333,6 +364,7 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
         },
         "warnings": [],
         "price_difference_pct": None,
+        "price_repairs": price_repairs or [],
         "ecosystem_breadth": {
             "available": False,
             "historically_validated": False,
@@ -349,6 +381,13 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
         status["sources"]["defillama"]["note"] = "Demomodus gebruikt synthetische testdata."
         status["warnings"].append("Demodata — dit zijn geen actuele marktgegevens.")
         return status
+
+    if price_repairs:
+        status["warnings"].append(
+            f"{len(price_repairs)} verdachte dagprijswaarde(n) gerepareerd met vorige "
+            "geldige prijs."
+        )
+        status["data_quality_score"] -= min(15, 5 * len(price_repairs))
 
     try:
         current = fetch_coingecko_current()
@@ -967,6 +1006,7 @@ def build_data_audit(
     last_date = str(df["date"].max()) if "date" in df and not df.empty else "n.v.t."
     rows = len(df)
     warnings = source_status.get("warnings") or []
+    price_repairs = source_status.get("price_repairs") or []
     sources = source_status.get("sources", {})
     return {
         "title": "Datakwaliteit & bronnen",
@@ -979,6 +1019,7 @@ def build_data_audit(
             metric("Datacutoff", cutoff),
             metric("Historie", f"{first_date} t/m {last_date}"),
             metric("Records", str(rows)),
+            metric("Prijsreparaties", str(len(price_repairs))),
             metric("Analoge dagen", str(analog_count or 0)),
             metric("Ecosysteem tokens", str(breadth.get("token_count", "n.v.t."))),
             metric("RPC samples", str(rpc_metrics.get("sample_count", "n.v.t."))),

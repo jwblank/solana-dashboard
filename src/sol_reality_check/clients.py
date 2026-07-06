@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import time
 from datetime import UTC, datetime, timedelta
@@ -8,6 +9,9 @@ from typing import Any
 
 import pandas as pd
 import requests
+
+LOGGER = logging.getLogger(__name__)
+MAX_DAILY_PRICE_CHANGE = 0.40
 
 
 class ApiError(RuntimeError):
@@ -71,7 +75,93 @@ def fetch_coinbase_daily(product_id: str, start: datetime, end: datetime) -> pd.
     frame["date"] = pd.to_datetime(frame["timestamp"], unit="s", utc=True).dt.date.astype(str)
     frame = frame.drop_duplicates("date").sort_values("date")
     frame["asset"] = product_id.split("-")[0]
+    frame = repair_daily_price_outliers(
+        frame,
+        price_columns=["open", "high", "low", "close"],
+        label=product_id,
+    )
     return frame[["date", "asset", "open", "high", "low", "close", "volume"]]
+
+
+def repair_daily_price_outliers(
+    frame: pd.DataFrame,
+    price_columns: list[str],
+    label: str,
+    threshold: float = MAX_DAILY_PRICE_CHANGE,
+) -> pd.DataFrame:
+    """Replace implausible daily close jumps with the previous valid price."""
+    if frame.empty or "date" not in frame or "close" not in frame:
+        return frame
+    repaired = frame.sort_values("date").reset_index(drop=True).copy()
+    repairs: list[dict[str, Any]] = []
+    close_values = pd.to_numeric(repaired["close"], errors="coerce")
+    previous_valid: float | None = None
+    for idx, close in close_values.items():
+        if pd.isna(close) or float(close) <= 0:
+            if previous_valid is not None:
+                repairs.append(
+                    price_repair_record(
+                        repaired,
+                        idx,
+                        label,
+                        close,
+                        previous_valid,
+                        "missing_or_non_positive",
+                    )
+                )
+                set_price_columns(repaired, idx, price_columns, previous_valid)
+            continue
+        current = float(close)
+        if previous_valid is not None:
+            change = current / previous_valid - 1
+            if abs(change) > threshold:
+                repairs.append(
+                    price_repair_record(
+                        repaired,
+                        idx,
+                        label,
+                        current,
+                        previous_valid,
+                        f"daily_change_{change:.2%}",
+                    )
+                )
+                set_price_columns(repaired, idx, price_columns, previous_valid)
+                continue
+        previous_valid = current
+    if repairs:
+        repaired.attrs["price_repairs"] = repairs
+        LOGGER.warning(
+            "Repaired %s suspicious daily price outlier(s) for %s", len(repairs), label
+        )
+    return repaired
+
+
+def set_price_columns(
+    frame: pd.DataFrame,
+    idx: int,
+    price_columns: list[str],
+    value: float,
+) -> None:
+    for column in price_columns:
+        if column in frame:
+            frame.at[idx, column] = value
+
+
+def price_repair_record(
+    frame: pd.DataFrame,
+    idx: int,
+    label: str,
+    original: Any,
+    replacement: float,
+    reason: str,
+) -> dict[str, Any]:
+    return {
+        "date": str(frame.at[idx, "date"]),
+        "asset": label,
+        "original_close": None if pd.isna(original) else round(float(original), 8),
+        "replacement_close": round(float(replacement), 8),
+        "reason": reason,
+    }
 
 
 def fetch_coingecko_current() -> dict[str, Any]:
