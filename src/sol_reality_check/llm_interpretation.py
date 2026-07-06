@@ -10,7 +10,7 @@ from sol_reality_check.clients import ApiError, HttpClient
 from sol_reality_check.utils import iso_z
 
 DEFAULT_PROVIDER = "Hugging Face Inference Providers"
-DEFAULT_MODEL = "Qwen/Qwen3-8B"
+DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 ROUTER_URL = "https://router.huggingface.co/v1/chat/completions"
 FIXED_HEADINGS = [
     "Kort beeld",
@@ -52,7 +52,7 @@ def build_interpretation(
     called_at = iso_z(datetime.now(tz=UTC))
     try:
         content = call_huggingface_interpretation(token, settings["model"], facts)
-        parsed = parse_llm_response(content)
+        parsed = parse_llm_response(content, facts)
         validated = validate_llm_output(parsed, facts)
         return {
             **base,
@@ -221,11 +221,11 @@ def llm_prompt(facts: dict[str, Any]) -> str:
     )
 
 
-def parse_llm_response(content: str) -> dict[str, Any]:
+def parse_llm_response(content: str, facts: dict[str, Any] | None = None) -> dict[str, Any]:
     try:
         return parse_json_object(content)
     except Exception:
-        return parse_marked_text(content)
+        return parse_marked_text(content, facts)
 
 
 def parse_json_object(content: str) -> dict[str, Any]:
@@ -244,19 +244,21 @@ def parse_json_object(content: str) -> dict[str, Any]:
     return parsed
 
 
-def parse_marked_text(content: str) -> dict[str, Any]:
+def parse_marked_text(content: str, facts: dict[str, Any] | None = None) -> dict[str, Any]:
     cleaned = content.strip()
     title = match_line(cleaned, "TITEL")
     intro = match_line(cleaned, "INTRO")
-    if not title or not intro:
-        raise ValueError("LLM-output mist TITEL of INTRO")
     sections = []
+    first_heading_start = len(cleaned)
     for index, heading in enumerate(FIXED_HEADINGS):
         next_heading = FIXED_HEADINGS[index + 1] if index + 1 < len(FIXED_HEADINGS) else None
-        text = extract_marked_section(cleaned, heading, next_heading)
+        text, section_start = extract_marked_section(cleaned, heading, next_heading)
+        first_heading_start = min(first_heading_start, section_start)
         if not text:
             raise ValueError(f"LLM-output mist sectie: {heading}")
         sections.append({"heading": heading, "text": text})
+    title = title or infer_title(cleaned, facts)
+    intro = intro or infer_intro(cleaned, first_heading_start, facts)
     return {"title": title, "intro": intro, "sections": sections}
 
 
@@ -265,10 +267,14 @@ def match_line(content: str, label: str) -> str:
     return clean_text(match.group(1)) if match else ""
 
 
-def extract_marked_section(content: str, heading: str, next_heading: str | None) -> str:
+def extract_marked_section(
+    content: str, heading: str, next_heading: str | None
+) -> tuple[str, int]:
     start_patterns = [
         rf"^\s*\[{re.escape(heading)}\]\s*$",
-        rf"^\s*#+\s*{re.escape(heading)}\s*$",
+        rf"^\s*#+\s*{re.escape(heading)}\s*:?\s*$",
+        rf"^\s*\*{{0,2}}{re.escape(heading)}\*{{0,2}}\s*:?\s*$",
+        rf"^\s*\d+[.)]\s*\*{{0,2}}{re.escape(heading)}\*{{0,2}}\s*:?\s*$",
     ]
     start_match = None
     for pattern in start_patterns:
@@ -276,20 +282,49 @@ def extract_marked_section(content: str, heading: str, next_heading: str | None)
         if start_match:
             break
     if not start_match:
-        return ""
+        return "", len(content)
     start = start_match.end()
     end = len(content)
     if next_heading:
         end_patterns = [
             rf"^\s*\[{re.escape(next_heading)}\]\s*$",
-            rf"^\s*#+\s*{re.escape(next_heading)}\s*$",
+            rf"^\s*#+\s*{re.escape(next_heading)}\s*:?\s*$",
+            rf"^\s*\*{{0,2}}{re.escape(next_heading)}\*{{0,2}}\s*:?\s*$",
+            rf"^\s*\d+[.)]\s*\*{{0,2}}{re.escape(next_heading)}\*{{0,2}}\s*:?\s*$",
         ]
         for pattern in end_patterns:
             end_match = re.search(pattern, content[start:], flags=re.IGNORECASE | re.MULTILINE)
             if end_match:
                 end = start + end_match.start()
                 break
-    return clean_text(content[start:end])
+    return clean_text(content[start:end]), start_match.start()
+
+
+def infer_title(content: str, facts: dict[str, Any] | None) -> str:
+    if facts and facts.get("regime_title"):
+        return clean_text(facts["regime_title"])
+    for line in content.splitlines():
+        text = clean_text(line.strip("#* []:"))
+        if text and text not in FIXED_HEADINGS:
+            return text[:90]
+    return "Kwalitatieve duiding"
+
+
+def infer_intro(content: str, first_heading_start: int, facts: dict[str, Any] | None) -> str:
+    preamble = clean_text(
+        re.sub(r"(?im)^\s*TITEL\s*:\s*.+?$", "", content[:first_heading_start]).strip()
+    )
+    preamble = re.sub(r"(?im)^\s*INTRO\s*:\s*", "", preamble).strip()
+    if preamble:
+        return preamble[:360]
+    if facts:
+        return (
+            f"Het marktsignaal staat op {facts['market_signal']} "
+            f"({facts['market_signal_label']}) en de bewijskwaliteit op "
+            f"{facts['evidence_quality']} ({facts['evidence_label']}). Deze duiding gebruikt "
+            f"de dashboardwaarden tot {facts['data_cutoff_utc']}."
+        )
+    return "Deze duiding gebruikt de dashboardwaarden en leest de indicatoren in samenhang."
 
 
 def validate_llm_output(data: dict[str, Any], facts: dict[str, Any]) -> dict[str, Any]:
