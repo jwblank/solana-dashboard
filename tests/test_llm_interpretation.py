@@ -1,6 +1,7 @@
 from sol_reality_check.llm_interpretation import (
     FIXED_HEADINGS,
     build_interpretation,
+    complete_required_values,
     interpretation_facts,
     parse_llm_response,
     validate_llm_output,
@@ -157,3 +158,30 @@ kapitaal 100/100 en ecosysteembreedte 62/100 geven samen het beeld.
     validated = validate_llm_output(parsed, facts)
 
     assert [section["heading"] for section in validated["sections"]] == FIXED_HEADINGS
+
+
+def test_complete_required_values_adds_missing_dashboard_value():
+    facts = interpretation_facts(sample_dashboard(), {"7d": {}})
+    data = {
+        "title": "Duiding",
+        "intro": "Marktsignaal 70/100 en bewijskwaliteit 55/100.",
+        "sections": [
+            {
+                "heading": "Kort beeld",
+                "text": "Prijssterkte 48/100 en netwerkgebruik 94/100 staan in beeld.",
+            },
+            {
+                "heading": "Wat valt op?",
+                "text": "Ecosysteembreedte 62/100 is zichtbaar.",
+            },
+            {"heading": "Wat ondersteunt het beeld?", "text": "De historie is gemengd."},
+            {"heading": "Wat maakt het onzeker?", "text": "Bewijs blijft beperkt."},
+            {"heading": "Eindbeeld", "text": "Het beeld blijft genuanceerd."},
+        ],
+    }
+
+    completed, warnings = complete_required_values(data, facts)
+    validated = validate_llm_output(completed, facts)
+
+    assert warnings
+    assert "100/100" in validated["sections"][1]["text"]

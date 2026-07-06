@@ -53,7 +53,8 @@ def build_interpretation(
     try:
         content = call_huggingface_interpretation(token, settings["model"], facts)
         parsed = parse_llm_response(content, facts)
-        validated = validate_llm_output(parsed, facts)
+        completed, completion_warnings = complete_required_values(parsed, facts)
+        validated = validate_llm_output(completed, facts)
         return {
             **base,
             "status": "llm_success",
@@ -61,7 +62,7 @@ def build_interpretation(
             "title": validated["title"],
             "intro": validated["intro"],
             "sections": validated["sections"],
-            "warnings": [],
+            "warnings": completion_warnings,
             "footer_note": (
                 "Deze tekst is door een LLM opgesteld op basis van de exacte dashboardwaarden. "
                 "De LLM bepaalt geen scores en geeft geen beleggingsadvies."
@@ -359,6 +360,64 @@ def validate_llm_output(data: dict[str, Any], facts: dict[str, Any]) -> dict[str
     if missing:
         raise ValueError(f"LLM-output mist dashboardwaarden: {missing}")
     return {"title": title, "intro": intro, "sections": normalized_sections}
+
+
+def complete_required_values(
+    data: dict[str, Any], facts: dict[str, Any]
+) -> tuple[dict[str, Any], list[str]]:
+    values = required_dashboard_values(facts)
+    joined = output_text(data).lower()
+    missing = [(label, value) for label, value in values if value and value.lower() not in joined]
+    if not missing:
+        return data, []
+    sections = list(data.get("sections") or [])
+    if not sections:
+        return data, []
+    summary = "Voor de controleerbaarheid staan de kernwaarden expliciet in beeld: " + ", ".join(
+        f"{label} {value}" for label, value in values if value
+    ) + "."
+    target_index = next(
+        (
+            index
+            for index, section in enumerate(sections)
+            if isinstance(section, dict) and clean_text(section.get("heading")) == "Wat valt op?"
+        ),
+        0,
+    )
+    target = dict(sections[target_index])
+    target["text"] = clean_text(f"{target.get('text', '')} {summary}")
+    sections[target_index] = target
+    return {
+        **data,
+        "sections": sections,
+    }, [
+        "LLM-output aangevuld met verplichte dashboardwaarden: "
+        + ", ".join(value for _, value in missing)
+        + "."
+    ]
+
+
+def required_dashboard_values(facts: dict[str, Any]) -> list[tuple[str, str]]:
+    return [
+        ("marktsignaal", facts["market_signal"]),
+        ("bewijskwaliteit", facts["evidence_quality"]),
+        ("prijssterkte", facts["price_strength"]),
+        ("netwerkgebruik", facts["network_usage"]),
+        ("kapitaal", facts["capital"]),
+        ("ecosysteembreedte", facts["ecosystem_breadth"]),
+    ]
+
+
+def output_text(data: dict[str, Any]) -> str:
+    raw_sections = data.get("sections")
+    sections: list[Any] = raw_sections if isinstance(raw_sections, list) else []
+    return " ".join(
+        [
+            clean_text(data.get("title")),
+            clean_text(data.get("intro")),
+            *(clean_text(section.get("text")) for section in sections if isinstance(section, dict)),
+        ]
+    )
 
 
 def with_fallback(
