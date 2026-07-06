@@ -6,10 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self';">
     <title>SOL Reality Check</title>
     <link rel="stylesheet" href="./styles.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" integrity="sha384-0saKbD0TnJpSgec4A/mR3dNqzQ4JkQq7RkAE4YfYu0N53XyVyYnCzV8ALpSgS3ii" crossorigin="anonymous"></script>
-    <script defer src="./charts.js"></script>
     <script defer src="./glossary.js"></script>
-    <script defer src="./position.js"></script>
     <script defer src="./accessibility.js"></script>
     <script defer src="./app.js"></script>
   </head>
@@ -57,19 +54,19 @@
           <h3>Historische vergelijkingen</h3>
           <p id="analog-summary"></p>
           <div id="analog-stats" class="stat-row"></div>
-          <div class="chart-frame">
-            <canvas id="analog-chart" aria-label="Verdeling van analoge uitkomsten"></canvas>
-          </div>
-          <ul id="change-list" class="clean"></ul>
         </section>
-        <section class="wide" id="my-sol">
-          <h3>Mijn SOL</h3>
-          <div class="inputs">
-            <label>Gemiddelde aankoopkoers <input id="buy-price" type="number" min="0" step="0.01"></label>
-            <label>Aantal SOL <input id="amount-sol" type="number" min="0" step="0.01"></label>
-            <label>Horizon <select id="position-horizon"><option>7</option><option>30</option><option>90</option></select></label>
+        <section class="wide">
+          <h3>Datakwaliteit & bronnen</h3>
+          <p id="audit-summary"></p>
+          <div id="audit-stats" class="stat-row"></div>
+          <div id="source-cards" class="source-grid"></div>
+          <p id="audit-warnings" class="plain"></p>
+        </section>
+        <section class="wide">
+          <h3>Omslagpunten</h3>
+          <div class="compact-list-wrap">
+            <ul id="change-list" class="clean"></ul>
           </div>
-          <p id="position-output" class="plain"></p>
         </section>
       </section>
 

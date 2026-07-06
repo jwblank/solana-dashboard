@@ -1,5 +1,6 @@
 const fmtPct = (x) => x === null || x === undefined ? "n.v.t." : `${(x * 100).toFixed(1)}%`;
 const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
+const fmtScore100 = (x) => x === null || x === undefined ? ".../100" : `${Math.round(x)}/100`;
 const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
 
 async function loadJson(path) {
@@ -32,7 +33,7 @@ function renderCards(data) {
     const span = document.createElement("span");
     span.textContent = item.title;
     const strong = document.createElement("strong");
-    strong.textContent = fmtScore(item.score);
+    strong.textContent = fmtScore100(item.score);
     const weight = document.createElement("small");
     weight.className = "weight";
     weight.textContent = fmtWeight(item.weight);
@@ -55,6 +56,44 @@ function renderCards(data) {
   }));
 }
 
+function renderSources(audit) {
+  const cards = audit?.sources || [];
+  document.getElementById("source-cards").replaceChildren(...cards.map((item) => {
+    const card = document.createElement("article");
+    card.className = "source-card";
+    const top = document.createElement("div");
+    top.className = "source-top";
+    const title = document.createElement("strong");
+    title.textContent = item.name;
+    const status = document.createElement("span");
+    status.className = item.status === "Succesvol" ? "status-ok" : "status-warn";
+    status.textContent = item.status;
+    top.append(title, status);
+    const role = document.createElement("p");
+    role.textContent = item.role;
+    const meta = document.createElement("div");
+    meta.className = "metric-row";
+    [
+      ["Validatie", item.validation],
+      ["Dekking", item.coverage],
+      ["Laatste succes", item.last_success_at_utc]
+    ].forEach(([label, value]) => {
+      const chip = document.createElement("span");
+      chip.className = "metric";
+      chip.textContent = `${label}: ${value || "n.v.t."}`;
+      meta.append(chip);
+    });
+    if (item.warning) {
+      const warning = document.createElement("small");
+      warning.textContent = item.warning;
+      card.append(top, role, meta, warning);
+    } else {
+      card.append(top, role, meta);
+    }
+    return card;
+  }));
+}
+
 function renderStats(targetId, stats) {
   const target = document.getElementById(targetId);
   target.replaceChildren(...(stats || []).map((item) => {
@@ -73,7 +112,7 @@ function renderBlockEvidence(data) {
   const rows = (data.scores.block_details || []).map((item) => [
     item.title,
     fmtWeight(item.weight),
-    fmtScore(item.score),
+    fmtScore100(item.score),
     item.status,
     `${item.summary} ${item.drivers.join(" ")}`
   ]);
@@ -106,9 +145,8 @@ function table(headers, rows) {
 
 async function main() {
   activateTabs();
-  const [dashboard, analogs, backtest, ledger, glossary] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary] = await Promise.all([
     loadJson("./data/dashboard.json"),
-    loadJson("./data/current_analogs.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
     loadJson("./data/glossary.json")
@@ -126,23 +164,25 @@ async function main() {
   setText("regime", dashboard.summary.regime_title || dashboard.summary.regime.replaceAll("_", " "));
   setText("conclusion-text", dashboard.summary.conclusion);
   setText("interpretation-note", dashboard.summary.interpretation_note || "");
-  setText("market-score", fmtScore(dashboard.scores.market_signal));
+  setText("market-score", fmtScore100(dashboard.scores.market_signal));
   setText("market-label", dashboard.summary.market_signal_label);
-  setText("evidence-score", fmtScore(dashboard.scores.evidence_quality));
+  setText("evidence-score", fmtScore100(dashboard.scores.evidence_quality));
   setText("evidence-label", dashboard.summary.evidence_label);
   renderCards(dashboard);
   setText("analog-summary", dashboard.historical_context?.summary || "");
   renderStats("analog-stats", dashboard.historical_context?.stats || []);
+  setText("audit-summary", dashboard.data_audit?.summary || "");
+  renderStats("audit-stats", dashboard.data_audit?.freshness || []);
+  renderSources(dashboard.data_audit);
+  setText("audit-warnings", (dashboard.data_audit?.warnings || []).join(" ") || "Geen waarschuwingen bij deze update.");
   document.getElementById("change-list").replaceChildren(...dashboard.summary.what_would_change.map((item) => {
     const li = document.createElement("li");
     li.textContent = item;
     return li;
   }));
-  window.renderAnalogChart(analogs.rows || []);
-  window.setupPosition(dashboard, analogs.rows || []);
   window.renderGlossary(glossary);
   document.getElementById("evidence-route").append(table(["Onderdeel", "Waarde"], [
-    ["Eindscore", `${fmtScore(dashboard.scores.market_signal)}/100`],
+    ["Eindscore", fmtScore100(dashboard.scores.market_signal)],
     ["Scoreduiding", dashboard.scores.method_note],
     ["Datakwaliteit", dashboard.scores.evidence_components.data_quality],
     ["Steekproefomvang", dashboard.scores.evidence_components.sample_adequacy],

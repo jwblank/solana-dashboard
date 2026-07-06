@@ -198,6 +198,15 @@ def build_outputs(mode: str) -> dict[str, Any]:
     )
     interpretation = interpret_market(reg, blocks, market_signal, quality["score"], analog_stats)
     historical_context = build_historical_context(analog_stats, language_label)
+    data_audit = build_data_audit(
+        df=df,
+        source_status=source_status,
+        generated=generated,
+        cutoff=cutoff,
+        analog_count=analog_stats.get("count"),
+        breadth=source_status["ecosystem_breadth"],
+        rpc_metrics=rpc_metrics,
+    )
     dashboard = {
         "schema_version": "1.0",
         "generated_at_utc": generated,
@@ -263,6 +272,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
         },
         "analog_summary": analog_stats,
         "historical_context": historical_context,
+        "data_audit": data_audit,
         "source_status": source_status["sources"],
     }
     write_all_json(
@@ -330,6 +340,7 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
     try:
         current = fetch_coingecko_current()
         status["sources"]["coingecko"]["available"] = True
+        status["sources"]["coingecko"]["last_success_at_utc"] = generated
         status["sources"]["coingecko"]["current_prices"] = current
         sol_price = float(current["solana"]["usd"])
         coinbase_price = float(latest["sol_close"])
@@ -353,6 +364,7 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
             key: value for key, value in breadth.items() if key != "tokens"
         }
         status["ecosystem_breadth"]["available"] = True
+        status["ecosystem_breadth"]["last_success_at_utc"] = generated
         append_unique(
             CURATED / "breadth_snapshots.jsonl",
             {"snapshot_at_utc": generated, **breadth},
@@ -380,6 +392,7 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
     try:
         status["sources"]["solana_rpc"]["context"] = fetch_rpc_context()
         status["sources"]["solana_rpc"]["available"] = True
+        status["sources"]["solana_rpc"]["last_success_at_utc"] = generated
     except Exception as exc:  # pragma: no cover - network dependent
         status["sources"]["solana_rpc"]["warning"] = str(exc)
 
@@ -680,6 +693,99 @@ def build_historical_context(analog_stats: dict[str, Any], language_label: str) 
             metric("Midden 80%", f"{pct_text(p10)} tot {pct_text(p90)}"),
         ],
     }
+
+
+def build_data_audit(
+    df: pd.DataFrame,
+    source_status: dict[str, Any],
+    generated: str,
+    cutoff: str,
+    analog_count: int | None,
+    breadth: dict[str, Any],
+    rpc_metrics: dict[str, Any],
+) -> dict[str, Any]:
+    first_date = str(df["date"].min()) if "date" in df and not df.empty else "n.v.t."
+    last_date = str(df["date"].max()) if "date" in df and not df.empty else "n.v.t."
+    rows = len(df)
+    warnings = source_status.get("warnings") or []
+    sources = source_status.get("sources", {})
+    return {
+        "title": "Datakwaliteit & bronnen",
+        "summary": (
+            f"{rows} historische records van {first_date} t/m {last_date}. "
+            f"Laatste dagdata-cutoff: {cutoff}. Update-run: {generated}."
+        ),
+        "freshness": [
+            metric("Update-run", generated),
+            metric("Datacutoff", cutoff),
+            metric("Historie", f"{first_date} t/m {last_date}"),
+            metric("Records", str(rows)),
+            metric("Analoge dagen", str(analog_count or 0)),
+            metric("Ecosysteem tokens", str(breadth.get("token_count", "n.v.t."))),
+            metric("RPC samples", str(rpc_metrics.get("sample_count", "n.v.t."))),
+        ],
+        "sources": [
+            source_row(
+                "Coinbase",
+                sources.get("coinbase", {}),
+                "SOL/BTC dagprijzen",
+                "Historisch gevalideerd",
+                f"{rows} dagrecords",
+            ),
+            source_row(
+                "DeFiLlama",
+                sources.get("defillama", {}),
+                "TVL, stablecoins, DEX-volume en fees",
+                "Historisch gevalideerd",
+                (
+                    f"{count_present_rows(df, ['tvl', 'stablecoins', 'dex_volume', 'fees'])} "
+                    "bruikbare rijen"
+                ),
+            ),
+            source_row(
+                "CoinGecko",
+                sources.get("coingecko", {}),
+                "Liveprijs en ecosysteembreedte",
+                "Actueel/contextueel",
+                f"{breadth.get('token_count', 0)} ecosysteemtokens",
+            ),
+            source_row(
+                "Solana RPC",
+                sources.get("solana_rpc", {}),
+                "Actuele netwerkcontext",
+                "Actueel, niet gebacktest",
+                f"{rpc_metrics.get('sample_count', 0)} performance samples",
+            ),
+        ],
+        "warnings": warnings,
+    }
+
+
+def source_row(
+    name: str,
+    source: dict[str, Any],
+    role: str,
+    validation: str,
+    coverage: str,
+) -> dict[str, str]:
+    ok = bool(source.get("available"))
+    return {
+        "name": name,
+        "status": "Succesvol" if ok else "Niet beschikbaar",
+        "role": role,
+        "validation": validation,
+        "coverage": coverage,
+        "last_success_at_utc": source.get("last_success_at_utc")
+        or ("Dataset aanwezig" if ok else "n.v.t."),
+        "warning": source.get("warning") or source.get("note") or "",
+    }
+
+
+def count_present_rows(df: pd.DataFrame, columns: list[str]) -> int:
+    available = [column for column in columns if column in df]
+    if not available:
+        return 0
+    return int(df[available].dropna(how="all").shape[0])
 
 
 def interpret_market(
