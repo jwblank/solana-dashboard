@@ -120,7 +120,7 @@ def prepare_dataset(mode: str) -> pd.DataFrame:
             block_scores[block].append(block_score)
         reg, _ = regime(
             current_blocks.get("price_strength"),
-            current_blocks.get("activity"),
+            current_blocks.get("network_usage"),
             current_blocks.get("capital"),
         )
         regimes.append(reg)
@@ -145,13 +145,6 @@ def build_outputs(mode: str) -> dict[str, Any]:
     df = prepare_dataset(mode)
     last_index = len(df) - 1
     latest = df.iloc[last_index]
-    blocks: dict[str, float | None] = {
-        "price_strength": latest.get("price_strength_score"),
-        "activity": latest.get("activity_score"),
-        "capital": latest.get("capital_score"),
-    }
-    market_signal, missing_blocks = weighted_average(blocks, ind["validated_market_signal"])
-    reg, reg_text = regime(blocks["price_strength"], blocks["activity"], blocks["capital"])
     horizons = cfg["backtest"]["horizons_days"]
     backtest = run_backtest(df, ind["analog_features"], horizons)
     analogs = find_analogs(
@@ -159,6 +152,25 @@ def build_outputs(mode: str) -> dict[str, Any]:
     )
     analog_stats = analog_summary(analogs, cfg["project"]["default_horizon_days"])
     source_status = build_source_status(mode, generated=iso_z(now), latest=latest)
+    breadth_score, breadth_summary, breadth_drivers = score_ecosystem_breadth(
+        source_status["ecosystem_breadth"]
+    )
+    rpc_score, rpc_metrics, rpc_summary = score_network_context(
+        source_status["sources"]["solana_rpc"].get("context")
+    )
+    base_network_usage = rounded_or_none(latest.get("network_usage_score"))
+    network_usage, _ = weighted_average(
+        {"validated_network": base_network_usage, "rpc_context": rpc_score},
+        {"validated_network": 0.85, "rpc_context": 0.15},
+    )
+    blocks: dict[str, float | None] = {
+        "price_strength": rounded_or_none(latest.get("price_strength_score")),
+        "network_usage": network_usage,
+        "capital": rounded_or_none(latest.get("capital_score")),
+        "ecosystem_breadth": breadth_score,
+    }
+    market_signal, missing_blocks = weighted_average(blocks, ind["validated_market_signal"])
+    reg, reg_text = regime(blocks["price_strength"], blocks["network_usage"], blocks["capital"])
     data_quality = source_status["data_quality_score"]
     quality = evidence_quality(
         data_quality,
@@ -168,6 +180,10 @@ def build_outputs(mode: str) -> dict[str, Any]:
         missing_sources=source_status["missing_validated_sources"],
         critical_error=source_status["critical_error"],
     )
+    if breadth_score is not None:
+        quality["caps"].append("Ecosysteembreedte telt beperkt mee en is nog experimenteel.")
+    if rpc_score is not None:
+        quality["caps"].append("RPC-netwerkcontext telt alleen actueel mee, niet in de backtest.")
     generated = iso_z(now)
     cutoff = f"{latest['date']}T23:59:59Z"
     probability_allowed = (
@@ -204,13 +220,30 @@ def build_outputs(mode: str) -> dict[str, Any]:
             "market_signal": market_signal,
             "evidence_quality": quality["score"],
             "blocks": {k: rounded_or_none(v) for k, v in blocks.items()},
+            "block_weights": ind["validated_market_signal"],
+            "block_details": block_details(
+                blocks,
+                ind["validated_market_signal"],
+                base_network_usage,
+                rpc_score,
+                rpc_metrics,
+                rpc_summary,
+                breadth_summary,
+                breadth_drivers,
+            ),
             "missing_blocks": missing_blocks,
             "evidence_components": quality["components"],
             "quality_caps": quality["caps"],
+            "method_note": (
+                "De eindscore is een gewogen indicatorscore van 0 tot 100. Het is geen "
+                "kanspercentage en geen beleggingsadvies."
+            ),
         },
         "current": {
             "sol_price": round(float(latest["sol_close"]), 2),
             "btc_price": round(float(latest["btc_close"]), 2),
+            "live_sol_price": current_price_or_none(source_status, "solana"),
+            "live_btc_price": current_price_or_none(source_status, "bitcoin"),
             "risk": {
                 "volatility_30d": round(float(latest["realized_volatility_30d"]), 4),
                 "drawdown_90d": round(float(latest["drawdown_90d"]), 4),
@@ -218,7 +251,10 @@ def build_outputs(mode: str) -> dict[str, Any]:
                 "warnings": source_status["warnings"],
             },
             "ecosystem_breadth": source_status["ecosystem_breadth"],
+            "ecosystem_breadth_score": breadth_score,
             "network_context": source_status["sources"]["solana_rpc"].get("context"),
+            "network_context_metrics": rpc_metrics,
+            "network_context_score": rpc_score,
         },
         "analog_summary": analog_stats,
         "source_status": source_status["sources"],
@@ -310,6 +346,7 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
         status["ecosystem_breadth"] = {
             key: value for key, value in breadth.items() if key != "tokens"
         }
+        status["ecosystem_breadth"]["available"] = True
         append_unique(
             CURATED / "breadth_snapshots.jsonl",
             {"snapshot_at_utc": generated, **breadth},
@@ -344,6 +381,171 @@ def build_source_status(mode: str, generated: str, latest: pd.Series) -> dict[st
     return status
 
 
+def score_ecosystem_breadth(
+    breadth: dict[str, Any],
+) -> tuple[float | None, str, list[str]]:
+    if not breadth.get("available"):
+        return None, "Niet beschikbaar bij deze update.", ["CoinGecko-breedtedata ontbreekt."]
+    positive_7d = breadth.get("positive_7d_share")
+    positive_24h = breadth.get("positive_24h_share")
+    median_7d = breadth.get("median_return_7d")
+    concentration = breadth.get("top3_market_cap_share")
+    values = {
+        "positive_7d": share_to_score(positive_7d),
+        "positive_24h": share_to_score(positive_24h),
+        "median_7d": return_to_score(median_7d),
+        "cap_spread": concentration_to_score(concentration),
+    }
+    score, _ = weighted_average(
+        values,
+        {"positive_7d": 0.40, "positive_24h": 0.20, "median_7d": 0.30, "cap_spread": 0.10},
+    )
+    token_count = breadth.get("token_count", 0)
+    summary = (
+        f"{pct_text(positive_7d)} van de gevolgde Solana-tokens staat 7 dagen positief; "
+        f"mediaan rendement {pct_text(median_7d)}."
+    )
+    drivers = [
+        f"Steekproef: {token_count} grootste bruikbare Solana-ecosysteemtokens.",
+        f"24u positief: {pct_text(positive_24h)}.",
+        f"Top-3 concentratie: {pct_text(concentration)} van de gemeten market cap.",
+    ]
+    return score, summary, drivers
+
+
+def score_network_context(
+    context: dict[str, Any] | None,
+) -> tuple[float | None, dict[str, Any], str]:
+    if not context:
+        return None, {}, "RPC-context ontbreekt bij deze update."
+    samples = context.get("recent_performance_samples") or []
+    seconds = sum(float(row.get("samplePeriodSecs") or 0) for row in samples)
+    non_vote = sum(float(row.get("numNonVoteTransactions") or 0) for row in samples)
+    total = sum(float(row.get("numTransactions") or 0) for row in samples)
+    if seconds <= 0 or non_vote <= 0:
+        return None, {}, "RPC-performance samples bevatten onvoldoende transactiedata."
+    non_vote_tps = non_vote / seconds
+    total_tps = total / seconds if total else None
+    score = clamp_score(35 + ((non_vote_tps - 500) / 2000) * 55)
+    metrics = {
+        "non_vote_tps": round(non_vote_tps, 1),
+        "total_tps": round(total_tps, 1) if total_tps is not None else None,
+        "sample_count": len(samples),
+        "transaction_count": context.get("transaction_count"),
+        "historically_validated": False,
+    }
+    summary = (
+        f"Actuele RPC-steekproef: circa {metrics['non_vote_tps']} niet-stemtransacties per "
+        "seconde. Deze context is nuttig, maar nog niet historisch gebacktest."
+    )
+    return score, metrics, summary
+
+
+def block_details(
+    blocks: dict[str, float | None],
+    weights: dict[str, float],
+    base_network_usage: float | None,
+    rpc_score: float | None,
+    rpc_metrics: dict[str, Any],
+    rpc_summary: str,
+    breadth_summary: str,
+    breadth_drivers: list[str],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "key": "price_strength",
+            "title": "Prijssterkte",
+            "weight": weights["price_strength"],
+            "score": blocks.get("price_strength"),
+            "status": "Historisch gevalideerd",
+            "summary": "Meet of SOL sterker beweegt dan zijn eigen trend en dan BTC.",
+            "drivers": [
+                "7d en 30d SOL-rendement.",
+                "Relatieve sterkte tegenover BTC.",
+                "Afstand tot de 50-daagse trend.",
+            ],
+        },
+        {
+            "key": "network_usage",
+            "title": "Netwerkgebruik",
+            "weight": weights["network_usage"],
+            "score": blocks.get("network_usage"),
+            "status": "Grotendeels gevalideerd",
+            "summary": "Combineert DeFi-gebruik met een kleine actuele Solana RPC-check.",
+            "drivers": [
+                f"Gevalideerde DeFi/fee-score: {score_text(base_network_usage)}.",
+                f"Actuele RPC-score: {score_text(rpc_score)}.",
+                rpc_summary,
+                f"Niet-stem TPS: {rpc_metrics.get('non_vote_tps', 'n.v.t.')}.",
+            ],
+        },
+        {
+            "key": "capital",
+            "title": "Kapitaal",
+            "weight": weights["capital"],
+            "score": blocks.get("capital"),
+            "status": "Historisch gevalideerd",
+            "summary": "Meet of kapitaal naar Solana stroomt of juist wegtrekt.",
+            "drivers": [
+                "30d verandering in stablecoinvoorraad.",
+                "30d verandering in total value locked.",
+            ],
+        },
+        {
+            "key": "ecosystem_breadth",
+            "title": "Ecosysteembreedte",
+            "weight": weights["ecosystem_breadth"],
+            "score": blocks.get("ecosystem_breadth"),
+            "status": "Experimenteel, beperkt meegewogen",
+            "summary": breadth_summary,
+            "drivers": breadth_drivers,
+        },
+    ]
+
+
+def current_price_or_none(source_status: dict[str, Any], asset: str) -> float | None:
+    value = (
+        source_status.get("sources", {})
+        .get("coingecko", {})
+        .get("current_prices", {})
+        .get(asset, {})
+        .get("usd")
+    )
+    return round(float(value), 2) if value is not None else None
+
+
+def share_to_score(value: float | None) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return clamp_score(float(value) * 100)
+
+
+def return_to_score(value: float | None) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return clamp_score(50 + float(value) * 500)
+
+
+def concentration_to_score(value: float | None) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return clamp_score((1 - float(value)) * 100)
+
+
+def clamp_score(value: float) -> float:
+    return round(max(0.0, min(100.0, float(value))), 2)
+
+
+def pct_text(value: float | None) -> str:
+    if value is None or pd.isna(value):
+        return "n.v.t."
+    return f"{float(value) * 100:.1f}%"
+
+
+def score_text(value: float | None) -> str:
+    return "n.v.t." if value is None or pd.isna(value) else f"{float(value):.0f}/100"
+
+
 def deterministic_conclusion(reg: str, signal: float | None, quality: float) -> str:
     if signal is None:
         return "Er is onvoldoende actuele kerninformatie voor een gevalideerde conclusie."
@@ -373,14 +575,18 @@ def what_would_change(blocks: dict[str, float | None]) -> list[str]:
         items.append("SOL verliest zijn relatieve sterkte ten opzichte van BTC.")
     else:
         items.append("SOL herwint duidelijke relatieve sterkte ten opzichte van BTC.")
-    if (blocks.get("activity") or 0) < 55:
-        items.append("DEX-volume en fees stijgen boven hun normale niveau.")
+    if (blocks.get("network_usage") or 0) < 55:
+        items.append("Netwerkgebruik, DEX-volume en fees stijgen boven hun normale niveau.")
     else:
-        items.append("DEX-volume zakt terug onder het normale niveau.")
+        items.append("Netwerkgebruik of DEX-volume zakt terug onder het normale niveau.")
     if (blocks.get("capital") or 0) < 55:
         items.append("Stablecoinvoorraad en TVL beginnen duidelijk toe te nemen.")
     else:
         items.append("TVL-groei of stablecoinvoorraad draait om.")
+    if (blocks.get("ecosystem_breadth") or 0) < 55:
+        items.append("Meer Solana-ecosysteemtokens gaan tegelijk meedoen aan de stijging.")
+    else:
+        items.append("De stijging versmalt naar minder Solana-ecosysteemtokens.")
     return items
 
 

@@ -38,6 +38,10 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .notice { border-left: 4px solid var(--warn); background: color-mix(in srgb, var(--warn), transparent 88%); padding: 10px 12px; border-radius: 6px; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
 .card strong { display: block; font-size: 26px; }
+.card small, .card em { display: block; color: var(--muted); font-size: 12px; font-style: normal; }
+.card .weight { margin-top: 2px; font-weight: 700; color: var(--accent-2); }
+.card em { margin-top: 8px; }
+.card p { margin-bottom: 0; }
 .wide { margin: 16px 0; }
 .clean { padding-left: 18px; }
 .inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -51,4 +55,3 @@ summary { cursor: pointer; font-weight: 700; }
   .top, .conclusion { grid-template-columns: 1fr; }
   .grid, .inputs, .score-pair, .meta { grid-template-columns: 1fr; }
 }
-

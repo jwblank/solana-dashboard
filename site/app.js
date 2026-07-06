@@ -1,5 +1,6 @@
 const fmtPct = (x) => x === null || x === undefined ? "n.v.t." : `${(x * 100).toFixed(1)}%`;
 const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
+const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
@@ -24,27 +25,35 @@ function activateTabs() {
 }
 
 function renderCards(data) {
-  const blocks = data.scores.blocks;
-  const cards = [
-    ["Prijssterkte", blocks.price_strength, "Koerskracht van SOL, ook vergeleken met BTC."],
-    ["Activiteit", blocks.activity, "DEX-volume en fees als bevestiging van gebruik."],
-    ["Kapitaal", blocks.capital, "TVL en stablecoinvoorraad in het ecosysteem."],
-    ["Ecosysteembreedte", null, "Experimentele indicator; nog niet gevalideerd."],
-    ["Risico", data.current.risk.volatility_30d, `Drawdown: ${fmtPct(data.current.risk.drawdown_90d)}`],
-    ["Netwerkcontext", null, "Actueel, nog niet historisch gevalideerd."]
-  ];
-  document.getElementById("cards").replaceChildren(...cards.map(([title, value, text]) => {
+  const cards = data.scores.block_details || [];
+  document.getElementById("cards").replaceChildren(...cards.map((item) => {
     const card = document.createElement("article");
     card.className = "card";
     const span = document.createElement("span");
-    span.textContent = title;
+    span.textContent = item.title;
     const strong = document.createElement("strong");
-    strong.textContent = value === null ? "Apart" : fmtScore(value);
+    strong.textContent = fmtScore(item.score);
+    const weight = document.createElement("small");
+    weight.className = "weight";
+    weight.textContent = fmtWeight(item.weight);
+    const status = document.createElement("em");
+    status.textContent = item.status;
     const p = document.createElement("p");
-    p.textContent = text;
-    card.append(span, strong, p);
+    p.textContent = item.summary;
+    card.append(span, strong, weight, status, p);
     return card;
   }));
+}
+
+function renderBlockEvidence(data) {
+  const rows = (data.scores.block_details || []).map((item) => [
+    item.title,
+    fmtWeight(item.weight),
+    fmtScore(item.score),
+    item.status,
+    `${item.summary} ${item.drivers.join(" ")}`
+  ]);
+  return table(["Blok", "Weging", "Score", "Status", "Kern en drijvers"], rows);
 }
 
 function table(headers, rows) {
@@ -85,7 +94,8 @@ async function main() {
     notice.hidden = false;
     notice.textContent = dashboard.demo_notice;
   }
-  setText("sol-price", `$${dashboard.current.sol_price.toFixed(2)}`);
+  const solPrice = dashboard.current.live_sol_price ?? dashboard.current.sol_price;
+  setText("sol-price", `$${solPrice.toFixed(2)}`);
   setText("updated-at", dashboard.generated_at_utc);
   setText("data-cutoff", dashboard.data_cutoff_utc);
   setText("method-version", dashboard.method_version);
@@ -107,6 +117,8 @@ async function main() {
   window.setupPosition(dashboard, analogs.rows || []);
   window.renderGlossary(glossary);
   document.getElementById("evidence-route").append(table(["Onderdeel", "Waarde"], [
+    ["Eindscore", `${fmtScore(dashboard.scores.market_signal)}/100`],
+    ["Scoreduiding", dashboard.scores.method_note],
     ["Datakwaliteit", dashboard.scores.evidence_components.data_quality],
     ["Steekproefomvang", dashboard.scores.evidence_components.sample_adequacy],
     ["Out-of-sample kwaliteit", dashboard.scores.evidence_components.out_of_sample_quality],
@@ -114,6 +126,9 @@ async function main() {
     ["Analogie-overeenkomst", dashboard.scores.evidence_components.analog_similarity],
     ["Toegepaste caps", dashboard.scores.quality_caps.join("; ") || "Geen"]
   ]));
+  const blockHeading = document.createElement("h3");
+  blockHeading.textContent = "Scoreblokken";
+  document.getElementById("evidence-route").append(blockHeading, renderBlockEvidence(dashboard));
   const bRows = Object.entries(backtest.horizons).map(([h, row]) => [
     h, row.prediction_count || 0, row.directional_accuracy ?? "n.v.t.", row.brier_score ?? "n.v.t.", row.brier_skill ?? "n.v.t.", row.calibration_error ?? "n.v.t."
   ]);

@@ -100,17 +100,17 @@ def evidence_label(score: float) -> str:
 
 
 def regime(
-    price_strength: float | None, activity: float | None, capital: float | None
+    price_strength: float | None, network_usage: float | None, capital: float | None
 ) -> tuple[str, str]:
-    if price_strength is None or activity is None or capital is None:
+    if price_strength is None or network_usage is None or capital is None:
         return "insufficient_data", "Er is onvoldoende data voor een gevalideerd regime."
-    confirmation = 0.5 * activity + 0.5 * capital
+    confirmation = 0.55 * network_usage + 0.45 * capital
     if 45 <= price_strength <= 55 or 45 <= confirmation <= 55:
         return "mixed", "De indicatoren geven nog geen overtuigende gezamenlijke richting."
     if price_strength >= 55 and confirmation >= 55:
         return (
             "confirmed_trend",
-            "De koers is sterk en wordt bevestigd door activiteit en kapitaal.",
+            "De koers is sterk en wordt bevestigd door netwerkgebruik en kapitaal.",
         )
     if price_strength >= 55 and confirmation < 45:
         return (
@@ -120,7 +120,7 @@ def regime(
     if price_strength < 45 and confirmation >= 55:
         return (
             "building_under_surface",
-            "De koers is nog zwak, terwijl activiteit en kapitaal al verbeteren.",
+            "De koers is nog zwak, terwijl netwerkgebruik en kapitaal al verbeteren.",
         )
     return "risk_regime", "Zowel de koers als de onderliggende bevestiging is zwak."
 
