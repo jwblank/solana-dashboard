@@ -52,7 +52,7 @@ def build_interpretation(
     called_at = iso_z(datetime.now(tz=UTC))
     try:
         content = call_huggingface_interpretation(token, settings["model"], facts)
-        parsed = parse_json_object(content)
+        parsed = parse_llm_response(content)
         validated = validate_llm_output(parsed, facts)
         return {
             **base,
@@ -168,31 +168,12 @@ def call_huggingface_interpretation(token: str, model: str, facts: dict[str, Any
                     "Schrijf helder Nederlands voor slimme lezers zonder jargon. "
                     "Gebruik alleen de aangeleverde feiten. Geen beleggingsadvies, geen koop- "
                     "of verkoopsignalen, geen garanties. Leg termen kort uit als je ze gebruikt. "
-                    "Geef uitsluitend geldige JSON terug."
+                    "Schrijf geen redenering, geen markdown-intro en geen JSON."
                 ),
             },
             {
                 "role": "user",
-                "content": json.dumps(
-                    {
-                        "taak": (
-                            "Schrijf een compacte maar intelligente duiding. Verwerk concrete "
-                            "dashboardwaarden in elke sectie waar dat logisch is. Gebruik exact "
-                            "deze koppen in deze volgorde."
-                        ),
-                        "koppen": FIXED_HEADINGS,
-                        "output_schema": {
-                            "title": "korte titel",
-                            "intro": "2 zinnen met marktsignaal en bewijskwaliteit",
-                            "sections": [
-                                {"heading": "Kort beeld", "text": "2 tot 4 zinnen"}
-                            ],
-                        },
-                        "facts": facts,
-                    },
-                    ensure_ascii=False,
-                    sort_keys=True,
-                ),
+                "content": llm_prompt(facts),
             },
         ],
         "temperature": 0.2,
@@ -210,6 +191,43 @@ def call_huggingface_interpretation(token: str, model: str, facts: dict[str, Any
         raise ApiError("Onverwachte Hugging Face response") from exc
 
 
+def llm_prompt(facts: dict[str, Any]) -> str:
+    return (
+        "Schrijf een compacte maar intelligente Nederlandse duiding voor het dashboard.\n"
+        "Gebruik exact dit outputformat, inclusief de labels en blokhaken:\n\n"
+        "TITEL: korte titel\n"
+        "INTRO: 2 zinnen met marktsignaal en bewijskwaliteit\n"
+        "[Kort beeld]\n"
+        "2 tot 4 zinnen\n"
+        "[Wat valt op?]\n"
+        "2 tot 4 zinnen\n"
+        "[Wat ondersteunt het beeld?]\n"
+        "2 tot 4 zinnen\n"
+        "[Wat maakt het onzeker?]\n"
+        "2 tot 4 zinnen\n"
+        "[Eindbeeld]\n"
+        "2 tot 4 zinnen\n\n"
+        "Verwerk deze exacte waarden letterlijk in de tekst: "
+        f"marktsignaal {facts['market_signal']}, "
+        f"bewijskwaliteit {facts['evidence_quality']}, "
+        f"prijssterkte {facts['price_strength']}, "
+        f"netwerkgebruik {facts['network_usage']}, "
+        f"kapitaal {facts['capital']}, "
+        f"ecosysteembreedte {facts['ecosystem_breadth']}.\n"
+        "Gebruik daarnaast waar relevant SOL-prijs, historische vergelijking en backtestwaarden.\n"
+        "Geen adviestaal, geen JSON, geen bulletlijst.\n\n"
+        "Feiten:\n"
+        f"{json.dumps(facts, ensure_ascii=False, sort_keys=True)}"
+    )
+
+
+def parse_llm_response(content: str) -> dict[str, Any]:
+    try:
+        return parse_json_object(content)
+    except Exception:
+        return parse_marked_text(content)
+
+
 def parse_json_object(content: str) -> dict[str, Any]:
     cleaned = content.strip()
     if cleaned.startswith("```"):
@@ -224,6 +242,54 @@ def parse_json_object(content: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise ValueError("LLM-output is geen JSON-object")
     return parsed
+
+
+def parse_marked_text(content: str) -> dict[str, Any]:
+    cleaned = content.strip()
+    title = match_line(cleaned, "TITEL")
+    intro = match_line(cleaned, "INTRO")
+    if not title or not intro:
+        raise ValueError("LLM-output mist TITEL of INTRO")
+    sections = []
+    for index, heading in enumerate(FIXED_HEADINGS):
+        next_heading = FIXED_HEADINGS[index + 1] if index + 1 < len(FIXED_HEADINGS) else None
+        text = extract_marked_section(cleaned, heading, next_heading)
+        if not text:
+            raise ValueError(f"LLM-output mist sectie: {heading}")
+        sections.append({"heading": heading, "text": text})
+    return {"title": title, "intro": intro, "sections": sections}
+
+
+def match_line(content: str, label: str) -> str:
+    match = re.search(rf"(?im)^\s*{re.escape(label)}\s*:\s*(.+?)\s*$", content)
+    return clean_text(match.group(1)) if match else ""
+
+
+def extract_marked_section(content: str, heading: str, next_heading: str | None) -> str:
+    start_patterns = [
+        rf"^\s*\[{re.escape(heading)}\]\s*$",
+        rf"^\s*#+\s*{re.escape(heading)}\s*$",
+    ]
+    start_match = None
+    for pattern in start_patterns:
+        start_match = re.search(pattern, content, flags=re.IGNORECASE | re.MULTILINE)
+        if start_match:
+            break
+    if not start_match:
+        return ""
+    start = start_match.end()
+    end = len(content)
+    if next_heading:
+        end_patterns = [
+            rf"^\s*\[{re.escape(next_heading)}\]\s*$",
+            rf"^\s*#+\s*{re.escape(next_heading)}\s*$",
+        ]
+        for pattern in end_patterns:
+            end_match = re.search(pattern, content[start:], flags=re.IGNORECASE | re.MULTILINE)
+            if end_match:
+                end = start + end_match.start()
+                break
+    return clean_text(content[start:end])
 
 
 def validate_llm_output(data: dict[str, Any], facts: dict[str, Any]) -> dict[str, Any]:

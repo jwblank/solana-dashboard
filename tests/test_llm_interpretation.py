@@ -2,6 +2,7 @@ from sol_reality_check.llm_interpretation import (
     FIXED_HEADINGS,
     build_interpretation,
     interpretation_facts,
+    parse_llm_response,
     validate_llm_output,
 )
 
@@ -75,3 +76,30 @@ def test_validate_llm_output_requires_dashboard_values():
         assert "dashboardwaarden" in str(exc)
     else:
         raise AssertionError("Expected validation failure")
+
+
+def test_parse_marked_llm_output_validates_dashboard_values():
+    facts = interpretation_facts(sample_dashboard(), {"7d": {}})
+    parsed = parse_llm_response(
+        """
+TITEL: Onderliggende kracht bouwt op
+INTRO: Marktsignaal 70/100 en bewijskwaliteit 55/100 geven een positief maar beperkt bewezen beeld.
+[Kort beeld]
+SOL staat rond $81.23. Marktsignaal 70/100 en bewijskwaliteit 55/100 maken het beeld concreet.
+[Wat valt op?]
+Prijssterkte 48/100, netwerkgebruik 94/100, kapitaal 100/100 en
+ecosysteembreedte 62/100 lopen niet gelijk.
+[Wat ondersteunt het beeld?]
+De historische vergelijking gebruikt 40 dagen en 45.0% was positief.
+[Wat maakt het onzeker?]
+De bewijskwaliteit 55/100 is beperkt, dus dit is geen zekerheid.
+[Eindbeeld]
+Met marktsignaal 70/100, prijssterkte 48/100, netwerkgebruik 94/100,
+kapitaal 100/100 en ecosysteembreedte 62/100 is het beeld sterk maar niet hard bewezen.
+"""
+    )
+
+    validated = validate_llm_output(parsed, facts)
+
+    assert validated["title"] == "Onderliggende kracht bouwt op"
+    assert [section["heading"] for section in validated["sections"]] == FIXED_HEADINGS
