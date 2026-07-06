@@ -8,7 +8,16 @@ def test_site_contains_required_tabs(monkeypatch):
     monkeypatch.setenv("APP_MODE", "demo")
     build_outputs("demo")
     html = Path("site/index.html").read_text(encoding="utf-8")
-    for text in ["Vandaag", "Bewijs", "Backtest", "Open logboek", "Zo werkt het"]:
+    required_text = [
+        "Duiding",
+        "Vandaag",
+        "Prijs",
+        "Bewijs",
+        "Backtest",
+        "Open logboek",
+        "Zo werkt het",
+    ]
+    for text in required_text:
         assert text in html
     assert "/data/dashboard.json" not in html
 

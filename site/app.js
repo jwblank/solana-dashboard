@@ -137,14 +137,57 @@ function renderEvidencePage(dashboard, backtest, ledger) {
 function renderInterpretationPage(interpretation, archiveIndex) {
   setText("llm-title", interpretation.title || "Duiding niet beschikbaar");
   setText("llm-date", interpretationDateText(interpretation));
-  setText(
-    "llm-analysis",
-    interpretation.analysis_text || interpretation.intro || "Geen analyse beschikbaar."
-  );
+  renderAnalysisText("llm-analysis", interpretation);
   renderInterpretationAudit(interpretation);
   renderInterpretationInputs(interpretation.input_snapshot || {});
   setText("llm-note", interpretation.footer_note || "");
   renderInterpretationArchive(archiveIndex);
+}
+
+function renderAnalysisText(targetId, interpretation) {
+  const target = document.getElementById(targetId);
+  const text = interpretation.analysis_text || interpretation.intro || "Geen analyse beschikbaar.";
+  const blocks = parseAnalysisBlocks(text);
+  target.replaceChildren(...blocks.map((block) => {
+    const section = document.createElement("section");
+    section.className = "analysis-block";
+    if (block.heading) {
+      const h3 = document.createElement("h3");
+      h3.textContent = block.heading;
+      section.append(h3);
+    }
+    const p = document.createElement("p");
+    p.textContent = block.text;
+    section.append(p);
+    return section;
+  }));
+}
+
+function parseAnalysisBlocks(text) {
+  const normalized = String(text || "").replace(/\r/g, "").trim();
+  const headingPattern = /(?:^|\n)\s*(Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)\s*:\s*/g;
+  const matches = Array.from(normalized.matchAll(headingPattern));
+  if (!matches.length) {
+    return splitPlainAnalysis(normalized);
+  }
+  return matches.map((match, index) => {
+    const start = match.index + match[0].length;
+    const end = index + 1 < matches.length ? matches[index + 1].index : normalized.length;
+    return {heading: match[1], text: normalized.slice(start, end).trim()};
+  }).filter((block) => block.text);
+}
+
+function splitPlainAnalysis(text) {
+  const paragraphs = text.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
+  if (paragraphs.length > 1) {
+    return paragraphs.map((part) => ({heading: "", text: part}));
+  }
+  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [text];
+  const chunks = [];
+  for (let index = 0; index < sentences.length; index += 3) {
+    chunks.push({heading: "", text: sentences.slice(index, index + 3).join(" ").trim()});
+  }
+  return chunks.filter((block) => block.text);
 }
 
 function renderInterpretationAudit(interpretation) {
@@ -185,11 +228,15 @@ function interpretationDateText(interpretation) {
 
 function renderInterpretationArchive(archiveIndex) {
   const target = document.getElementById("llm-archive");
-  const entries = (archiveIndex?.entries || []).slice(0, 14);
+  const controls = document.getElementById("llm-archive-controls");
+  const allEntries = archiveIndex?.entries || [];
+  const entries = allEntries.slice(0, 8);
   if (!entries.length) {
+    controls.replaceChildren();
     target.replaceChildren(emptyArchiveMessage());
     return;
   }
+  controls.replaceChildren(archiveSelect(allEntries));
   target.replaceChildren(...entries.map((entry) => {
     const button = document.createElement("button");
     button.className = "archive-item";
@@ -204,7 +251,7 @@ function renderInterpretationArchive(archiveIndex) {
         const archived = await loadJson(entry.path);
         setText("llm-title", archived.title || "Duiding niet beschikbaar");
         setText("llm-date", interpretationDateText(archived));
-        setText("llm-analysis", archived.analysis_text || archived.intro || "Geen analyse beschikbaar.");
+        renderAnalysisText("llm-analysis", archived);
         renderInterpretationAudit(archived);
         renderInterpretationInputs(archived.input_snapshot || {});
         setText("llm-note", archived.footer_note || "");
@@ -214,6 +261,40 @@ function renderInterpretationArchive(archiveIndex) {
     });
     return button;
   }));
+}
+
+function archiveSelect(entries) {
+  const wrap = document.createElement("div");
+  wrap.className = "archive-select";
+  const label = document.createElement("label");
+  label.textContent = "Open oudere duiding";
+  const select = document.createElement("select");
+  entries.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.path;
+    option.textContent = `${entry.date} · ${entry.title || "Duiding"}`;
+    select.append(option);
+  });
+  const button = document.createElement("button");
+  button.className = "button";
+  button.type = "button";
+  button.textContent = "Open";
+  button.addEventListener("click", async () => {
+    try {
+      const archived = await loadJson(select.value);
+      setText("llm-title", archived.title || "Duiding niet beschikbaar");
+      setText("llm-date", interpretationDateText(archived));
+      renderAnalysisText("llm-analysis", archived);
+      renderInterpretationAudit(archived);
+      renderInterpretationInputs(archived.input_snapshot || {});
+      setText("llm-note", archived.footer_note || "");
+    } catch (error) {
+      setText("llm-note", `Kon archiefitem niet laden: ${error.message}`);
+    }
+  });
+  label.append(select);
+  wrap.append(label, button);
+  return wrap;
 }
 
 function emptyArchiveMessage() {

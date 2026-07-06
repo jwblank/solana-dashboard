@@ -58,7 +58,11 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .evidence-page { max-width: 1180px; }
 .interpretation-page { max-width: 1180px; }
 .interpretation-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 18px; align-items: stretch; margin-bottom: 16px; }
-.interpretation-analysis { font-size: 18px; max-width: 78ch; margin: 12px 0 0; }
+.interpretation-analysis { max-width: 78ch; margin: 12px 0 0; }
+.analysis-block { margin: 0 0 18px; }
+.analysis-block:last-child { margin-bottom: 0; }
+.analysis-block h3 { margin: 0 0 5px; font-size: 15px; color: var(--accent); }
+.analysis-block p { margin: 0; font-size: 18px; }
 .interpretation-audit { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .interpretation-audit div { border-bottom: 1px solid var(--line); padding-bottom: 7px; }
 .interpretation-audit div:last-of-type { border-bottom: 0; padding-bottom: 0; }
@@ -66,6 +70,9 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .interpretation-audit strong { display: block; overflow-wrap: anywhere; }
 .interpretation-audit small { display: block; color: var(--warn); }
 .archive-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.archive-controls { margin-bottom: 12px; }
+.archive-select { display: grid; grid-template-columns: minmax(220px, 420px) auto; gap: 10px; align-items: end; }
+.archive-select label { color: var(--muted); font-size: 12px; }
 .archive-item { cursor: pointer; text-align: left; color: var(--text); }
 .archive-item:hover { border-color: var(--accent); }
 .archive-item strong { display: block; font-size: 15px; }
@@ -121,6 +128,6 @@ details { border-bottom: 1px solid var(--line); padding: 12px 0; }
 summary { cursor: pointer; font-weight: 700; }
 @media (max-width: 800px) {
   .top, .conclusion, .indicator-hero, .evidence-hero, .evidence-two-col, .interpretation-hero { grid-template-columns: 1fr; }
-  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list { grid-template-columns: 1fr; }
+  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list, .archive-select { grid-template-columns: 1fr; }
   .section-head { display: block; }
 }

@@ -30,6 +30,7 @@
       <nav class="tabs" aria-label="Hoofdnavigatie">
         <button class="tab active" data-tab="interpretation">Duiding</button>
         <button class="tab" data-tab="today">Vandaag</button>
+        <button class="tab" data-tab="price">Prijs</button>
         <button class="tab" data-tab="network">Netwerk & ecosysteem</button>
         <button class="tab" data-tab="capital">Kapitaal</button>
         <button class="tab" data-tab="evidence">Bewijs</button>
@@ -42,7 +43,7 @@
               <p class="eyebrow">Kwalitatieve duiding</p>
               <p id="llm-date" class="plain"></p>
               <h2 id="llm-title">...</h2>
-              <p id="llm-analysis" class="interpretation-analysis"></p>
+              <div id="llm-analysis" class="interpretation-analysis"></div>
             </div>
             <div id="llm-audit" class="interpretation-audit"></div>
           </section>
@@ -58,6 +59,7 @@
                 <p class="plain">Dagelijkse LLM-duidingen, geordend op de datadag waarop de analyse betrekking heeft.</p>
               </div>
             </div>
+            <div id="llm-archive-controls" class="archive-controls"></div>
             <div id="llm-archive" class="archive-list"></div>
           </section>
         </div>

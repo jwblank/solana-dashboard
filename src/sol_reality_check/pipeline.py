@@ -1320,15 +1320,32 @@ def source_row(
     coverage: str,
 ) -> dict[str, str]:
     ok = bool(source.get("available"))
+    fallback_used = any(
+        isinstance(row, dict) and row.get("fallback_used")
+        for row in (source.get("context") or {}).values()
+    )
+    status = "Succesvol" if ok else "Niet beschikbaar"
+    if fallback_used:
+        status = "Fallback gebruikt"
+    last_success = source.get("last_success_at_utc")
+    if not last_success:
+        if ok:
+            last_success = "Dataset aanwezig"
+        elif fallback_used:
+            last_success = "Coinbase fallback actief"
+        else:
+            last_success = "n.v.t."
+    warning = source.get("warning") or source.get("note") or ""
+    if fallback_used and not warning:
+        warning = "Multi-exchange consensus niet volledig beschikbaar; fallback is gebruikt."
     return {
         "name": name,
-        "status": "Succesvol" if ok else "Niet beschikbaar",
+        "status": status,
         "role": role,
         "validation": validation,
         "coverage": coverage,
-        "last_success_at_utc": source.get("last_success_at_utc")
-        or ("Dataset aanwezig" if ok else "n.v.t."),
-        "warning": source.get("warning") or source.get("note") or "",
+        "last_success_at_utc": str(last_success),
+        "warning": str(warning),
     }
 
 

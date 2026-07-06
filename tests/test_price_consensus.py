@@ -1,6 +1,7 @@
 import pandas as pd
 
 from sol_reality_check.clients import build_price_consensus
+from sol_reality_check.pipeline import source_row
 
 
 def exchange_frame(exchange: str, closes: list[float]) -> pd.DataFrame:
@@ -47,3 +48,23 @@ def test_price_consensus_skips_day_when_too_few_sources_remain():
     )
 
     assert consensus["date"].tolist() == ["2026-07-01"]
+
+
+def test_source_row_labels_price_fallback_clearly():
+    row = source_row(
+        "CCXT consensus",
+        {
+            "available": False,
+            "context": {
+                "sol": {"fallback_used": True, "provider": "Coinbase fallback"},
+                "btc": {"fallback_used": False, "provider": "CCXT consensus"},
+            },
+        },
+        "Multi-exchange SOL/BTC dagprijs",
+        "Historisch gevalideerd",
+        "1400 consensusrijen",
+    )
+
+    assert row["status"] == "Fallback gebruikt"
+    assert row["last_success_at_utc"] == "Coinbase fallback actief"
+    assert "fallback" in row["warning"]
