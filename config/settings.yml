@@ -29,4 +29,7 @@ probability_language:
   minimum_brier_skill: 0.02
   maximum_calibration_error: 0.08
   minimum_evidence_quality: 65
-
+llm_interpretation:
+  provider: "Hugging Face Inference Providers"
+  model: "Qwen/Qwen3-8B"
+  fallback_model: "Qwen/Qwen2.5-7B-Instruct"

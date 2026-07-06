@@ -31,6 +31,7 @@ from sol_reality_check.clients import (
 from sol_reality_check.config import ROOT, indicators, load_yaml, settings
 from sol_reality_check.demo import demo_history
 from sol_reality_check.ledger import append_unique, read_jsonl
+from sol_reality_check.llm_interpretation import build_interpretation
 from sol_reality_check.utils import iso_z, utc_now, write_json
 
 CURATED = ROOT / "data" / "curated"
@@ -430,12 +431,22 @@ def build_outputs(mode: str) -> dict[str, Any]:
         "indicator_tabs": indicator_tabs,
         "source_status": source_status["sources"],
     }
+    llm_interpretation = build_interpretation(
+        dashboard, backtest.summary, generated, cfg.get("llm_interpretation", {})
+    )
+    dashboard["llm_interpretation"] = {
+        "status": llm_interpretation["status"],
+        "provider": llm_interpretation["provider"],
+        "model": llm_interpretation["model"],
+        "llm_called_at_utc": llm_interpretation["llm_called_at_utc"],
+    }
     write_all_json(
         dashboard=dashboard,
         df=df,
         analogs=analogs,
         backtest=backtest.summary,
         source_status=source_status,
+        interpretation=llm_interpretation,
         generated=generated,
         cutoff=cutoff,
     )
@@ -1389,6 +1400,7 @@ def write_all_json(
     analogs: pd.DataFrame,
     backtest: dict[str, Any],
     source_status: dict[str, Any],
+    interpretation: dict[str, Any],
     generated: str,
     cutoff: str,
 ) -> None:
@@ -1475,6 +1487,7 @@ def write_all_json(
         },
     )
     write_json(SITE_DATA / "source_status.json", source_status)
+    write_json(SITE_DATA / "interpretation.json", interpretation)
     write_json(
         SITE_DATA / "build_info.json",
         {

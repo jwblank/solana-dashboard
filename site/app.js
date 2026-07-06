@@ -134,6 +134,82 @@ function renderEvidencePage(dashboard, backtest, ledger) {
   renderTermExplainers();
 }
 
+function renderInterpretationPage(interpretation) {
+  setText("llm-title", interpretation.title || "Duiding niet beschikbaar");
+  setText("llm-intro", interpretation.intro || "");
+  renderInterpretationAudit(interpretation);
+  renderInterpretationSections(interpretation.sections || []);
+  renderInterpretationInputs(interpretation.input_snapshot || {});
+  setText("llm-note", interpretation.footer_note || "");
+}
+
+function renderInterpretationAudit(interpretation) {
+  const statusText = interpretation.status === "llm_success"
+    ? "LLM-call geslaagd"
+    : "Fallback gebruikt";
+  const items = [
+    ["Status", statusText],
+    ["Model", interpretation.model || "n.v.t."],
+    ["Provider", interpretation.provider || "n.v.t."],
+    ["LLM-call", interpretation.llm_called_at_utc || "Niet aangeroepen"],
+    ["Update", interpretation.generated_at_utc || "n.v.t."],
+    ["Datacutoff", interpretation.data_cutoff_utc || "n.v.t."]
+  ];
+  const target = document.getElementById("llm-audit");
+  target.replaceChildren(...items.map(([label, value]) => {
+    const row = document.createElement("div");
+    const span = document.createElement("span");
+    span.textContent = label;
+    const strong = document.createElement("strong");
+    strong.textContent = value;
+    row.append(span, strong);
+    return row;
+  }));
+  (interpretation.warnings || []).forEach((warning) => {
+    const small = document.createElement("small");
+    small.textContent = warning;
+    target.append(small);
+  });
+}
+
+function renderInterpretationSections(sections) {
+  document.getElementById("llm-sections").replaceChildren(...sections.map((item) => {
+    const card = document.createElement("article");
+    card.className = "interpretation-card";
+    const h3 = document.createElement("h3");
+    h3.textContent = item.heading;
+    const p = document.createElement("p");
+    p.textContent = item.text;
+    card.append(h3, p);
+    return card;
+  }));
+}
+
+function renderInterpretationInputs(facts) {
+  const items = [
+    ["Marktsignaal", facts.market_signal],
+    ["Bewijskwaliteit", facts.evidence_quality],
+    ["Prijssterkte", facts.price_strength],
+    ["Netwerkgebruik", facts.network_usage],
+    ["Kapitaal", facts.capital],
+    ["Ecosysteembreedte", facts.ecosystem_breadth],
+    ["SOL", facts.sol_price],
+    ["Analoge dagen", facts.analog_count],
+    ["Historisch positief", facts.analog_positive_frequency],
+    ["7d backtest", `${facts.backtest_7d?.prediction_count || 0} runs`]
+  ];
+  document.getElementById("llm-inputs").replaceChildren(...items.map(([label, value]) => {
+    const div = document.createElement("div");
+    div.className = "stat";
+    const span = document.createElement("span");
+    span.textContent = label;
+    const strong = document.createElement("strong");
+    strong.textContent = value || "n.v.t.";
+    div.append(span, strong);
+    return div;
+  }));
+}
+
 function renderEvidenceScorecard(dashboard) {
   const target = document.getElementById("evidence-scorecard");
   target.replaceChildren(
@@ -562,11 +638,12 @@ function table(headers, rows) {
 
 async function main() {
   activateTabs();
-  const [dashboard, backtest, ledger, glossary] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
-    loadJson("./data/glossary.json")
+    loadJson("./data/glossary.json"),
+    loadJson("./data/interpretation.json")
   ]);
   if (dashboard.demo_notice) {
     const notice = document.getElementById("demo-notice");
@@ -602,6 +679,7 @@ async function main() {
   }));
   window.renderGlossary(glossary);
   renderEvidencePage(dashboard, backtest, ledger);
+  renderInterpretationPage(interpretation);
 }
 
 main().catch((error) => {

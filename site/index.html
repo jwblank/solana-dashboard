@@ -32,6 +32,7 @@
         <button class="tab" data-tab="price">Prijs</button>
         <button class="tab" data-tab="network">Netwerk & ecosysteem</button>
         <button class="tab" data-tab="capital">Kapitaal</button>
+        <button class="tab" data-tab="interpretation">Duiding</button>
         <button class="tab" data-tab="evidence">Bewijs</button>
       </nav>
 
@@ -80,6 +81,25 @@
 
       <section id="capital" class="panel">
         <div id="capital-tab"></div>
+      </section>
+
+      <section id="interpretation" class="panel">
+        <div class="interpretation-page">
+          <section class="interpretation-hero">
+            <div>
+              <p class="eyebrow">Kwalitatieve duiding</p>
+              <h2 id="llm-title">...</h2>
+              <p id="llm-intro" class="interpretation-intro"></p>
+            </div>
+            <div id="llm-audit" class="interpretation-audit"></div>
+          </section>
+          <div id="llm-sections" class="interpretation-grid"></div>
+          <section class="wide">
+            <h3>Gebruikte dashboardwaarden</h3>
+            <div id="llm-inputs" class="stat-row"></div>
+            <p id="llm-note" class="plain"></p>
+          </section>
+        </div>
       </section>
 
       <section id="evidence" class="panel">
