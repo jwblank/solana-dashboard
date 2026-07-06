@@ -12,7 +12,7 @@ from sol_reality_check.utils import iso_z
 DEFAULT_PROVIDER = "Hugging Face Inference Providers"
 DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 ROUTER_URL = "https://router.huggingface.co/v1/chat/completions"
-FIXED_HEADINGS = [
+LEGACY_HEADINGS = [
     "Kort beeld",
     "Wat valt op?",
     "Wat ondersteunt het beeld?",
@@ -61,7 +61,7 @@ def build_interpretation(
             "llm_called_at_utc": called_at,
             "title": validated["title"],
             "intro": validated["intro"],
-            "sections": validated["sections"],
+            "analysis_text": validated["analysis_text"],
             "warnings": completion_warnings,
             "footer_note": (
                 "Deze tekst is door een LLM opgesteld op basis van de exacte dashboardwaarden. "
@@ -82,6 +82,7 @@ def interpretation_base(
         "schema_version": "1.0",
         "generated_at_utc": generated_at,
         "data_cutoff_utc": dashboard["data_cutoff_utc"],
+        "interpretation_date": str(dashboard["data_cutoff_utc"])[:10],
         "method_version": dashboard["method_version"],
         "provider": settings["provider"],
         "model": settings["model"],
@@ -169,6 +170,8 @@ def call_huggingface_interpretation(token: str, model: str, facts: dict[str, Any
                     "Schrijf helder Nederlands voor slimme lezers zonder jargon. "
                     "Gebruik alleen de aangeleverde feiten. Geen beleggingsadvies, geen koop- "
                     "of verkoopsignalen, geen garanties. Leg termen kort uit als je ze gebruikt. "
+                    "Vermijd herhaling. Beschrijf niet alleen cijfers, maar duid de spanning "
+                    "tussen prijs, netwerk, kapitaal, ecosysteembreedte en bewijskwaliteit. "
                     "Schrijf geen redenering, geen markdown-intro en geen JSON."
                 ),
             },
@@ -193,21 +196,16 @@ def call_huggingface_interpretation(token: str, model: str, facts: dict[str, Any
 
 
 def llm_prompt(facts: dict[str, Any]) -> str:
+    frame = interpretation_frame(facts)
     return (
-        "Schrijf een compacte maar intelligente Nederlandse duiding voor het dashboard.\n"
-        "Gebruik exact dit outputformat, inclusief de labels en blokhaken:\n\n"
+        "Schrijf één compacte, volledige Nederlandse analyse voor het dashboard.\n"
+        "Gebruik exact dit outputformat:\n\n"
         "TITEL: korte titel\n"
-        "INTRO: 2 zinnen met marktsignaal en bewijskwaliteit\n"
-        "[Kort beeld]\n"
-        "2 tot 4 zinnen\n"
-        "[Wat valt op?]\n"
-        "2 tot 4 zinnen\n"
-        "[Wat ondersteunt het beeld?]\n"
-        "2 tot 4 zinnen\n"
-        "[Wat maakt het onzeker?]\n"
-        "2 tot 4 zinnen\n"
-        "[Eindbeeld]\n"
-        "2 tot 4 zinnen\n\n"
+        "ANALYSE: één doorlopende tekst van 170 tot 260 woorden\n\n"
+        f"Interpretatiekader: {frame}.\n"
+        "De tekst moet deze vaste logica volgen, zonder zichtbare tussenkopjes: "
+        "kernbeeld, spanning in de data, bewijskracht, wat het beeld sterker of zwakker "
+        "zou maken, eindconclusie. Gebruik eenvoudige maar scherpe taal.\n"
         "Verwerk deze exacte waarden letterlijk in de tekst: "
         f"marktsignaal {facts['market_signal']}, "
         f"bewijskwaliteit {facts['evidence_quality']}, "
@@ -215,11 +213,29 @@ def llm_prompt(facts: dict[str, Any]) -> str:
         f"netwerkgebruik {facts['network_usage']}, "
         f"kapitaal {facts['capital']}, "
         f"ecosysteembreedte {facts['ecosystem_breadth']}.\n"
-        "Gebruik daarnaast waar relevant SOL-prijs, historische vergelijking en backtestwaarden.\n"
-        "Geen adviestaal, geen JSON, geen bulletlijst.\n\n"
+        "Gebruik daarnaast waar relevant SOL-prijs, historische vergelijking en backtestwaarden. "
+        "Leg kort uit wat bewijskwaliteit betekent als je die term gebruikt. "
+        "Geen adviestaal, geen JSON, geen bulletlijst, geen herhaling.\n\n"
         "Feiten:\n"
         f"{json.dumps(facts, ensure_ascii=False, sort_keys=True)}"
     )
+
+
+def interpretation_frame(facts: dict[str, Any]) -> str:
+    price = score_value(facts.get("price_strength"))
+    network = score_value(facts.get("network_usage"))
+    capital = score_value(facts.get("capital"))
+    breadth = score_value(facts.get("ecosystem_breadth"))
+    evidence = score_value(facts.get("evidence_quality"))
+    if price >= 60 and network >= 60 and capital >= 60:
+        return "breed bevestigd; prijs, netwerk en kapitaal wijzen dezelfde kant op"
+    if price >= 60 and (network < 60 or capital < 60):
+        return "koers loopt vooruit; prijs is sterker dan de onderliggende bevestiging"
+    if price < 55 and (network >= 60 or capital >= 60 or breadth >= 65):
+        return "onderliggende kracht zonder volledige koersbevestiging"
+    if evidence < 60:
+        return "positief of gemengd signaal met beperkte bewijskracht"
+    return "gemengd beeld; de blokken spreken elkaar deels tegen"
 
 
 def parse_llm_response(content: str, facts: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -249,22 +265,34 @@ def parse_marked_text(content: str, facts: dict[str, Any] | None = None) -> dict
     cleaned = content.strip()
     title = match_line(cleaned, "TITEL")
     intro = match_line(cleaned, "INTRO")
-    sections = []
-    first_heading_start = len(cleaned)
-    for index, heading in enumerate(FIXED_HEADINGS):
-        next_heading = FIXED_HEADINGS[index + 1] if index + 1 < len(FIXED_HEADINGS) else None
-        text, section_start = extract_marked_section(cleaned, heading, next_heading)
-        first_heading_start = min(first_heading_start, section_start)
-        if not text:
-            raise ValueError(f"LLM-output mist sectie: {heading}")
-        sections.append({"heading": heading, "text": text})
+    analysis = match_block(cleaned, "ANALYSE")
+    if not analysis:
+        sections = []
+        first_heading_start = len(cleaned)
+        for index, heading in enumerate(LEGACY_HEADINGS):
+            next_heading = LEGACY_HEADINGS[index + 1] if index + 1 < len(LEGACY_HEADINGS) else None
+            text, section_start = extract_marked_section(cleaned, heading, next_heading)
+            first_heading_start = min(first_heading_start, section_start)
+            if text:
+                sections.append(text)
+        analysis = " ".join(sections) if sections else infer_analysis(cleaned)
+    else:
+        first_heading_start = cleaned.upper().find("ANALYSE")
     title = title or infer_title(cleaned, facts)
     intro = intro or infer_intro(cleaned, first_heading_start, facts)
-    return {"title": title, "intro": intro, "sections": sections}
+    return {"title": title, "intro": intro, "analysis_text": analysis}
 
 
 def match_line(content: str, label: str) -> str:
     match = re.search(rf"(?im)^\s*{re.escape(label)}\s*:\s*(.+?)\s*$", content)
+    return clean_text(match.group(1)) if match else ""
+
+
+def match_block(content: str, label: str) -> str:
+    match = re.search(
+        rf"(?ims)^\s*{re.escape(label)}\s*:\s*(.+?)(?:\n\s*[A-ZÀ-Ý][A-ZÀ-Ý _-]{{2,}}\s*:|\Z)",
+        content,
+    )
     return clean_text(match.group(1)) if match else ""
 
 
@@ -306,7 +334,7 @@ def infer_title(content: str, facts: dict[str, Any] | None) -> str:
         return clean_text(facts["regime_title"])
     for line in content.splitlines():
         text = clean_text(line.strip("#* []:"))
-        if text and text not in FIXED_HEADINGS:
+        if text and text not in LEGACY_HEADINGS and not text.upper().startswith("ANALYSE"):
             return text[:90]
     return "Kwalitatieve duiding"
 
@@ -328,38 +356,26 @@ def infer_intro(content: str, first_heading_start: int, facts: dict[str, Any] | 
     return "Deze duiding gebruikt de dashboardwaarden en leest de indicatoren in samenhang."
 
 
+def infer_analysis(content: str) -> str:
+    cleaned = re.sub(r"(?im)^\s*TITEL\s*:\s*.+?$", "", content)
+    cleaned = re.sub(r"(?im)^\s*INTRO\s*:\s*.+?$", "", cleaned)
+    return clean_text(cleaned)
+
+
 def validate_llm_output(data: dict[str, Any], facts: dict[str, Any]) -> dict[str, Any]:
     title = clean_text(data.get("title"))
     intro = clean_text(data.get("intro"))
-    sections = data.get("sections")
-    if not title or not intro or not isinstance(sections, list):
-        raise ValueError("LLM-output mist titel, intro of secties")
-    normalized_sections = []
-    for expected, section in zip(FIXED_HEADINGS, sections, strict=False):
-        if not isinstance(section, dict):
-            raise ValueError("Sectie is geen object")
-        heading = clean_text(section.get("heading"))
-        text = clean_text(section.get("text"))
-        if heading != expected or not text:
-            raise ValueError("LLM-output gebruikt niet de vaste koppen")
-        normalized_sections.append({"heading": heading, "text": text})
-    if [section["heading"] for section in normalized_sections] != FIXED_HEADINGS:
-        raise ValueError("LLM-output bevat niet alle vaste koppen")
-    joined = " ".join([title, intro, *(section["text"] for section in normalized_sections)]).lower()
+    analysis = clean_text(data.get("analysis_text") or legacy_sections_to_text(data))
+    if not title or not intro or not analysis:
+        raise ValueError("LLM-output mist titel, intro of analyse")
+    joined = " ".join([title, intro, analysis]).lower()
     if any(term in joined for term in FORBIDDEN_TERMS):
         raise ValueError("LLM-output bevat verboden adviestaal")
-    required_values = [
-        facts["market_signal"],
-        facts["evidence_quality"],
-        facts["price_strength"],
-        facts["network_usage"],
-        facts["capital"],
-        facts["ecosystem_breadth"],
-    ]
+    required_values = [value for _, value in required_dashboard_values(facts)]
     missing = [value for value in required_values if value and value not in joined]
     if missing:
         raise ValueError(f"LLM-output mist dashboardwaarden: {missing}")
-    return {"title": title, "intro": intro, "sections": normalized_sections}
+    return {"title": title, "intro": intro, "analysis_text": analysis}
 
 
 def complete_required_values(
@@ -370,26 +386,13 @@ def complete_required_values(
     missing = [(label, value) for label, value in values if value and value.lower() not in joined]
     if not missing:
         return data, []
-    sections = list(data.get("sections") or [])
-    if not sections:
-        return data, []
     summary = "Voor de controleerbaarheid staan de kernwaarden expliciet in beeld: " + ", ".join(
         f"{label} {value}" for label, value in values if value
     ) + "."
-    target_index = next(
-        (
-            index
-            for index, section in enumerate(sections)
-            if isinstance(section, dict) and clean_text(section.get("heading")) == "Wat valt op?"
-        ),
-        0,
-    )
-    target = dict(sections[target_index])
-    target["text"] = clean_text(f"{target.get('text', '')} {summary}")
-    sections[target_index] = target
+    existing_analysis = data.get("analysis_text") or legacy_sections_to_text(data)
     return {
         **data,
-        "sections": sections,
+        "analysis_text": clean_text(f"{existing_analysis} {summary}"),
     }, [
         "LLM-output aangevuld met verplichte dashboardwaarden: "
         + ", ".join(value for _, value in missing)
@@ -409,14 +412,23 @@ def required_dashboard_values(facts: dict[str, Any]) -> list[tuple[str, str]]:
 
 
 def output_text(data: dict[str, Any]) -> str:
-    raw_sections = data.get("sections")
-    sections: list[Any] = raw_sections if isinstance(raw_sections, list) else []
     return " ".join(
         [
             clean_text(data.get("title")),
             clean_text(data.get("intro")),
-            *(clean_text(section.get("text")) for section in sections if isinstance(section, dict)),
+            clean_text(data.get("analysis_text")),
+            legacy_sections_to_text(data),
         ]
+    )
+
+
+def legacy_sections_to_text(data: dict[str, Any]) -> str:
+    raw_sections = data.get("sections")
+    sections: list[Any] = raw_sections if isinstance(raw_sections, list) else []
+    return clean_text(
+        " ".join(
+            clean_text(section.get("text")) for section in sections if isinstance(section, dict)
+        )
     )
 
 
@@ -437,7 +449,7 @@ def with_fallback(
             f"en de bewijskwaliteit op {facts['evidence_quality']} ({facts['evidence_label']}). "
             f"Deze duiding gebruikt de dashboardwaarden tot {facts['data_cutoff_utc']}."
         ),
-        "sections": fallback_sections(facts),
+        "analysis_text": fallback_analysis(facts),
         "warnings": [warning],
         "footer_note": (
             "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de LLM-call niet "
@@ -450,57 +462,27 @@ def fallback_title(facts: dict[str, Any]) -> str:
     return facts.get("regime_title") or "Duiding van het actuele beeld"
 
 
-def fallback_sections(facts: dict[str, Any]) -> list[dict[str, str]]:
-    return [
-        {
-            "heading": "Kort beeld",
-            "text": (
-                f"SOL staat rond {facts['sol_price']}. Het dashboard geeft een marktsignaal "
-                f"van {facts['market_signal']} en een bewijskwaliteit van "
-                f"{facts['evidence_quality']}. Dat betekent dat het beeld bruikbaar is, maar "
-                "dat de score altijd samen met de onderliggende blokken gelezen moet worden."
-            ),
-        },
-        {
-            "heading": "Wat valt op?",
-            "text": (
-                f"Prijssterkte staat op {facts['price_strength']}, netwerkgebruik op "
-                f"{facts['network_usage']}, kapitaal op {facts['capital']} en "
-                f"ecosysteembreedte op {facts['ecosystem_breadth']}. De kern is dus de "
-                "verhouding tussen koersgedrag, netwerkactiviteit, kapitaalstromen en de "
-                "breedte van het Solana-ecosysteem."
-            ),
-        },
-        {
-            "heading": "Wat ondersteunt het beeld?",
-            "text": (
-                f"De historische vergelijking gebruikt {facts['analog_count']} vergelijkbare "
-                f"dagen. Daarvan was {facts['analog_positive_frequency']} positief na de "
-                f"gekozen horizon, met een mediaan rendement van "
-                f"{facts['analog_median_return']}. De 7-daagse backtest bevat "
-                f"{facts['backtest_7d']['prediction_count']} voorspellingen."
-            ),
-        },
-        {
-            "heading": "Wat maakt het onzeker?",
-            "text": (
-                f"De bewijskwaliteit is {facts['evidence_quality']}, dus de methode zegt niet "
-                "dat de uitkomst zeker is. Backtestwaarden zoals Brier skill "
-                f"({facts['backtest_7d']['brier_skill']}) en kalibratiefout "
-                f"({facts['backtest_7d']['calibration_error']}) laten zien hoe goed eerdere "
-                "signalen werkten buiten de data waarop ze zijn gevormd."
-            ),
-        },
-        {
-            "heading": "Eindbeeld",
-            "text": (
-                f"De dashboardlezing is: {facts['regime_title']}. Met marktsignaal "
-                f"{facts['market_signal']} en bewijskwaliteit {facts['evidence_quality']} is "
-                "dit een gestructureerde duiding van de data, geen voorspelling met zekerheid "
-                "en geen financieel advies."
-            ),
-        },
-    ]
+def fallback_analysis(facts: dict[str, Any]) -> str:
+    return (
+        f"SOL staat rond {facts['sol_price']}. Het dashboard geeft een marktsignaal van "
+        f"{facts['market_signal']} en een bewijskwaliteit van {facts['evidence_quality']}. "
+        "Bewijskwaliteit betekent hoe stevig de actuele conclusie historisch en datatechnisch "
+        "onderbouwd is; bij beperkt bewijs moet het signaal dus voorzichtig gelezen worden. "
+        f"De belangrijkste verhouding zit tussen prijssterkte {facts['price_strength']}, "
+        f"netwerkgebruik {facts['network_usage']}, kapitaal {facts['capital']} en "
+        f"ecosysteembreedte {facts['ecosystem_breadth']}. Als prijs sterker is dan netwerk "
+        "en kapitaal, loopt de markt mogelijk vooruit op bredere bevestiging. Als netwerk en "
+        "kapitaal meebewegen, wordt het beeld steviger. De historische vergelijking gebruikt "
+        f"{facts['analog_count']} vergelijkbare dagen; daarvan was "
+        f"{facts['analog_positive_frequency']} positief na de gekozen horizon, met een mediaan "
+        f"rendement van {facts['analog_median_return']}. Samengevat: "
+        f"{facts['regime_title']}. Dit is een gestructureerde dataduiding, geen financieel advies."
+    )
+
+
+def score_value(value: Any) -> float:
+    match = re.search(r"-?\d+(?:\.\d+)?", str(value or ""))
+    return float(match.group(0)) if match else 0.0
 
 
 def clean_text(value: Any) -> str:

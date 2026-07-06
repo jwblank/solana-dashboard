@@ -134,13 +134,17 @@ function renderEvidencePage(dashboard, backtest, ledger) {
   renderTermExplainers();
 }
 
-function renderInterpretationPage(interpretation) {
+function renderInterpretationPage(interpretation, archiveIndex) {
   setText("llm-title", interpretation.title || "Duiding niet beschikbaar");
-  setText("llm-intro", interpretation.intro || "");
+  setText("llm-date", interpretationDateText(interpretation));
+  setText(
+    "llm-analysis",
+    interpretation.analysis_text || interpretation.intro || "Geen analyse beschikbaar."
+  );
   renderInterpretationAudit(interpretation);
-  renderInterpretationSections(interpretation.sections || []);
   renderInterpretationInputs(interpretation.input_snapshot || {});
   setText("llm-note", interpretation.footer_note || "");
+  renderInterpretationArchive(archiveIndex);
 }
 
 function renderInterpretationAudit(interpretation) {
@@ -153,6 +157,7 @@ function renderInterpretationAudit(interpretation) {
     ["Provider", interpretation.provider || "n.v.t."],
     ["LLM-call", interpretation.llm_called_at_utc || "Niet aangeroepen"],
     ["Update", interpretation.generated_at_utc || "n.v.t."],
+    ["Duiding voor", interpretation.interpretation_date || "n.v.t."],
     ["Datacutoff", interpretation.data_cutoff_utc || "n.v.t."]
   ];
   const target = document.getElementById("llm-audit");
@@ -172,17 +177,50 @@ function renderInterpretationAudit(interpretation) {
   });
 }
 
-function renderInterpretationSections(sections) {
-  document.getElementById("llm-sections").replaceChildren(...sections.map((item) => {
-    const card = document.createElement("article");
-    card.className = "interpretation-card";
-    const h3 = document.createElement("h3");
-    h3.textContent = item.heading;
-    const p = document.createElement("p");
-    p.textContent = item.text;
-    card.append(h3, p);
-    return card;
+function interpretationDateText(interpretation) {
+  const date = interpretation.interpretation_date || String(interpretation.data_cutoff_utc || "").slice(0, 10);
+  const generated = interpretation.generated_at_utc || "n.v.t.";
+  return `Duiding voor ${date || "n.v.t."} · gegenereerd ${generated}`;
+}
+
+function renderInterpretationArchive(archiveIndex) {
+  const target = document.getElementById("llm-archive");
+  const entries = (archiveIndex?.entries || []).slice(0, 14);
+  if (!entries.length) {
+    target.replaceChildren(emptyArchiveMessage());
+    return;
+  }
+  target.replaceChildren(...entries.map((entry) => {
+    const button = document.createElement("button");
+    button.className = "archive-item";
+    button.type = "button";
+    const title = document.createElement("strong");
+    title.textContent = entry.title || "Duiding";
+    const meta = document.createElement("span");
+    meta.textContent = `${entry.date} · ${entry.market_signal || "n.v.t."} · bewijs ${entry.evidence_quality || "n.v.t."}`;
+    button.append(title, meta);
+    button.addEventListener("click", async () => {
+      try {
+        const archived = await loadJson(entry.path);
+        setText("llm-title", archived.title || "Duiding niet beschikbaar");
+        setText("llm-date", interpretationDateText(archived));
+        setText("llm-analysis", archived.analysis_text || archived.intro || "Geen analyse beschikbaar.");
+        renderInterpretationAudit(archived);
+        renderInterpretationInputs(archived.input_snapshot || {});
+        setText("llm-note", archived.footer_note || "");
+      } catch (error) {
+        setText("llm-note", `Kon archiefitem niet laden: ${error.message}`);
+      }
+    });
+    return button;
   }));
+}
+
+function emptyArchiveMessage() {
+  const p = document.createElement("p");
+  p.className = "plain";
+  p.textContent = "Het archief wordt gevuld zodra de dagelijkse update duidingen publiceert.";
+  return p;
 }
 
 function renderInterpretationInputs(facts) {
@@ -638,12 +676,13 @@ function table(headers, rows) {
 
 async function main() {
   activateTabs();
-  const [dashboard, backtest, ledger, glossary, interpretation] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
     loadJson("./data/glossary.json"),
-    loadJson("./data/interpretation.json")
+    loadJson("./data/interpretation.json"),
+    loadJson("./data/interpretations/index.json").catch(() => ({entries: []}))
   ]);
   if (dashboard.demo_notice) {
     const notice = document.getElementById("demo-notice");
@@ -679,7 +718,7 @@ async function main() {
   }));
   window.renderGlossary(glossary);
   renderEvidencePage(dashboard, backtest, ledger);
-  renderInterpretationPage(interpretation);
+  renderInterpretationPage(interpretation, interpretationArchive);
 }
 
 main().catch((error) => {

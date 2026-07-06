@@ -1,5 +1,4 @@
 from sol_reality_check.llm_interpretation import (
-    FIXED_HEADINGS,
     build_interpretation,
     complete_required_values,
     interpretation_facts,
@@ -56,8 +55,8 @@ def test_build_interpretation_falls_back_without_token(monkeypatch):
     result = build_interpretation(sample_dashboard(), {"7d": {}}, "2026-07-06T07:00:00Z")
     assert result["status"] == "fallback_no_token"
     assert result["llm_called_at_utc"] is None
-    assert [section["heading"] for section in result["sections"]] == FIXED_HEADINGS
-    body = " ".join([result["intro"], *(section["text"] for section in result["sections"])])
+    assert result["interpretation_date"] == "2026-07-05"
+    body = " ".join([result["intro"], result["analysis_text"]])
     for value in ["70/100", "55/100", "48/100", "94/100", "100/100", "62/100"]:
         assert value in body
 
@@ -67,9 +66,7 @@ def test_validate_llm_output_requires_dashboard_values():
     data = {
         "title": "Duiding",
         "intro": "Marktsignaal 70/100 en bewijskwaliteit 55/100.",
-        "sections": [
-            {"heading": heading, "text": "Geen concrete blokscore."} for heading in FIXED_HEADINGS
-        ],
+        "analysis_text": "Geen concrete blokscore.",
     }
     try:
         validate_llm_output(data, facts)
@@ -84,29 +81,20 @@ def test_parse_marked_llm_output_validates_dashboard_values():
     parsed = parse_llm_response(
         """
 TITEL: Onderliggende kracht bouwt op
-INTRO: Marktsignaal 70/100 en bewijskwaliteit 55/100 geven een positief maar beperkt bewezen beeld.
-[Kort beeld]
-SOL staat rond $81.23. Marktsignaal 70/100 en bewijskwaliteit 55/100 maken het beeld concreet.
-[Wat valt op?]
-Prijssterkte 48/100, netwerkgebruik 94/100, kapitaal 100/100 en
-ecosysteembreedte 62/100 lopen niet gelijk.
-[Wat ondersteunt het beeld?]
-De historische vergelijking gebruikt 40 dagen en 45.0% was positief.
-[Wat maakt het onzeker?]
-De bewijskwaliteit 55/100 is beperkt, dus dit is geen zekerheid.
-[Eindbeeld]
-Met marktsignaal 70/100, prijssterkte 48/100, netwerkgebruik 94/100,
-kapitaal 100/100 en ecosysteembreedte 62/100 is het beeld sterk maar niet hard bewezen.
+ANALYSE: Marktsignaal 70/100 en bewijskwaliteit 55/100 geven een positief maar
+beperkt bewezen beeld. SOL staat rond $81.23. Prijssterkte 48/100,
+netwerkgebruik 94/100, kapitaal 100/100 en ecosysteembreedte 62/100 lopen niet
+gelijk. De historische vergelijking gebruikt 40 dagen en 45.0% was positief.
 """
     )
 
     validated = validate_llm_output(parsed, facts)
 
     assert validated["title"] == "Onderliggende kracht bouwt op"
-    assert [section["heading"] for section in validated["sections"]] == FIXED_HEADINGS
+    assert "kapitaal 100/100" in validated["analysis_text"]
 
 
-def test_parse_markdown_llm_output_without_title_or_intro_uses_facts():
+def test_parse_legacy_markdown_output_without_title_or_intro_uses_facts():
     facts = interpretation_facts(sample_dashboard(), {"7d": {}})
     parsed = parse_llm_response(
         """
@@ -131,9 +119,10 @@ kapitaal 100/100 en ecosysteembreedte 62/100 is het beeld bruikbaar.
     assert validated["title"] == "Onderliggende kracht bouwt op"
     assert "70/100" in validated["intro"]
     assert "55/100" in validated["intro"]
+    assert "kapitaal 100/100" in validated["analysis_text"]
 
 
-def test_parse_numbered_llm_output_sections():
+def test_parse_numbered_legacy_output_sections():
     facts = interpretation_facts(sample_dashboard(), {"7d": {}})
     parsed = parse_llm_response(
         """
@@ -157,7 +146,7 @@ kapitaal 100/100 en ecosysteembreedte 62/100 geven samen het beeld.
 
     validated = validate_llm_output(parsed, facts)
 
-    assert [section["heading"] for section in validated["sections"]] == FIXED_HEADINGS
+    assert "kapitaal 100/100" in validated["analysis_text"]
 
 
 def test_complete_required_values_adds_missing_dashboard_value():
@@ -165,23 +154,14 @@ def test_complete_required_values_adds_missing_dashboard_value():
     data = {
         "title": "Duiding",
         "intro": "Marktsignaal 70/100 en bewijskwaliteit 55/100.",
-        "sections": [
-            {
-                "heading": "Kort beeld",
-                "text": "Prijssterkte 48/100 en netwerkgebruik 94/100 staan in beeld.",
-            },
-            {
-                "heading": "Wat valt op?",
-                "text": "Ecosysteembreedte 62/100 is zichtbaar.",
-            },
-            {"heading": "Wat ondersteunt het beeld?", "text": "De historie is gemengd."},
-            {"heading": "Wat maakt het onzeker?", "text": "Bewijs blijft beperkt."},
-            {"heading": "Eindbeeld", "text": "Het beeld blijft genuanceerd."},
-        ],
+        "analysis_text": (
+            "Prijssterkte 48/100, netwerkgebruik 94/100 en ecosysteembreedte 62/100 "
+            "staan in beeld."
+        ),
     }
 
     completed, warnings = complete_required_values(data, facts)
     validated = validate_llm_output(completed, facts)
 
     assert warnings
-    assert "100/100" in validated["sections"][1]["text"]
+    assert "kapitaal 100/100" in validated["analysis_text"]

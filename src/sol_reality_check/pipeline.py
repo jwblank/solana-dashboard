@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 from datetime import UTC, datetime
@@ -1573,6 +1574,7 @@ def write_all_json(
     )
     write_json(SITE_DATA / "source_status.json", source_status)
     write_json(SITE_DATA / "interpretation.json", interpretation)
+    write_interpretation_archive(interpretation)
     write_json(
         SITE_DATA / "build_info.json",
         {
@@ -1580,6 +1582,69 @@ def write_all_json(
             "generated_at_utc": generated,
             "data_cutoff_utc": cutoff,
             "method_version": method,
+        },
+    )
+
+
+def write_interpretation_archive(interpretation: dict[str, Any]) -> None:
+    archive_dir = SITE_DATA / "interpretations"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    interpretation_date = str(
+        interpretation.get("interpretation_date")
+        or str(interpretation.get("data_cutoff_utc", ""))[:10]
+    )
+    if not interpretation_date:
+        return
+    daily_payload = {
+        "schema_version": "1.0",
+        "date": interpretation_date,
+        "generated_at_utc": interpretation.get("generated_at_utc"),
+        "data_cutoff_utc": interpretation.get("data_cutoff_utc"),
+        "llm_called_at_utc": interpretation.get("llm_called_at_utc"),
+        "status": interpretation.get("status"),
+        "provider": interpretation.get("provider"),
+        "model": interpretation.get("model"),
+        "title": interpretation.get("title"),
+        "intro": interpretation.get("intro"),
+        "analysis_text": interpretation.get("analysis_text"),
+        "warnings": interpretation.get("warnings", []),
+        "footer_note": interpretation.get("footer_note"),
+        "input_snapshot": interpretation.get("input_snapshot", {}),
+    }
+    write_json(archive_dir / f"{interpretation_date}.json", daily_payload)
+    index_path = archive_dir / "index.json"
+    existing_entries = []
+    if index_path.exists():
+        try:
+            existing_entries = json.loads(index_path.read_text(encoding="utf-8")).get(
+                "entries", []
+            )
+        except json.JSONDecodeError:
+            existing_entries = []
+    entry = {
+        "date": interpretation_date,
+        "title": interpretation.get("title"),
+        "status": interpretation.get("status"),
+        "market_signal": (interpretation.get("input_snapshot") or {}).get("market_signal"),
+        "evidence_quality": (interpretation.get("input_snapshot") or {}).get(
+            "evidence_quality"
+        ),
+        "generated_at_utc": interpretation.get("generated_at_utc"),
+        "llm_called_at_utc": interpretation.get("llm_called_at_utc"),
+        "model": interpretation.get("model"),
+        "path": f"./data/interpretations/{interpretation_date}.json",
+    }
+    entries_by_date = {
+        str(item.get("date")): item for item in existing_entries if item.get("date")
+    }
+    entries_by_date[interpretation_date] = entry
+    entries = sorted(entries_by_date.values(), key=lambda item: item["date"], reverse=True)
+    write_json(
+        index_path,
+        {
+            "schema_version": "1.0",
+            "generated_at_utc": interpretation.get("generated_at_utc"),
+            "entries": entries,
         },
     )
 

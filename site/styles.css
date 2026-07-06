@@ -21,7 +21,7 @@ h3 { margin: 0 0 12px; font-size: 18px; }
 .eyebrow { margin: 0 0 8px; color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 12px; }
 .subtitle { margin: 10px 0 0; color: var(--muted); font-size: 18px; }
 .meta { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 10px; margin: 0; }
-.meta div, .card, .wide, .conclusion, .score-pair > div, .source-card, .indicator-hero, .indicator-score, .component-card, .mini-chart, .evidence-hero, .evidence-section, .explainer-card, .evidence-block, .method-step, .interpretation-hero, .interpretation-card, .interpretation-audit { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.meta div, .card, .wide, .conclusion, .score-pair > div, .source-card, .indicator-hero, .indicator-score, .component-card, .mini-chart, .evidence-hero, .evidence-section, .explainer-card, .evidence-block, .method-step, .interpretation-hero, .interpretation-audit, .archive-item { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
 dt, .card span, .score-pair span { color: var(--muted); font-size: 12px; }
 dd { margin: 0; font-weight: 700; }
 main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
@@ -58,16 +58,18 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .evidence-page { max-width: 1180px; }
 .interpretation-page { max-width: 1180px; }
 .interpretation-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 18px; align-items: stretch; margin-bottom: 16px; }
-.interpretation-intro { font-size: 18px; margin-bottom: 0; }
+.interpretation-analysis { font-size: 18px; max-width: 78ch; margin: 12px 0 0; }
 .interpretation-audit { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .interpretation-audit div { border-bottom: 1px solid var(--line); padding-bottom: 7px; }
 .interpretation-audit div:last-of-type { border-bottom: 0; padding-bottom: 0; }
 .interpretation-audit span { display: block; color: var(--muted); font-size: 12px; }
 .interpretation-audit strong { display: block; overflow-wrap: anywhere; }
 .interpretation-audit small { display: block; color: var(--warn); }
-.interpretation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.interpretation-card:first-child, .interpretation-card:last-child { grid-column: 1 / -1; }
-.interpretation-card p { margin-bottom: 0; font-size: 16px; }
+.archive-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.archive-item { cursor: pointer; text-align: left; color: var(--text); }
+.archive-item:hover { border-color: var(--accent); }
+.archive-item strong { display: block; font-size: 15px; }
+.archive-item span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
 .evidence-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 320px); gap: 18px; align-items: stretch; margin-bottom: 16px; }
 .evidence-scorecard { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .evidence-scorecard div { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: color-mix(in srgb, var(--panel), var(--bg) 35%); }
@@ -119,7 +121,6 @@ details { border-bottom: 1px solid var(--line); padding: 12px 0; }
 summary { cursor: pointer; font-weight: 700; }
 @media (max-width: 800px) {
   .top, .conclusion, .indicator-hero, .evidence-hero, .evidence-two-col, .interpretation-hero { grid-template-columns: 1fr; }
-  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .interpretation-grid { grid-template-columns: 1fr; }
-  .interpretation-card:first-child, .interpretation-card:last-child { grid-column: auto; }
+  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list { grid-template-columns: 1fr; }
   .section-head { display: block; }
 }
