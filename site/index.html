@@ -29,10 +29,10 @@
       <p id="demo-notice" class="notice" hidden></p>
       <nav class="tabs" aria-label="Hoofdnavigatie">
         <button class="tab active" data-tab="today">Vandaag</button>
+        <button class="tab" data-tab="price">Prijs</button>
+        <button class="tab" data-tab="network">Netwerk & ecosysteem</button>
+        <button class="tab" data-tab="capital">Kapitaal</button>
         <button class="tab" data-tab="evidence">Bewijs</button>
-        <button class="tab" data-tab="backtest">Backtest</button>
-        <button class="tab" data-tab="ledger">Open logboek</button>
-        <button class="tab" data-tab="method">Zo werkt het</button>
       </nav>
 
       <section id="today" class="panel active">
@@ -70,24 +70,27 @@
         </section>
       </section>
 
+      <section id="price" class="panel">
+        <div id="price-tab"></div>
+      </section>
+
+      <section id="network" class="panel">
+        <div id="network-tab"></div>
+      </section>
+
+      <section id="capital" class="panel">
+        <div id="capital-tab"></div>
+      </section>
+
       <section id="evidence" class="panel">
         <h2>Bewijsroute</h2>
         <div id="evidence-route" class="table-wrap"></div>
         <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
-      </section>
-
-      <section id="backtest" class="panel">
         <h2>Backtest</h2>
         <p id="edge-warning" class="notice"></p>
         <div id="backtest-table" class="table-wrap"></div>
-      </section>
-
-      <section id="ledger" class="panel">
         <h2>Open logboek</h2>
         <div id="ledger-table" class="table-wrap"></div>
-      </section>
-
-      <section id="method" class="panel">
         <h2>Zo werkt het</h2>
         <div class="method-copy">
           <p>Dit dashboard vergelijkt SOL met eerdere marktdagen die statistisch op vandaag lijken. Het gebruikt prijssterkte, netwerkgebruik, kapitaalstromen en ecosysteembreedte. De methode wordt walk-forward getest, zodat toekomstige informatie buiten beeld blijft.</p>

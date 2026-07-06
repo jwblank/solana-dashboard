@@ -58,7 +58,11 @@ function renderCards(data) {
 
 function renderSources(audit) {
   const cards = audit?.sources || [];
-  document.getElementById("source-cards").replaceChildren(...cards.map((item) => {
+  document.getElementById("source-cards").replaceChildren(...sourceCards(cards));
+}
+
+function sourceCards(cards) {
+  return cards.map((item) => {
     const card = document.createElement("article");
     card.className = "source-card";
     const top = document.createElement("div");
@@ -91,7 +95,7 @@ function renderSources(audit) {
       card.append(top, role, meta);
     }
     return card;
-  }));
+  });
 }
 
 function renderStats(targetId, stats) {
@@ -117,6 +121,151 @@ function renderBlockEvidence(data) {
     `${item.summary} ${item.drivers.join(" ")}`
   ]);
   return table(["Blok", "Weging", "Score", "Status", "Kern en drijvers"], rows);
+}
+
+function renderIndicatorTab(targetId, tab) {
+  const target = document.getElementById(targetId);
+  if (!target || !tab) return;
+  const hero = document.createElement("section");
+  hero.className = "indicator-hero";
+  const text = document.createElement("div");
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "Indicator";
+  const title = document.createElement("h2");
+  title.textContent = tab.title;
+  const subtitle = document.createElement("p");
+  subtitle.className = "plain";
+  subtitle.textContent = tab.subtitle;
+  const summary = document.createElement("p");
+  summary.textContent = tab.summary;
+  const note = document.createElement("p");
+  note.className = "plain";
+  note.textContent = tab.note;
+  text.append(eyebrow, title, subtitle, summary, note);
+
+  const score = document.createElement("div");
+  score.className = "indicator-score";
+  const scoreLabel = document.createElement("span");
+  scoreLabel.textContent = "Score";
+  const scoreValue = document.createElement("strong");
+  scoreValue.textContent = fmtScore100(tab.score);
+  const weight = document.createElement("small");
+  weight.textContent = fmtWeight(tab.weight);
+  const status = document.createElement("small");
+  status.textContent = tab.status;
+  score.append(scoreLabel, scoreValue, weight, status);
+  hero.append(text, score);
+
+  const components = document.createElement("section");
+  components.className = "wide";
+  const componentTitle = document.createElement("h3");
+  componentTitle.textContent = "Onderliggende metingen";
+  const componentGrid = document.createElement("div");
+  componentGrid.className = "component-grid";
+  componentGrid.replaceChildren(...(tab.components || []).map(componentCard));
+  components.append(componentTitle, componentGrid);
+
+  const trend = document.createElement("section");
+  trend.className = "wide";
+  const trendTitle = document.createElement("h3");
+  trendTitle.textContent = "Trend";
+  const trendGrid = document.createElement("div");
+  trendGrid.className = "spark-grid";
+  trendGrid.replaceChildren(...(tab.trend?.series || []).map((series) => {
+    return sparklineCard(tab.trend?.rows || [], series);
+  }));
+  trend.append(trendTitle, trendGrid);
+
+  const sources = document.createElement("section");
+  sources.className = "wide";
+  const sourceTitle = document.createElement("h3");
+  sourceTitle.textContent = "Bronnen voor dit blok";
+  const sourceGrid = document.createElement("div");
+  sourceGrid.className = "source-grid";
+  sourceGrid.replaceChildren(...sourceCards(tab.sources || []));
+  sources.append(sourceTitle, sourceGrid);
+
+  target.replaceChildren(hero, components, trend, sources);
+}
+
+function componentCard(item) {
+  const card = document.createElement("article");
+  card.className = "component-card";
+  const label = document.createElement("span");
+  label.textContent = item.label;
+  const value = document.createElement("strong");
+  value.textContent = item.value;
+  const score = document.createElement("small");
+  score.className = "weight";
+  score.textContent = `Score: ${fmtScore100(item.score)}`;
+  const weight = document.createElement("small");
+  weight.textContent = item.weight;
+  const description = document.createElement("p");
+  description.textContent = item.description;
+  card.append(label, value, score, weight, description);
+  return card;
+}
+
+function sparklineCard(rows, series) {
+  const card = document.createElement("article");
+  card.className = "mini-chart";
+  const label = document.createElement("span");
+  label.textContent = series.label;
+  const values = rows
+    .map((row, index) => ({index, value: Number(row[series.key])}))
+    .filter((point) => Number.isFinite(point.value));
+  const latest = values.length ? values[values.length - 1].value : null;
+  const strong = document.createElement("strong");
+  strong.textContent = formatTrendValue(latest, series.unit);
+  card.append(label, strong, sparklineSvg(values));
+  if (values.length) {
+    const range = document.createElement("small");
+    const min = Math.min(...values.map((point) => point.value));
+    const max = Math.max(...values.map((point) => point.value));
+    range.textContent = `Bereik: ${formatTrendValue(min, series.unit)} tot ${formatTrendValue(max, series.unit)}`;
+    card.append(range);
+  }
+  return card;
+}
+
+function sparklineSvg(values) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 320 90");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-hidden", "true");
+  const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  axis.setAttribute("x1", "0");
+  axis.setAttribute("y1", "70");
+  axis.setAttribute("x2", "320");
+  axis.setAttribute("y2", "70");
+  axis.setAttribute("class", "spark-axis");
+  svg.append(axis);
+  if (values.length < 2) return svg;
+  const min = Math.min(...values.map((point) => point.value));
+  const max = Math.max(...values.map((point) => point.value));
+  const span = max - min || 1;
+  const lastIndex = values[values.length - 1].index || 1;
+  const points = values.map((point) => {
+    const x = (point.index / lastIndex) * 320;
+    const y = 78 - ((point.value - min) / span) * 66;
+    return `${x.toFixed(2)},${y.toFixed(2)}`;
+  }).join(" ");
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  line.setAttribute("points", points);
+  line.setAttribute("class", "spark-line");
+  svg.append(line);
+  return svg;
+}
+
+function formatTrendValue(value, unit) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  const number = Number(value);
+  if (unit === "%") return `${(number * 100).toFixed(1)}%`;
+  if (unit === "$") return `$${number.toFixed(2)}`;
+  if (unit === "/100") return `${Math.round(number)}/100`;
+  if (unit === "x") return `${number.toFixed(2)}x`;
+  return Math.abs(number) >= 10 ? number.toFixed(1) : number.toFixed(2);
 }
 
 function table(headers, rows) {
@@ -169,6 +318,9 @@ async function main() {
   setText("evidence-score", fmtScore100(dashboard.scores.evidence_quality));
   setText("evidence-label", dashboard.summary.evidence_label);
   renderCards(dashboard);
+  renderIndicatorTab("price-tab", dashboard.indicator_tabs?.price);
+  renderIndicatorTab("network-tab", dashboard.indicator_tabs?.network);
+  renderIndicatorTab("capital-tab", dashboard.indicator_tabs?.capital);
   setText("analog-summary", dashboard.historical_context?.summary || "");
   renderStats("analog-stats", dashboard.historical_context?.stats || []);
   setText("audit-summary", dashboard.data_audit?.summary || "");

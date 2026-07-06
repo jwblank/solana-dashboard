@@ -207,6 +207,28 @@ def build_outputs(mode: str) -> dict[str, Any]:
         breadth=source_status["ecosystem_breadth"],
         rpc_metrics=rpc_metrics,
     )
+    details = block_details(
+        blocks,
+        ind["validated_market_signal"],
+        base_network_usage,
+        rpc_score,
+        rpc_metrics,
+        rpc_summary,
+        breadth_summary,
+        breadth_drivers,
+        latest,
+    )
+    indicator_tabs = build_indicator_tabs(
+        df=df,
+        latest=latest,
+        details=details,
+        blocks=blocks,
+        source_audit=data_audit,
+        breadth=source_status["ecosystem_breadth"],
+        base_network_usage=base_network_usage,
+        rpc_score=rpc_score,
+        rpc_metrics=rpc_metrics,
+    )
     dashboard = {
         "schema_version": "1.0",
         "generated_at_utc": generated,
@@ -234,17 +256,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
             "evidence_quality": quality["score"],
             "blocks": {k: rounded_or_none(v) for k, v in blocks.items()},
             "block_weights": ind["validated_market_signal"],
-            "block_details": block_details(
-                blocks,
-                ind["validated_market_signal"],
-                base_network_usage,
-                rpc_score,
-                rpc_metrics,
-                rpc_summary,
-                breadth_summary,
-                breadth_drivers,
-                latest,
-            ),
+            "block_details": details,
             "missing_blocks": missing_blocks,
             "evidence_components": quality["components"],
             "quality_caps": quality["caps"],
@@ -273,6 +285,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
         "analog_summary": analog_stats,
         "historical_context": historical_context,
         "data_audit": data_audit,
+        "indicator_tabs": indicator_tabs,
         "source_status": source_status["sources"],
     }
     write_all_json(
@@ -548,6 +561,252 @@ def block_details(
             "metrics": [],
         },
     ]
+
+
+def build_indicator_tabs(
+    df: pd.DataFrame,
+    latest: pd.Series,
+    details: list[dict[str, Any]],
+    blocks: dict[str, float | None],
+    source_audit: dict[str, Any],
+    breadth: dict[str, Any],
+    base_network_usage: float | None,
+    rpc_score: float | None,
+    rpc_metrics: dict[str, Any],
+) -> dict[str, Any]:
+    detail_by_key = {item["key"]: item for item in details}
+    price = detail_by_key["price_strength"]
+    network = detail_by_key["network_usage"]
+    capital = detail_by_key["capital"]
+    ecosystem = detail_by_key["ecosystem_breadth"]
+    network_tab_score, _ = weighted_average(
+        {
+            "network_usage": blocks.get("network_usage"),
+            "ecosystem_breadth": blocks.get("ecosystem_breadth"),
+        },
+        {
+            "network_usage": network["weight"],
+            "ecosystem_breadth": ecosystem["weight"],
+        },
+    )
+    return {
+        "price": {
+            "title": "Prijs",
+            "subtitle": "Koerskracht van SOL, inclusief relatieve sterkte tegenover BTC.",
+            "score": price["score"],
+            "weight": price["weight"],
+            "status": price["status"],
+            "summary": price["summary"],
+            "note": price["score_note"],
+            "components": [
+                component(
+                    "SOL 7 dagen",
+                    pct_text(latest.get("sol_return_7d")),
+                    latest.get("sol_return_7d__score"),
+                    "20% binnen prijsblok",
+                    "Kortetermijnmomentum van SOL zelf.",
+                ),
+                component(
+                    "SOL 30 dagen",
+                    pct_text(latest.get("sol_return_30d")),
+                    latest.get("sol_return_30d__score"),
+                    "15% binnen prijsblok",
+                    "Middellange koersbeweging van SOL.",
+                ),
+                component(
+                    "Relatief vs BTC 7d",
+                    pct_text(latest.get("relative_strength_btc_7d")),
+                    latest.get("relative_strength_btc_7d__score"),
+                    "30% binnen prijsblok",
+                    "Meet of SOL beter of slechter beweegt dan BTC.",
+                ),
+                component(
+                    "Afstand tot 50d trend",
+                    pct_text(latest.get("price_vs_sma50")),
+                    latest.get("price_vs_sma50__score"),
+                    "20% binnen prijsblok",
+                    "Laat zien of de koers boven of onder de eigen trend ligt.",
+                ),
+            ],
+            "sources": source_rows_by_name(source_audit, ["Coinbase", "CoinGecko"]),
+            "trend": {
+                "rows": trend_rows(
+                    df,
+                    {
+                        "SOL slotkoers": "sol_close",
+                        "Prijssterkte": "price_strength_score",
+                        "Relatief vs BTC 7d": "relative_strength_btc_7d",
+                    },
+                ),
+                "series": [
+                    {"key": "SOL slotkoers", "label": "SOL slotkoers", "unit": "$"},
+                    {"key": "Prijssterkte", "label": "Prijssterkte", "unit": "/100"},
+                    {"key": "Relatief vs BTC 7d", "label": "Relatief vs BTC 7d", "unit": "%"},
+                ],
+            },
+        },
+        "network": {
+            "title": "Netwerk & ecosysteem",
+            "subtitle": "Gebruik van DeFi-activiteit, fees, actuele RPC-context en breedte.",
+            "score": network_tab_score,
+            "weight": network["weight"] + ecosystem["weight"],
+            "status": "Grotendeels gevalideerd; ecosysteembreedte is experimenteel",
+            "summary": (
+                f"{network['summary']} Ecosysteembreedte: {ecosystem['summary']}"
+            ),
+            "note": (
+                "Netwerkgebruik telt volledig mee binnen de backtest; RPC-context en "
+                "ecosysteembreedte zijn actueel en transparant beperkt meegewogen."
+            ),
+            "components": [
+                component(
+                    "DEX-volume 7d/30d",
+                    ratio_text(latest.get("dex_volume_ratio_7d_30d")),
+                    latest.get("dex_volume_ratio_7d_30d__score"),
+                    "60% binnen netwerkgebruik",
+                    "Vergelijkt recente DEX-activiteit met het 30-daags gemiddelde.",
+                ),
+                component(
+                    "Fees 7d/30d",
+                    ratio_text(latest.get("fees_ratio_7d_30d")),
+                    latest.get("fees_ratio_7d_30d__score"),
+                    "40% binnen netwerkgebruik",
+                    "Meet of betaalde fees boven of onder normaal liggen.",
+                ),
+                component(
+                    "RPC-context",
+                    f"{score_text(rpc_score)}; {number_text(rpc_metrics.get('non_vote_tps'))} TPS",
+                    rpc_score,
+                    "15% correctie op netwerkgebruik",
+                    "Actuele steekproef uit Solana RPC-performance samples.",
+                ),
+                component(
+                    "Ecosysteembreedte",
+                    breadth_value_text(breadth),
+                    blocks.get("ecosystem_breadth"),
+                    "10% van eindscore",
+                    "Meet of meerdere Solana-ecosysteemtokens tegelijk meedoen.",
+                ),
+                component(
+                    "Gevalideerde basis",
+                    score_text(base_network_usage),
+                    base_network_usage,
+                    "85% van netwerkgebruik",
+                    "Alleen DeFi/fee-data die historisch is meegetest.",
+                ),
+            ],
+            "sources": source_rows_by_name(source_audit, ["DeFiLlama", "Solana RPC", "CoinGecko"]),
+            "trend": {
+                "rows": trend_rows(
+                    df,
+                    {
+                        "Netwerkgebruik": "network_usage_score",
+                        "DEX 7d/30d": "dex_volume_ratio_7d_30d",
+                        "Fees 7d/30d": "fees_ratio_7d_30d",
+                    },
+                ),
+                "series": [
+                    {"key": "Netwerkgebruik", "label": "Netwerkgebruik", "unit": "/100"},
+                    {"key": "DEX 7d/30d", "label": "DEX 7d/30d", "unit": "x"},
+                    {"key": "Fees 7d/30d", "label": "Fees 7d/30d", "unit": "x"},
+                ],
+            },
+        },
+        "capital": {
+            "title": "Kapitaal",
+            "subtitle": "Kapitaalstromen via stablecoinvoorraad en TVL op Solana.",
+            "score": capital["score"],
+            "weight": capital["weight"],
+            "status": capital["status"],
+            "summary": capital["summary"],
+            "note": capital["score_note"],
+            "components": [
+                component(
+                    "Stablecoins 30d",
+                    pct_text(latest.get("stablecoin_change_30d")),
+                    latest.get("stablecoin_change_30d__score"),
+                    "55% binnen kapitaalblok",
+                    "Groei of krimp van stablecoinvoorraad op Solana.",
+                ),
+                component(
+                    "TVL 30d",
+                    pct_text(latest.get("tvl_change_30d")),
+                    latest.get("tvl_change_30d__score"),
+                    "45% binnen kapitaalblok",
+                    "Groei of krimp van total value locked.",
+                ),
+                component(
+                    "Schaalduiding",
+                    "Afgekapt op 100" if is_capped(blocks.get("capital")) else "Relatief",
+                    blocks.get("capital"),
+                    "Uitleg",
+                    capital_scale_note(blocks.get("capital")),
+                ),
+            ],
+            "sources": source_rows_by_name(source_audit, ["DeFiLlama"]),
+            "trend": {
+                "rows": trend_rows(
+                    df,
+                    {
+                        "Kapitaal": "capital_score",
+                        "Stablecoins 30d": "stablecoin_change_30d",
+                        "TVL 30d": "tvl_change_30d",
+                    },
+                ),
+                "series": [
+                    {"key": "Kapitaal", "label": "Kapitaal", "unit": "/100"},
+                    {"key": "Stablecoins 30d", "label": "Stablecoins 30d", "unit": "%"},
+                    {"key": "TVL 30d", "label": "TVL 30d", "unit": "%"},
+                ],
+            },
+        },
+    }
+
+
+def component(
+    label: str,
+    value: str,
+    score: float | None,
+    weight: str,
+    description: str,
+) -> dict[str, str | float | None]:
+    return {
+        "label": label,
+        "value": value,
+        "score": rounded_or_none(score),
+        "weight": weight,
+        "description": description,
+    }
+
+
+def source_rows_by_name(source_audit: dict[str, Any], names: list[str]) -> list[dict[str, str]]:
+    rows = source_audit.get("sources", [])
+    by_name = {row.get("name"): row for row in rows}
+    return [by_name[name] for name in names if name in by_name]
+
+
+def trend_rows(
+    df: pd.DataFrame,
+    fields: dict[str, str],
+    days: int = 120,
+) -> list[dict[str, str | float | None]]:
+    selected = df.tail(days)
+    rows: list[dict[str, str | float | None]] = []
+    for _, row in selected.iterrows():
+        item: dict[str, str | float | None] = {"date": str(row.get("date"))}
+        for label, column in fields.items():
+            item[label] = rounded_or_none(row.get(column)) if column in row else None
+        rows.append(item)
+    return rows
+
+
+def breadth_value_text(breadth: dict[str, Any]) -> str:
+    if not breadth.get("available"):
+        return "n.v.t."
+    return (
+        f"{pct_text(breadth.get('positive_7d_share'))} positief 7d; "
+        f"{breadth.get('token_count', 0)} tokens"
+    )
 
 
 def current_price_or_none(source_status: dict[str, Any], asset: str) -> float | None:
