@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -36,6 +37,14 @@ from sol_reality_check.utils import iso_z, utc_now, write_json
 
 CURATED = ROOT / "data" / "curated"
 SITE_DATA = ROOT / "site" / "data"
+LOGGER = logging.getLogger(__name__)
+PRICE_METADATA_COLUMNS = [
+    "sol_price_source_count",
+    "sol_price_sources",
+    "btc_price_source_count",
+    "btc_price_sources",
+]
+MAX_ALLOWED_CACHE_PRICE_BREAK = 0.40
 
 
 def load_or_fetch_history(mode: str) -> pd.DataFrame:
@@ -46,16 +55,23 @@ def load_or_fetch_history(mode: str) -> pd.DataFrame:
         df.to_csv(path, index=False)
         return df
     if path.exists():
-        cached = repair_history_prices(pd.read_csv(path))
-        cached.to_csv(path, index=False)
         if mode != "production":
+            cached = repair_history_prices(pd.read_csv(path))
+            cached.to_csv(path, index=False)
             return cached
+        raw_cache = pd.read_csv(path)
+        cache_ok, cache_reason = production_history_cache_is_usable(raw_cache)
+        cached = repair_history_prices(raw_cache) if cache_ok else None
+        if not cache_ok:
+            LOGGER.warning("Ignoring production history cache: %s", cache_reason)
         try:
             refreshed = fetch_history_window(cached)
             refreshed.to_csv(path, index=False)
             return refreshed
         except ApiError:
-            return cached
+            if cached is not None:
+                return cached
+            raise
     end = last_completed_utc_day_end()
     start = end - pd.Timedelta(days=1400)
     merged = fetch_history_window(None, start=start, end=end)
@@ -124,8 +140,50 @@ def fetch_history_window(
     merged = merged[merged["date"] < end_date]
     trusted_price_dates = trusted_dates_from_price_sources(sol, btc)
     merged = repair_history_prices(merged.sort_values("date"), trusted_price_dates)
+    assert_no_extreme_price_breaks(merged)
     merged.attrs["price_source_status"] = price_status
     return merged
+
+
+def production_history_cache_is_usable(df: pd.DataFrame) -> tuple[bool, str]:
+    missing = [column for column in PRICE_METADATA_COLUMNS if column not in df]
+    if missing:
+        return False, f"missing price source metadata: {', '.join(missing)}"
+    if df.empty:
+        return False, "empty history cache"
+    for column in ["sol_close", "btc_close"]:
+        if column not in df:
+            return False, f"missing {column}"
+    break_reason = extreme_price_break_reason(df)
+    if break_reason:
+        return False, break_reason
+    return True, ""
+
+
+def extreme_price_break_reason(
+    df: pd.DataFrame,
+    threshold: float = MAX_ALLOWED_CACHE_PRICE_BREAK,
+) -> str:
+    ordered = df.sort_values("date").reset_index(drop=True)
+    for column in ["sol_close", "btc_close"]:
+        if column not in ordered:
+            continue
+        changes = pd.to_numeric(ordered[column], errors="coerce").pct_change().abs()
+        bad = changes[changes > threshold]
+        if bad.empty:
+            continue
+        idx = int(bad.index[0])
+        return (
+            f"{column} daily break {bad.iloc[0]:.1%} between "
+            f"{ordered.at[idx - 1, 'date']} and {ordered.at[idx, 'date']}"
+        )
+    return ""
+
+
+def assert_no_extreme_price_breaks(df: pd.DataFrame) -> None:
+    reason = extreme_price_break_reason(df)
+    if reason:
+        raise ApiError(f"Untrusted price history after rebuild: {reason}")
 
 
 def trusted_dates_from_price_sources(
@@ -161,6 +219,12 @@ def fetch_price_history(
             min_sources=int(ccxt_cfg.get("min_sources", 2)),
             max_deviation_pct=float(ccxt_cfg.get("max_exchange_deviation_pct", 5.0)),
         )
+        assert_price_coverage(
+            frame,
+            start,
+            end,
+            min_coverage_ratio=float(ccxt_cfg.get("min_coverage_ratio", 0.8)),
+        )
         frame.attrs["price_source_status"] = {
             "provider": "CCXT consensus",
             **frame.attrs.get("ccxt_status", {}),
@@ -180,7 +244,28 @@ def fetch_price_history(
             "warning": str(exc),
             "rows": len(frame),
         }
+        frame["source_count"] = 1
+        frame["outlier_count"] = 0
+        frame["sources"] = "coinbase"
         return frame
+
+
+def assert_price_coverage(
+    frame: pd.DataFrame,
+    start: datetime | pd.Timestamp,
+    end: datetime | pd.Timestamp,
+    min_coverage_ratio: float,
+) -> None:
+    expected_days = max(1, (pd.Timestamp(end).date() - pd.Timestamp(start).date()).days)
+    min_rows = int(expected_days * min_coverage_ratio)
+    if expected_days >= 60:
+        min_rows = max(30, min_rows)
+    min_rows = max(1, min_rows)
+    if len(frame) < min_rows:
+        raise ApiError(
+            f"CCXT consensus has insufficient history: {len(frame)} rows for "
+            f"{expected_days} requested days"
+        )
 
 
 def repair_history_prices(

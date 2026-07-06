@@ -3,7 +3,12 @@ import pandas as pd
 
 from sol_reality_check.analytics import add_features
 from sol_reality_check.demo import demo_history
-from sol_reality_check.pipeline import repair_history_prices
+from sol_reality_check.pipeline import (
+    ApiError,
+    assert_price_coverage,
+    production_history_cache_is_usable,
+    repair_history_prices,
+)
 
 
 def test_feature_engineering_core_columns():
@@ -81,3 +86,43 @@ def test_repair_history_prices_trusts_cached_consensus_metadata():
 
     assert repaired.iloc[-1]["sol_close"] == 79.5
     assert "price_repairs" not in repaired.attrs
+
+
+def test_production_cache_requires_price_source_metadata():
+    history = demo_history(days=40)
+
+    usable, reason = production_history_cache_is_usable(history)
+
+    assert usable is False
+    assert "missing price source metadata" in reason
+
+
+def test_production_cache_rejects_extreme_price_break_even_with_metadata():
+    dates = pd.date_range("2026-06-01", periods=5, freq="D").date.astype(str)
+    history = pd.DataFrame(
+        {
+            "date": dates,
+            "sol_close": [137.0, 138.0, 139.0, 140.0, 71.0],
+            "sol_price_source_count": [4] * 5,
+            "sol_price_sources": ["coinbase,kraken,kucoin,okx"] * 5,
+            "btc_close": [100_000.0] * 5,
+            "btc_price_source_count": [4] * 5,
+            "btc_price_sources": ["coinbase,kraken,kucoin,okx"] * 5,
+        }
+    )
+
+    usable, reason = production_history_cache_is_usable(history)
+
+    assert usable is False
+    assert "sol_close daily break" in reason
+
+
+def test_price_coverage_rejects_short_consensus_for_full_rebuild():
+    frame = pd.DataFrame({"date": pd.date_range("2026-01-01", periods=8).date.astype(str)})
+
+    try:
+        assert_price_coverage(frame, pd.Timestamp("2026-01-01"), pd.Timestamp("2026-04-01"), 0.8)
+    except ApiError as exc:
+        assert "insufficient history" in str(exc)
+    else:
+        raise AssertionError("Expected insufficient history failure")
