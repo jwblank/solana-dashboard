@@ -123,6 +123,208 @@ function renderBlockEvidence(data) {
   return table(["Blok", "Weging", "Score", "Status", "Kern en drijvers"], rows);
 }
 
+function renderEvidencePage(dashboard, backtest, ledger) {
+  setText("evidence-summary", evidenceSummaryText(dashboard, backtest));
+  renderEvidenceScorecard(dashboard);
+  renderEvidenceKpis(dashboard, backtest);
+  renderEvidenceBlocks(dashboard);
+  renderBacktest(backtest);
+  renderLedger(ledger);
+  renderMethodSteps();
+  renderTermExplainers();
+}
+
+function renderEvidenceScorecard(dashboard) {
+  const target = document.getElementById("evidence-scorecard");
+  target.replaceChildren(
+    labeledValue("Bewijskwaliteit", fmtScore100(dashboard.scores.evidence_quality)),
+    labeledValue("Marktsignaal", fmtScore100(dashboard.scores.market_signal)),
+    labeledValue("Duiding", dashboard.summary.evidence_label)
+  );
+}
+
+function renderEvidenceKpis(dashboard, backtest) {
+  const components = dashboard.scores.evidence_components || {};
+  const horizon7 = backtest.horizons?.["7d"] || {};
+  const cards = [
+    {
+      label: "Datakwaliteit",
+      value: fmtScore100(components.data_quality),
+      text: "Meet of de gebruikte databronnen beschikbaar, actueel en compleet zijn.",
+      interpretation: highIsBetter(components.data_quality)
+    },
+    {
+      label: "Steekproefomvang",
+      value: fmtScore100(components.sample_adequacy),
+      text: "Beoordeelt of er genoeg vergelijkbare historische situaties zijn.",
+      interpretation: highIsBetter(components.sample_adequacy)
+    },
+    {
+      label: "Out-of-sample kwaliteit",
+      value: fmtScore100(components.out_of_sample_quality),
+      text: "Meet prestaties op latere data die niet gebruikt is om het signaal te vormen.",
+      interpretation: highIsBetter(components.out_of_sample_quality)
+    },
+    {
+      label: "Backtest 7d",
+      value: formatDecimal(horizon7.brier_skill),
+      text: "Brier skill vergelijkt de methode met een simpele basislijn.",
+      interpretation: brierSkillText(horizon7.brier_skill)
+    },
+    {
+      label: "Stabiliteit",
+      value: fmtScore100(components.stability),
+      text: "Meet of de uitkomst niet te afhankelijk is van kleine dataverschillen.",
+      interpretation: highIsBetter(components.stability)
+    },
+    {
+      label: "Analogie-overeenkomst",
+      value: fmtScore100(components.analog_similarity),
+      text: "Meet hoe sterk vandaag lijkt op de gekozen historische vergelijkingsdagen.",
+      interpretation: highIsBetter(components.analog_similarity)
+    }
+  ];
+  document.getElementById("evidence-kpis").replaceChildren(...cards.map(explainerCard));
+}
+
+function renderEvidenceBlocks(dashboard) {
+  const cards = (dashboard.scores.block_details || []).map((item) => {
+    const card = document.createElement("article");
+    card.className = "evidence-block";
+    const head = document.createElement("div");
+    head.className = "evidence-block-head";
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const score = document.createElement("span");
+    score.textContent = fmtScore100(item.score);
+    head.append(title, score);
+    const meta = document.createElement("div");
+    meta.className = "metric-row";
+    [
+      ["Weging", fmtWeight(item.weight)],
+      ["Status", item.status],
+      ["Schaal", item.score_label]
+    ].forEach(([label, value]) => {
+      const chip = document.createElement("span");
+      chip.className = "metric";
+      chip.textContent = `${label}: ${value}`;
+      meta.append(chip);
+    });
+    const summary = document.createElement("p");
+    summary.textContent = item.summary;
+    const list = document.createElement("ul");
+    list.className = "clean compact";
+    (item.drivers || []).slice(0, 3).forEach((driver) => {
+      const li = document.createElement("li");
+      li.textContent = driver;
+      list.append(li);
+    });
+    card.append(head, meta, summary, list);
+    return card;
+  });
+  document.getElementById("evidence-blocks").replaceChildren(...cards);
+}
+
+function renderBacktest(backtest) {
+  const entries = Object.entries(backtest.horizons || {});
+  const cards = entries.map(([horizon, row]) => explainerCard({
+    label: `${horizon} horizon`,
+    value: `${row.prediction_count || 0} runs`,
+    text: `Richting: ${formatPctLike(row.directional_accuracy)}. Brier skill: ${formatDecimal(row.brier_skill)}.`,
+    interpretation: backtestInterpretation(row)
+  }));
+  document.getElementById("backtest-cards").replaceChildren(...cards);
+  const bRows = entries.map(([h, row]) => [
+    h,
+    row.prediction_count || 0,
+    formatPctLike(row.directional_accuracy),
+    formatDecimal(row.brier_score),
+    formatDecimal(row.brier_skill),
+    formatDecimal(row.calibration_error)
+  ]);
+  document.getElementById("backtest-table").replaceChildren(table([
+    "Horizon",
+    "Voorspellingen",
+    "Richting",
+    "Brier",
+    "Brier skill",
+    "Kalibratiefout"
+  ], bRows));
+  const skill7 = backtest.horizons?.["7d"]?.brier_skill;
+  document.getElementById("edge-warning").textContent = skill7 > 0
+    ? "De 7-daagse backtest laat lichte meerwaarde zien, maar de steekproef blijft beperkt."
+    : "De 7-daagse backtest toont nog geen overtuigende meerwaarde boven een simpele basislijn.";
+}
+
+function renderLedger(ledger) {
+  const target = document.getElementById("ledger-summary");
+  const predictions = ledger.predictions?.length || 0;
+  const outcomes = ledger.outcomes?.length || 0;
+  target.replaceChildren(
+    explainerCard({
+      label: "Voorspellingen",
+      value: String(predictions),
+      text: "Aantal officiële signalen dat in het append-only logboek is vastgelegd.",
+      interpretation: predictions ? "Er is een controleerbaar spoor." : "Nog geen signalen vastgelegd."
+    }),
+    explainerCard({
+      label: "Uitkomsten",
+      value: String(outcomes),
+      text: "Aantal voorspellingen waarvan de latere uitkomst al gemeten is.",
+      interpretation: outcomes ? "Er is al feedback op eerdere signalen." : "Nog te vroeg voor outcome-meting."
+    })
+  );
+}
+
+function renderMethodSteps() {
+  const steps = [
+    ["1. Data ophalen", "Dagprijzen, DeFi-data, kapitaalstromen en actuele netwerkcontext worden opgehaald."],
+    ["2. Normaliseren", "Elke indicator wordt omgerekend naar een score van 0 tot 100 ten opzichte van de eigen historie."],
+    ["3. Vergelijken", "Vandaag wordt vergeleken met eerdere dagen die statistisch vergelijkbaar waren."],
+    ["4. Controleren", "De methode wordt walk-forward getest, zodat toekomstige informatie buiten beeld blijft."]
+  ];
+  document.getElementById("method-steps").replaceChildren(...steps.map(([title, text]) => {
+    const item = document.createElement("article");
+    item.className = "method-step";
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    const p = document.createElement("p");
+    p.textContent = text;
+    item.append(strong, p);
+    return item;
+  }));
+}
+
+function renderTermExplainers() {
+  const terms = [
+    {
+      label: "Out-of-sample kwaliteit",
+      value: "Controle buiten trainingsdata",
+      text: "De methode wordt beoordeeld op latere data die niet gebruikt is om het signaal te bepalen.",
+      interpretation: "Hoger is beter; laag betekent dat het signaal historisch nog kwetsbaar is."
+    },
+    {
+      label: "Brier skill",
+      value: "Meerwaarde t.o.v. basislijn",
+      text: "Vergelijkt de fout van dit model met een simpele referentie zoals historische frequentie.",
+      interpretation: "Boven 0 is beter dan de basislijn; onder 0 is slechter."
+    },
+    {
+      label: "Kalibratiefout",
+      value: "Betrouwbaarheid van kansen",
+      text: "Meet of uitspraken over waarschijnlijkheid passen bij wat later werkelijk gebeurde.",
+      interpretation: "Lager is beter; hoog betekent dat kansen te zeker of te voorzichtig kunnen zijn."
+    },
+    {
+      label: "Caps",
+      value: "Voorzichtigheidsregels",
+      text: "Beperkingen die voorkomen dat een score te stellig wordt bij weinig bewijs.",
+      interpretation: "Caps maken de conclusie conservatiever en transparanter."
+    }
+  ];
+  document.getElementById("term-explainer").replaceChildren(...terms.map(explainerCard));
+}
+
 function renderIndicatorTab(targetId, tab) {
   const target = document.getElementById(targetId);
   if (!target || !tab) return;
@@ -268,6 +470,72 @@ function formatTrendValue(value, unit) {
   return Math.abs(number) >= 10 ? number.toFixed(1) : number.toFixed(2);
 }
 
+function labeledValue(label, value) {
+  const div = document.createElement("div");
+  const span = document.createElement("span");
+  span.textContent = label;
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  div.append(span, strong);
+  return div;
+}
+
+function explainerCard(item) {
+  const card = document.createElement("article");
+  card.className = "explainer-card";
+  const span = document.createElement("span");
+  span.textContent = item.label;
+  const strong = document.createElement("strong");
+  strong.textContent = item.value;
+  const p = document.createElement("p");
+  p.textContent = item.text;
+  const small = document.createElement("small");
+  small.textContent = item.interpretation;
+  card.append(span, strong, p, small);
+  return card;
+}
+
+function evidenceSummaryText(dashboard, backtest) {
+  const count = dashboard.analog_summary?.count || 0;
+  const skill7 = backtest.horizons?.["7d"]?.brier_skill;
+  const skillText = skill7 > 0 ? "lichte historische meerwaarde" : "nog beperkte meerwaarde";
+  return `De bewijskwaliteit is ${fmtScore100(dashboard.scores.evidence_quality)}. De huidige conclusie steunt op ${count} vergelijkbare historische dagen en een backtest met ${skillText}.`;
+}
+
+function highIsBetter(value) {
+  if (value === null || value === undefined) return "Nog niet berekend.";
+  if (value >= 75) return "Sterk: deze controle ondersteunt het signaal.";
+  if (value >= 55) return "Redelijk: bruikbaar, maar niet doorslaggevend.";
+  return "Beperkt: interpreteer het signaal voorzichtig.";
+}
+
+function brierSkillText(value) {
+  if (value === null || value === undefined) return "Nog niet berekend.";
+  if (value > 0.05) return "Positief: duidelijk beter dan de basislijn.";
+  if (value > 0) return "Licht positief: iets beter dan de basislijn.";
+  return "Zwak: niet beter dan de basislijn.";
+}
+
+function backtestInterpretation(row) {
+  const skill = row.brier_skill;
+  const accuracy = row.directional_accuracy;
+  if ((skill || 0) > 0 && (accuracy || 0) > 0.5) {
+    return "Deze horizon draagt voorzichtig positief bewijs bij.";
+  }
+  if ((skill || 0) > 0) return "De foutscore is licht positief, maar richting blijft gemengd.";
+  return "Deze horizon bewijst nog weinig voorspellende meerwaarde.";
+}
+
+function formatDecimal(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  return Number(value).toFixed(3);
+}
+
+function formatPctLike(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  return `${(Number(value) * 100).toFixed(1)}%`;
+}
+
 function table(headers, rows) {
   const t = document.createElement("table");
   const thead = document.createElement("thead");
@@ -333,26 +601,7 @@ async function main() {
     return li;
   }));
   window.renderGlossary(glossary);
-  document.getElementById("evidence-route").append(table(["Onderdeel", "Waarde"], [
-    ["Eindscore", fmtScore100(dashboard.scores.market_signal)],
-    ["Scoreduiding", dashboard.scores.method_note],
-    ["Datakwaliteit", dashboard.scores.evidence_components.data_quality],
-    ["Steekproefomvang", dashboard.scores.evidence_components.sample_adequacy],
-    ["Out-of-sample kwaliteit", dashboard.scores.evidence_components.out_of_sample_quality],
-    ["Stabiliteit", dashboard.scores.evidence_components.stability],
-    ["Analogie-overeenkomst", dashboard.scores.evidence_components.analog_similarity],
-    ["Toegepaste caps", dashboard.scores.quality_caps.join("; ") || "Geen"]
-  ]));
-  const blockHeading = document.createElement("h3");
-  blockHeading.textContent = "Scoreblokken";
-  document.getElementById("evidence-route").append(blockHeading, renderBlockEvidence(dashboard));
-  const bRows = Object.entries(backtest.horizons).map(([h, row]) => [
-    h, row.prediction_count || 0, row.directional_accuracy ?? "n.v.t.", row.brier_score ?? "n.v.t.", row.brier_skill ?? "n.v.t.", row.calibration_error ?? "n.v.t."
-  ]);
-  document.getElementById("backtest-table").append(table(["Horizon", "Voorspellingen", "Richting", "Brier", "Brier skill", "Kalibratiefout"], bRows));
-  const skill7 = backtest.horizons["7d"]?.brier_skill;
-  document.getElementById("edge-warning").textContent = skill7 > 0 ? "De huidige backtest laat enige voorspellende meerwaarde zien." : "In de huidige backtest is nog geen overtuigende voorspellende meerwaarde aangetoond.";
-  document.getElementById("ledger-table").append(table(["Voorspellingen", "Outcomes"], [[ledger.predictions.length, ledger.outcomes.length]]));
+  renderEvidencePage(dashboard, backtest, ledger);
 }
 
 main().catch((error) => {

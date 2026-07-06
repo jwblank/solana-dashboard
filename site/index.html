@@ -83,23 +83,70 @@
       </section>
 
       <section id="evidence" class="panel">
-        <h2>Bewijsroute</h2>
-        <div id="evidence-route" class="table-wrap"></div>
-        <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
-        <h2>Backtest</h2>
-        <p id="edge-warning" class="notice"></p>
-        <div id="backtest-table" class="table-wrap"></div>
-        <h2>Open logboek</h2>
-        <div id="ledger-table" class="table-wrap"></div>
-        <h2>Zo werkt het</h2>
-        <div class="method-copy">
-          <p>Dit dashboard vergelijkt SOL met eerdere marktdagen die statistisch op vandaag lijken. Het gebruikt prijssterkte, netwerkgebruik, kapitaalstromen en ecosysteembreedte. De methode wordt walk-forward getest, zodat toekomstige informatie buiten beeld blijft.</p>
-          <p>Prijssterkte, DeFi-gebruik en kapitaalstromen zijn historisch getoetst. Actuele Solana RPC-context en ecosysteembreedte wegen beperkt mee en worden zichtbaar als experimenteel gemarkeerd.</p>
-          <p>Een hoge eindscore betekent niet automatisch sterk bewijs. Daarom staan marktsignaal en bewijskwaliteit altijd los van elkaar.</p>
-          <p>SOL Reality Check is een educatief en analytisch dataproduct. Het geeft geen financieel advies en doet geen garantie over toekomstige rendementen.</p>
+        <div class="evidence-page">
+          <section class="evidence-hero">
+            <div>
+              <p class="eyebrow">Methodiek & bewijs</p>
+              <h2>Hoe sterk is dit signaal?</h2>
+              <p id="evidence-summary" class="plain"></p>
+            </div>
+            <div id="evidence-scorecard" class="evidence-scorecard"></div>
+          </section>
+
+          <section class="evidence-section">
+            <div class="section-head">
+              <div>
+                <h3>Bewijs in het kort</h3>
+                <p class="plain">De belangrijkste kwaliteitscontroles achter de eindscore.</p>
+              </div>
+            </div>
+            <div id="evidence-kpis" class="evidence-kpis"></div>
+          </section>
+
+          <section class="evidence-section">
+            <div class="section-head">
+              <div>
+                <h3>Indicatorbijdrage</h3>
+                <p class="plain">Welke blokken dragen bij aan het marktsignaal, en hoe zwaar tellen ze mee?</p>
+              </div>
+            </div>
+            <div id="evidence-blocks" class="evidence-block-grid"></div>
+          </section>
+
+          <section class="evidence-section">
+            <div class="section-head">
+              <div>
+                <h3>Backtest</h3>
+                <p id="edge-warning" class="plain"></p>
+              </div>
+            </div>
+            <div id="backtest-cards" class="backtest-grid"></div>
+            <div id="backtest-table" class="table-wrap compact-table"></div>
+          </section>
+
+          <section class="evidence-section evidence-two-col">
+            <div>
+              <h3>Open logboek</h3>
+              <div id="ledger-summary" class="ledger-summary"></div>
+            </div>
+            <div>
+              <h3>Zo werkt het</h3>
+              <div id="method-steps" class="method-steps"></div>
+            </div>
+          </section>
+
+          <section class="evidence-section">
+            <div class="section-head">
+              <div>
+                <h3>Begrippen</h3>
+                <p class="plain">Korte uitleg bij statistische termen en dashboardbegrippen.</p>
+              </div>
+              <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
+            </div>
+            <div id="term-explainer" class="term-grid"></div>
+            <div id="glossary" class="glossary-grid"></div>
+          </section>
         </div>
-        <h3>Woordenlijst</h3>
-        <div id="glossary"></div>
       </section>
     </main>
   </body>
