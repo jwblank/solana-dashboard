@@ -44,6 +44,7 @@
             <p class="eyebrow">Actuele conclusie</p>
             <h2 id="regime">...</h2>
             <p id="conclusion-text"></p>
+            <p id="interpretation-note" class="plain"></p>
           </div>
           <div class="score-pair">
             <div><span>Marktsignaal</span><strong id="market-score">...</strong><small id="market-label"></small></div>
@@ -55,7 +56,10 @@
         <section class="wide">
           <h3>Historische vergelijkingen</h3>
           <p id="analog-summary"></p>
-          <canvas id="analog-chart" height="120" aria-label="Verdeling van analoge uitkomsten"></canvas>
+          <div id="analog-stats" class="stat-row"></div>
+          <div class="chart-frame">
+            <canvas id="analog-chart" aria-label="Verdeling van analoge uitkomsten"></canvas>
+          </div>
           <ul id="change-list" class="clean"></ul>
         </section>
         <section class="wide" id="my-sol">

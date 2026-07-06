@@ -40,8 +40,32 @@ function renderCards(data) {
     status.textContent = item.status;
     const p = document.createElement("p");
     p.textContent = item.summary;
-    card.append(span, strong, weight, status, p);
+    const note = document.createElement("small");
+    note.textContent = item.score_note;
+    const metrics = document.createElement("div");
+    metrics.className = "metric-row";
+    (item.metrics || []).forEach((m) => {
+      const chip = document.createElement("span");
+      chip.className = "metric";
+      chip.textContent = `${m.label}: ${m.value}`;
+      metrics.append(chip);
+    });
+    card.append(span, strong, weight, status, p, metrics, note);
     return card;
+  }));
+}
+
+function renderStats(targetId, stats) {
+  const target = document.getElementById(targetId);
+  target.replaceChildren(...(stats || []).map((item) => {
+    const div = document.createElement("div");
+    div.className = "stat";
+    const span = document.createElement("span");
+    span.textContent = item.label;
+    const strong = document.createElement("strong");
+    strong.textContent = item.value;
+    div.append(span, strong);
+    return div;
   }));
 }
 
@@ -99,15 +123,16 @@ async function main() {
   setText("updated-at", dashboard.generated_at_utc);
   setText("data-cutoff", dashboard.data_cutoff_utc);
   setText("method-version", dashboard.method_version);
-  setText("regime", dashboard.summary.regime.replaceAll("_", " "));
+  setText("regime", dashboard.summary.regime_title || dashboard.summary.regime.replaceAll("_", " "));
   setText("conclusion-text", dashboard.summary.conclusion);
+  setText("interpretation-note", dashboard.summary.interpretation_note || "");
   setText("market-score", fmtScore(dashboard.scores.market_signal));
   setText("market-label", dashboard.summary.market_signal_label);
   setText("evidence-score", fmtScore(dashboard.scores.evidence_quality));
   setText("evidence-label", dashboard.summary.evidence_label);
   renderCards(dashboard);
-  const a = dashboard.analog_summary;
-  setText("analog-summary", `${dashboard.summary.language_label}: ${fmtPct(a.positive_frequency)} positief na ${a.horizon_days} dagen (${a.count} vergelijkbare situaties). Mediaan: ${fmtPct(a.median_return)}. Midden 80%: ${fmtPct(a.p10)} tot ${fmtPct(a.p90)}.`);
+  setText("analog-summary", dashboard.historical_context?.summary || "");
+  renderStats("analog-stats", dashboard.historical_context?.stats || []);
   document.getElementById("change-list").replaceChildren(...dashboard.summary.what_would_change.map((item) => {
     const li = document.createElement("li");
     li.textContent = item;

@@ -196,6 +196,8 @@ def build_outputs(mode: str) -> dict[str, Any]:
     language_label = (
         "Gekalibreerde historische schatting" if probability_allowed else "Historische frequentie"
     )
+    interpretation = interpret_market(reg, blocks, market_signal, quality["score"], analog_stats)
+    historical_context = build_historical_context(analog_stats, language_label)
     dashboard = {
         "schema_version": "1.0",
         "generated_at_utc": generated,
@@ -209,11 +211,13 @@ def build_outputs(mode: str) -> dict[str, Any]:
             "title": "SOL Reality Check",
             "subtitle": cfg["project"]["subtitle"],
             "regime": reg,
+            "regime_title": interpretation["title"],
             "regime_text": reg_text,
             "market_signal_label": score_label(market_signal),
             "evidence_label": quality["label"],
             "language_label": language_label,
-            "conclusion": deterministic_conclusion(reg, market_signal, quality["score"]),
+            "conclusion": interpretation["body"],
+            "interpretation_note": interpretation["note"],
             "what_would_change": what_would_change(blocks),
         },
         "scores": {
@@ -230,6 +234,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
                 rpc_summary,
                 breadth_summary,
                 breadth_drivers,
+                latest,
             ),
             "missing_blocks": missing_blocks,
             "evidence_components": quality["components"],
@@ -257,6 +262,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
             "network_context_score": rpc_score,
         },
         "analog_summary": analog_stats,
+        "historical_context": historical_context,
         "source_status": source_status["sources"],
     }
     write_all_json(
@@ -450,6 +456,7 @@ def block_details(
     rpc_summary: str,
     breadth_summary: str,
     breadth_drivers: list[str],
+    latest: pd.Series,
 ) -> list[dict[str, Any]]:
     return [
         {
@@ -457,12 +464,20 @@ def block_details(
             "title": "Prijssterkte",
             "weight": weights["price_strength"],
             "score": blocks.get("price_strength"),
+            "score_label": score_band(blocks.get("price_strength")),
+            "score_note": score_note(blocks.get("price_strength")),
             "status": "Historisch gevalideerd",
-            "summary": "Meet of SOL sterker beweegt dan zijn eigen trend en dan BTC.",
+            "summary": block_summary("price_strength", blocks.get("price_strength")),
             "drivers": [
-                "7d en 30d SOL-rendement.",
-                "Relatieve sterkte tegenover BTC.",
-                "Afstand tot de 50-daagse trend.",
+                f"SOL 7d: {pct_text(latest.get('sol_return_7d'))}.",
+                f"SOL 30d: {pct_text(latest.get('sol_return_30d'))}.",
+                f"Relatieve sterkte vs BTC 7d: {pct_text(latest.get('relative_strength_btc_7d'))}.",
+                f"Afstand tot 50-daagse trend: {pct_text(latest.get('price_vs_sma50'))}.",
+            ],
+            "metrics": [
+                metric("SOL 7d", pct_text(latest.get("sol_return_7d"))),
+                metric("SOL 30d", pct_text(latest.get("sol_return_30d"))),
+                metric("vs BTC 7d", pct_text(latest.get("relative_strength_btc_7d"))),
             ],
         },
         {
@@ -470,13 +485,21 @@ def block_details(
             "title": "Netwerkgebruik",
             "weight": weights["network_usage"],
             "score": blocks.get("network_usage"),
+            "score_label": score_band(blocks.get("network_usage")),
+            "score_note": score_note(blocks.get("network_usage")),
             "status": "Grotendeels gevalideerd",
-            "summary": "Combineert DeFi-gebruik met een kleine actuele Solana RPC-check.",
+            "summary": block_summary("network_usage", blocks.get("network_usage")),
             "drivers": [
+                f"DEX-volume 7d/30d: {ratio_text(latest.get('dex_volume_ratio_7d_30d'))}.",
+                f"Fees 7d/30d: {ratio_text(latest.get('fees_ratio_7d_30d'))}.",
                 f"Gevalideerde DeFi/fee-score: {score_text(base_network_usage)}.",
                 f"Actuele RPC-score: {score_text(rpc_score)}.",
                 rpc_summary,
-                f"Niet-stem TPS: {rpc_metrics.get('non_vote_tps', 'n.v.t.')}.",
+            ],
+            "metrics": [
+                metric("DEX 7d/30d", ratio_text(latest.get("dex_volume_ratio_7d_30d"))),
+                metric("Fees 7d/30d", ratio_text(latest.get("fees_ratio_7d_30d"))),
+                metric("Niet-stem TPS", number_text(rpc_metrics.get("non_vote_tps"))),
             ],
         },
         {
@@ -484,11 +507,19 @@ def block_details(
             "title": "Kapitaal",
             "weight": weights["capital"],
             "score": blocks.get("capital"),
+            "score_label": score_band(blocks.get("capital")),
+            "score_note": score_note(blocks.get("capital")),
             "status": "Historisch gevalideerd",
-            "summary": "Meet of kapitaal naar Solana stroomt of juist wegtrekt.",
+            "summary": block_summary("capital", blocks.get("capital")),
             "drivers": [
-                "30d verandering in stablecoinvoorraad.",
-                "30d verandering in total value locked.",
+                f"Stablecoinvoorraad 30d: {pct_text(latest.get('stablecoin_change_30d'))}.",
+                f"TVL 30d: {pct_text(latest.get('tvl_change_30d'))}.",
+                capital_scale_note(blocks.get("capital")),
+            ],
+            "metrics": [
+                metric("Stablecoins 30d", pct_text(latest.get("stablecoin_change_30d"))),
+                metric("TVL 30d", pct_text(latest.get("tvl_change_30d"))),
+                metric("Schaal", "max" if is_capped(blocks.get("capital")) else "relatief"),
             ],
         },
         {
@@ -496,9 +527,12 @@ def block_details(
             "title": "Ecosysteembreedte",
             "weight": weights["ecosystem_breadth"],
             "score": blocks.get("ecosystem_breadth"),
+            "score_label": score_band(blocks.get("ecosystem_breadth")),
+            "score_note": score_note(blocks.get("ecosystem_breadth")),
             "status": "Experimenteel, beperkt meegewogen",
             "summary": breadth_summary,
             "drivers": breadth_drivers,
+            "metrics": [],
         },
     ]
 
@@ -544,6 +578,177 @@ def pct_text(value: float | None) -> str:
 
 def score_text(value: float | None) -> str:
     return "n.v.t." if value is None or pd.isna(value) else f"{float(value):.0f}/100"
+
+
+def score_band(value: float | None) -> str:
+    if value is None or pd.isna(value):
+        return "niet berekend"
+    score = float(value)
+    if score >= 99.5:
+        return "extreem sterk, afgekapt"
+    if score >= 85:
+        return "zeer sterk"
+    if score >= 66:
+        return "sterk"
+    if score >= 56:
+        return "positief"
+    if score >= 45:
+        return "neutraal"
+    if score >= 35:
+        return "zwak"
+    return "zeer zwak"
+
+
+def score_note(value: float | None) -> str:
+    if value is None or pd.isna(value):
+        return "Geen bruikbare score bij deze update."
+    if is_capped(value):
+        return "Afgekapt op 100: extreem op historische schaal, geen zekerheid."
+    return "Score is relatief ten opzichte van de eigen historie."
+
+
+def is_capped(value: float | None) -> bool:
+    return value is not None and not pd.isna(value) and float(value) >= 99.5
+
+
+def block_summary(key: str, value: float | None) -> str:
+    if value is None or pd.isna(value):
+        return "Niet beschikbaar bij deze update."
+    score = float(value)
+    if key == "price_strength":
+        if score >= 66:
+            return "SOL toont duidelijke koerskracht, ook relatief tegen de markt."
+        if score >= 45:
+            return "Prijssterkte is gemengd: nog geen overtuigende koersbevestiging."
+        return "SOL blijft qua koers achter; prijs bevestigt de onderliggende data nog niet."
+    if key == "network_usage":
+        if score >= 66:
+            return "Gebruik op en rond Solana ligt ruim boven normaal."
+        if score >= 45:
+            return "Netwerkgebruik is rond normaal tot licht positief."
+        return "Netwerkgebruik geeft nog weinig bevestiging."
+    if key == "capital":
+        if is_capped(value):
+            return "Kapitaalstromen staan extreem hoog op de historische schaal."
+        if score >= 66:
+            return "Kapitaalstromen naar Solana zijn sterk."
+        if score >= 45:
+            return "Kapitaalstromen zijn neutraal tot gemengd."
+        return "Kapitaalstromen zijn zwak ten opzichte van de eigen historie."
+    return "Score op basis van beschikbare indicatoren."
+
+
+def capital_scale_note(value: float | None) -> str:
+    if is_capped(value):
+        return "Een score van 100 betekent: afgekapt op het maximum, niet 100% zekerheid."
+    return "Score is een relatieve positie op de historische schaal."
+
+
+def metric(label: str, value: str) -> dict[str, str]:
+    return {"label": label, "value": value}
+
+
+def ratio_text(value: float | None) -> str:
+    if value is None or pd.isna(value):
+        return "n.v.t."
+    return f"{float(value):.2f}x"
+
+
+def number_text(value: float | int | None) -> str:
+    if value is None or pd.isna(value):
+        return "n.v.t."
+    return f"{float(value):,.1f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def build_historical_context(analog_stats: dict[str, Any], language_label: str) -> dict[str, Any]:
+    positive = analog_stats.get("positive_frequency")
+    median = analog_stats.get("median_return")
+    p10 = analog_stats.get("p10")
+    p90 = analog_stats.get("p90")
+    horizon = analog_stats.get("horizon_days")
+    count = analog_stats.get("count")
+    return {
+        "title": "Historische vergelijkingen",
+        "summary": (
+            f"{language_label}: {pct_text(positive)} positief na {horizon} dagen. "
+            f"Mediaan {pct_text(median)}; midden 80% liep van {pct_text(p10)} tot {pct_text(p90)}."
+        ),
+        "stats": [
+            metric("Vergelijkbare dagen", str(count)),
+            metric("Positief", pct_text(positive)),
+            metric("Mediaan", pct_text(median)),
+            metric("Midden 80%", f"{pct_text(p10)} tot {pct_text(p90)}"),
+        ],
+    }
+
+
+def interpret_market(
+    reg: str,
+    blocks: dict[str, float | None],
+    signal: float | None,
+    quality: float,
+    analog_stats: dict[str, Any],
+) -> dict[str, str]:
+    positive_frequency = analog_stats.get("positive_frequency")
+    signal_text = score_text(signal)
+    evidence_text = score_text(quality)
+    if signal is None:
+        return {
+            "title": "Onvoldoende actuele data",
+            "body": "Er is onvoldoende actuele kerninformatie voor een betrouwbare conclusie.",
+            "note": "Wacht op een volledige data-update voordat je dit interpreteert.",
+        }
+
+    price = blocks.get("price_strength") or 0
+    network = blocks.get("network_usage") or 0
+    capital = blocks.get("capital") or 0
+    history_is_mixed = positive_frequency is not None and positive_frequency < 0.5
+    weak_evidence = quality < 60
+
+    if reg == "building_under_surface":
+        title = "Onderliggende kracht bouwt op"
+        body = (
+            "Netwerkgebruik en kapitaalstromen zijn sterk, terwijl prijssterkte nog "
+            "achterblijft. Dat wijst op verbetering onder de oppervlakte, niet op een "
+            "volledig bevestigde trend."
+        )
+    elif reg == "confirmed_trend":
+        title = "Trend wordt breed bevestigd"
+        body = (
+            "Prijssterkte, netwerkgebruik en kapitaal wijzen dezelfde kant op. Dit is "
+            "het meest overtuigende type positief signaal binnen deze methode."
+        )
+    elif reg == "fragile_rally":
+        title = "Prijs loopt vooruit op bevestiging"
+        body = (
+            "De koers oogt sterk, maar netwerkgebruik en kapitaal bevestigen die beweging "
+            "nog onvoldoende. Dat maakt het signaal kwetsbaarder."
+        )
+    elif reg == "risk_regime":
+        title = "Zwak marktbeeld"
+        body = (
+            "Prijssterkte en onderliggende bevestiging zijn zwak. De methode vraagt hier "
+            "om terughoudendheid."
+        )
+    else:
+        title = "Gemengd marktbeeld"
+        body = (
+            "De blokken geven geen eenduidige richting. Dit vraagt om terughoudende "
+            "interpretatie."
+        )
+
+    note_parts = [f"Eindscore {signal_text}; bewijskwaliteit {evidence_text}."]
+    if history_is_mixed:
+        note_parts.append(
+            f"Historische analogieën zijn gemengd: {pct_text(positive_frequency)} was positief."
+        )
+    if weak_evidence:
+        note_parts.append("De bewijskwaliteit is beperkt, dus de conclusie is geen hard signaal.")
+    if capital >= 99.5:
+        note_parts.append("Kapitaal staat op 100 omdat de score op het maximum is afgekapt.")
+    if price < 55 and (network >= 70 or capital >= 70):
+        note_parts.append("De kernspanning: onderliggende data is sterker dan de koers.")
+    return {"title": title, "body": body, "note": " ".join(note_parts)}
 
 
 def deterministic_conclusion(reg: str, signal: float | None, quality: float) -> str:
