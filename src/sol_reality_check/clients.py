@@ -12,6 +12,8 @@ import requests
 
 LOGGER = logging.getLogger(__name__)
 MAX_DAILY_PRICE_CHANGE = 0.40
+CCXT_TIMEFRAME = "1d"
+CCXT_LIMIT = 1000
 
 
 class ApiError(RuntimeError):
@@ -83,11 +85,161 @@ def fetch_coinbase_daily(product_id: str, start: datetime, end: datetime) -> pd.
     return frame[["date", "asset", "open", "high", "low", "close", "volume"]]
 
 
+def fetch_ccxt_consensus_daily(
+    asset: str,
+    exchange_configs: list[dict[str, Any]],
+    start: datetime,
+    end: datetime,
+    min_sources: int = 2,
+    max_deviation_pct: float = 5.0,
+) -> pd.DataFrame:
+    frames: list[pd.DataFrame] = []
+    statuses: list[dict[str, Any]] = []
+    symbol_key = f"{asset.lower()}_symbol"
+    for config in exchange_configs:
+        exchange_id = str(config["id"])
+        symbol = str(config.get(symbol_key) or "")
+        if not symbol:
+            statuses.append(ccxt_status(exchange_id, symbol, False, "Symbol ontbreekt.", 0))
+            continue
+        try:
+            frame = fetch_ccxt_exchange_daily(exchange_id, symbol, start, end)
+            frames.append(frame)
+            statuses.append(ccxt_status(exchange_id, symbol, True, "", len(frame)))
+        except Exception as exc:  # pragma: no cover - exchange/network dependent
+            statuses.append(ccxt_status(exchange_id, symbol, False, str(exc), 0))
+    available = [status for status in statuses if status["available"]]
+    if len(available) < min_sources:
+        raise ApiError(f"CCXT consensus for {asset} has only {len(available)} sources")
+    consensus = build_price_consensus(
+        frames,
+        asset=asset,
+        min_sources=min_sources,
+        max_deviation_pct=max_deviation_pct,
+    )
+    if consensus.empty:
+        raise ApiError(f"CCXT consensus for {asset} returned no usable rows")
+    consensus.attrs["ccxt_status"] = {
+        "asset": asset.upper(),
+        "available": True,
+        "min_sources": min_sources,
+        "max_deviation_pct": max_deviation_pct,
+        "sources": statuses,
+        "rows": len(consensus),
+        "outlier_count": int(consensus["outlier_count"].sum()),
+        "min_source_count": int(consensus["source_count"].min()),
+        "max_source_count": int(consensus["source_count"].max()),
+    }
+    return consensus
+
+
+def fetch_ccxt_exchange_daily(
+    exchange_id: str,
+    symbol: str,
+    start: datetime,
+    end: datetime,
+) -> pd.DataFrame:
+    try:
+        import ccxt
+    except ImportError as exc:  # pragma: no cover - depends on installed env
+        raise ApiError("ccxt is not installed") from exc
+    exchange_class = getattr(ccxt, exchange_id)
+    exchange = exchange_class({"enableRateLimit": True})
+    if not getattr(exchange, "has", {}).get("fetchOHLCV"):
+        raise ApiError(f"{exchange_id} does not support fetchOHLCV")
+    rows: list[list[float]] = []
+    cursor = int(start.astimezone(UTC).timestamp() * 1000)
+    end_ms = int(end.astimezone(UTC).timestamp() * 1000)
+    while cursor < end_ms:
+        payload = exchange.fetch_ohlcv(symbol, CCXT_TIMEFRAME, since=cursor, limit=CCXT_LIMIT)
+        if not payload:
+            break
+        rows.extend(payload)
+        last_ts = int(payload[-1][0])
+        next_cursor = last_ts + 86_400_000
+        if next_cursor <= cursor:
+            break
+        cursor = next_cursor
+        if len(payload) < CCXT_LIMIT:
+            break
+    frame = pd.DataFrame(rows, columns=["timestamp", "open", "high", "low", "close", "volume"])
+    if frame.empty:
+        raise ApiError(f"No CCXT data for {exchange_id} {symbol}")
+    frame["date"] = pd.to_datetime(frame["timestamp"], unit="ms", utc=True).dt.date.astype(str)
+    start_date = pd.Timestamp(start).date().isoformat()
+    end_date = pd.Timestamp(end).date().isoformat()
+    frame = frame[(frame["date"] >= start_date) & (frame["date"] < end_date)]
+    frame = frame.drop_duplicates("date", keep="last").sort_values("date")
+    frame["exchange"] = exchange_id
+    frame["symbol"] = symbol
+    frame["close"] = pd.to_numeric(frame["close"], errors="coerce")
+    frame["volume"] = pd.to_numeric(frame["volume"], errors="coerce")
+    frame = frame.dropna(subset=["close"])
+    if frame.empty:
+        raise ApiError(f"No usable CCXT close data for {exchange_id} {symbol}")
+    return frame[["date", "exchange", "symbol", "close", "volume"]]
+
+
+def build_price_consensus(
+    frames: list[pd.DataFrame],
+    asset: str,
+    min_sources: int,
+    max_deviation_pct: float,
+) -> pd.DataFrame:
+    if not frames:
+        return pd.DataFrame()
+    raw = pd.concat(frames, ignore_index=True)
+    rows: list[dict[str, Any]] = []
+    max_deviation = max_deviation_pct / 100
+    for date, group in raw.groupby("date"):
+        closes = pd.to_numeric(group["close"], errors="coerce").dropna()
+        if len(closes) < min_sources:
+            continue
+        median = float(closes.median())
+        if median <= 0:
+            continue
+        group = group.assign(deviation=(pd.to_numeric(group["close"]) / median - 1).abs())
+        usable = group[group["deviation"] <= max_deviation]
+        if usable["exchange"].nunique() < min_sources:
+            continue
+        close = float(pd.to_numeric(usable["close"], errors="coerce").median())
+        volume = pd.to_numeric(usable["volume"], errors="coerce").sum(min_count=1)
+        rows.append(
+            {
+                "date": str(date),
+                "asset": asset.upper(),
+                "close": close,
+                "volume": round(float(volume), 8) if not pd.isna(volume) else None,
+                "source_count": int(usable["exchange"].nunique()),
+                "outlier_count": int(len(group) - len(usable)),
+                "sources": ",".join(sorted(usable["exchange"].unique())),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("date") if rows else pd.DataFrame()
+
+
+def ccxt_status(
+    exchange_id: str,
+    symbol: str,
+    available: bool,
+    warning: str,
+    rows: int,
+) -> dict[str, Any]:
+    return {
+        "exchange": exchange_id,
+        "symbol": symbol,
+        "available": available,
+        "warning": warning,
+        "rows": rows,
+    }
+
+
 def repair_daily_price_outliers(
     frame: pd.DataFrame,
     price_columns: list[str],
     label: str,
     threshold: float = MAX_DAILY_PRICE_CHANGE,
+    trusted_dates: set[str] | None = None,
 ) -> pd.DataFrame:
     """Replace implausible daily close jumps with the previous valid price."""
     if frame.empty or "date" not in frame or "close" not in frame:
@@ -97,6 +249,7 @@ def repair_daily_price_outliers(
     close_values = pd.to_numeric(repaired["close"], errors="coerce")
     previous_valid: float | None = None
     for idx, close in close_values.items():
+        date = str(repaired.at[idx, "date"])
         if pd.isna(close) or float(close) <= 0:
             if previous_valid is not None:
                 repairs.append(
@@ -112,6 +265,9 @@ def repair_daily_price_outliers(
                 set_price_columns(repaired, idx, price_columns, previous_valid)
             continue
         current = float(close)
+        if trusted_dates and date in trusted_dates:
+            previous_valid = current
+            continue
         if previous_valid is not None:
             change = current / previous_valid - 1
             if abs(change) > threshold:

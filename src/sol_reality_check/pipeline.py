@@ -20,6 +20,7 @@ from sol_reality_check.analytics import (
 )
 from sol_reality_check.clients import (
     ApiError,
+    fetch_ccxt_consensus_daily,
     fetch_coinbase_daily,
     fetch_coingecko_breadth,
     fetch_coingecko_current,
@@ -73,12 +74,45 @@ def fetch_history_window(
         last_date = pd.to_datetime(existing["date"].max(), utc=True)
         start = max(last_date - pd.Timedelta(days=7), end - pd.Timedelta(days=90))
     start = start or end - pd.Timedelta(days=1400)
-    sol = fetch_coinbase_daily("SOL-USD", start, end).rename(
-        columns={"close": "sol_close", "volume": "sol_volume"}
+    sol = fetch_price_history("sol", "SOL-USD", start, end).rename(
+        columns={
+            "close": "sol_close",
+            "volume": "sol_volume",
+            "source_count": "sol_price_source_count",
+            "outlier_count": "sol_price_outlier_count",
+            "sources": "sol_price_sources",
+        }
     )
-    btc = fetch_coinbase_daily("BTC-USD", start, end).rename(columns={"close": "btc_close"})
+    btc = fetch_price_history("btc", "BTC-USD", start, end).rename(
+        columns={
+            "close": "btc_close",
+            "source_count": "btc_price_source_count",
+            "outlier_count": "btc_price_outlier_count",
+            "sources": "btc_price_sources",
+        }
+    )
+    price_status = {
+        "sol": sol.attrs.get("price_source_status", {}),
+        "btc": btc.attrs.get("price_source_status", {}),
+    }
     defi = fetch_defillama_series()
-    merged = sol[["date", "sol_close", "sol_volume"]].merge(btc[["date", "btc_close"]], on="date")
+    merged = sol[available_columns(sol, [
+        "date",
+        "sol_close",
+        "sol_volume",
+        "sol_price_source_count",
+        "sol_price_outlier_count",
+        "sol_price_sources",
+    ])].merge(
+        btc[available_columns(btc, [
+            "date",
+            "btc_close",
+            "btc_price_source_count",
+            "btc_price_outlier_count",
+            "btc_price_sources",
+        ])],
+        on="date",
+    )
     merged = merged.merge(defi, on="date", how="left")
     for column in ["tvl", "stablecoins", "dex_volume", "fees"]:
         if column not in merged:
@@ -87,22 +121,102 @@ def fetch_history_window(
         merged = pd.concat([existing, merged], ignore_index=True)
         merged = merged.drop_duplicates("date", keep="last")
     merged = merged[merged["date"] < end_date]
-    return repair_history_prices(merged.sort_values("date"))
+    trusted_price_dates = trusted_dates_from_price_sources(sol, btc)
+    merged = repair_history_prices(merged.sort_values("date"), trusted_price_dates)
+    merged.attrs["price_source_status"] = price_status
+    return merged
 
 
-def repair_history_prices(df: pd.DataFrame) -> pd.DataFrame:
+def trusted_dates_from_price_sources(
+    sol: pd.DataFrame,
+    btc: pd.DataFrame,
+) -> dict[str, set[str]]:
+    trusted: dict[str, set[str]] = {}
+    if sol.attrs.get("price_source_status", {}).get("provider") == "CCXT consensus":
+        trusted["sol_close"] = set(sol["date"].astype(str))
+    if btc.attrs.get("price_source_status", {}).get("provider") == "CCXT consensus":
+        trusted["btc_close"] = set(btc["date"].astype(str))
+    return trusted
+
+
+def available_columns(df: pd.DataFrame, columns: list[str]) -> list[str]:
+    return [column for column in columns if column in df]
+
+
+def fetch_price_history(
+    asset: str,
+    coinbase_product_id: str,
+    start: datetime | pd.Timestamp,
+    end: datetime | pd.Timestamp,
+) -> pd.DataFrame:
+    source_cfg = load_yaml("config/sources.yml")
+    ccxt_cfg = source_cfg.get("sources", {}).get("ccxt", {})
+    try:
+        frame = fetch_ccxt_consensus_daily(
+            asset=asset,
+            exchange_configs=ccxt_cfg.get("exchanges", []),
+            start=pd.Timestamp(start).to_pydatetime(),
+            end=pd.Timestamp(end).to_pydatetime(),
+            min_sources=int(ccxt_cfg.get("min_sources", 2)),
+            max_deviation_pct=float(ccxt_cfg.get("max_exchange_deviation_pct", 5.0)),
+        )
+        frame.attrs["price_source_status"] = {
+            "provider": "CCXT consensus",
+            **frame.attrs.get("ccxt_status", {}),
+        }
+        return frame
+    except Exception as exc:  # pragma: no cover - exchange/network dependent
+        frame = fetch_coinbase_daily(
+            coinbase_product_id,
+            pd.Timestamp(start).to_pydatetime(),
+            pd.Timestamp(end).to_pydatetime(),
+        )
+        frame.attrs["price_source_status"] = {
+            "provider": "Coinbase fallback",
+            "asset": asset.upper(),
+            "available": False,
+            "fallback_used": True,
+            "warning": str(exc),
+            "rows": len(frame),
+        }
+        return frame
+
+
+def repair_history_prices(
+    df: pd.DataFrame,
+    trusted_price_dates: dict[str, set[str]] | None = None,
+) -> pd.DataFrame:
     repaired = df.sort_values("date").reset_index(drop=True).copy()
+    trusted_price_dates = trusted_price_dates or trusted_dates_from_history(repaired)
     repairs: list[dict[str, Any]] = []
     for column, label in [("sol_close", "SOL-USD history"), ("btc_close", "BTC-USD history")]:
         if column not in repaired:
             continue
         single = repaired[["date", column]].rename(columns={column: "close"})
-        fixed = repair_daily_price_outliers(single, ["close"], label)
+        fixed = repair_daily_price_outliers(
+            single,
+            ["close"],
+            label,
+            trusted_dates=(trusted_price_dates or {}).get(column),
+        )
         repaired[column] = fixed["close"]
         repairs.extend(fixed.attrs.get("price_repairs", []))
     if repairs:
         repaired.attrs["price_repairs"] = repairs
     return repaired
+
+
+def trusted_dates_from_history(df: pd.DataFrame) -> dict[str, set[str]]:
+    trusted: dict[str, set[str]] = {}
+    for price_column, count_column in [
+        ("sol_close", "sol_price_source_count"),
+        ("btc_close", "btc_price_source_count"),
+    ]:
+        if count_column not in df:
+            continue
+        counts = pd.to_numeric(df[count_column], errors="coerce")
+        trusted[price_column] = set(df.loc[counts >= 2, "date"].astype(str))
+    return trusted
 
 
 def last_completed_utc_day_end() -> datetime:
@@ -172,11 +286,13 @@ def build_outputs(mode: str) -> dict[str, Any]:
     )
     analog_stats = analog_summary(analogs, cfg["project"]["default_horizon_days"])
     price_repairs = df.attrs.get("price_repairs", [])
+    price_source_status = df.attrs.get("price_source_status", {})
     source_status = build_source_status(
         mode,
         generated=iso_z(now),
         latest=latest,
         price_repairs=price_repairs,
+        price_source_status=price_source_status,
     )
     breadth_score, breadth_summary, breadth_drivers = score_ecosystem_breadth(
         source_status["ecosystem_breadth"]
@@ -332,10 +448,14 @@ def build_source_status(
     generated: str,
     latest: pd.Series,
     price_repairs: list[dict[str, Any]] | None = None,
+    price_source_status: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     breadth_notice = (
         "Experimentele indicator — nog onvoldoende historische waarnemingen voor een "
         "betrouwbare backtest."
+    )
+    ccxt_available = bool(price_source_status) and not any(
+        row.get("fallback_used") for row in (price_source_status or {}).values()
     )
     status: dict[str, Any] = {
         "schema_version": "1.0",
@@ -343,8 +463,14 @@ def build_source_status(
         "sources": {
             "coinbase": {
                 "available": True,
-                "role": "historical prices",
+                "role": "fallback historical prices",
                 "validated_signal_source": True,
+            },
+            "ccxt_price_consensus": {
+                "available": ccxt_available,
+                "role": "multi-exchange historical price consensus",
+                "validated_signal_source": True,
+                "context": price_source_status or {},
             },
             "coingecko": {
                 "available": False,
@@ -365,6 +491,7 @@ def build_source_status(
         "warnings": [],
         "price_difference_pct": None,
         "price_repairs": price_repairs or [],
+        "price_source_status": price_source_status or {},
         "ecosystem_breadth": {
             "available": False,
             "historically_validated": False,
@@ -388,6 +515,22 @@ def build_source_status(
             "geldige prijs."
         )
         status["data_quality_score"] -= min(15, 5 * len(price_repairs))
+
+    price_status = price_source_status or {}
+    if price_status:
+        fallback_used = any(row.get("fallback_used") for row in price_status.values())
+        outlier_count = sum(
+            int(row.get("outlier_count") or 0)
+            for row in price_status.values()
+            if isinstance(row, dict)
+        )
+        if fallback_used:
+            status["warnings"].append("CCXT-prijsconsensus viel terug op Coinbase voor een asset.")
+            status["data_quality_score"] -= 8
+        if outlier_count:
+            status["warnings"].append(
+                f"{outlier_count} exchange-candle(s) genegeerd buiten de prijsconsensus."
+            )
 
     try:
         current = fetch_coingecko_current()
@@ -667,7 +810,9 @@ def build_indicator_tabs(
                     "Laat zien of de koers boven of onder de eigen trend ligt.",
                 ),
             ],
-            "sources": source_rows_by_name(source_audit, ["Coinbase", "CoinGecko"]),
+            "sources": source_rows_by_name(
+                source_audit, ["CCXT consensus", "Coinbase fallback", "CoinGecko"]
+            ),
             "trend": {
                 "rows": trend_rows(
                     df,
@@ -1008,6 +1153,7 @@ def build_data_audit(
     warnings = source_status.get("warnings") or []
     price_repairs = source_status.get("price_repairs") or []
     sources = source_status.get("sources", {})
+    price_consensus = sources.get("ccxt_price_consensus", {}).get("context", {})
     return {
         "title": "Datakwaliteit & bronnen",
         "summary": (
@@ -1020,15 +1166,23 @@ def build_data_audit(
             metric("Historie", f"{first_date} t/m {last_date}"),
             metric("Records", str(rows)),
             metric("Prijsreparaties", str(len(price_repairs))),
+            metric("Prijsconsensus", price_consensus_summary(price_consensus)),
             metric("Analoge dagen", str(analog_count or 0)),
             metric("Ecosysteem tokens", str(breadth.get("token_count", "n.v.t."))),
             metric("RPC samples", str(rpc_metrics.get("sample_count", "n.v.t."))),
         ],
         "sources": [
             source_row(
-                "Coinbase",
+                "CCXT consensus",
+                sources.get("ccxt_price_consensus", {}),
+                "Multi-exchange SOL/BTC dagprijs",
+                "Historisch gevalideerd",
+                price_consensus_coverage(price_consensus),
+            ),
+            source_row(
+                "Coinbase fallback",
                 sources.get("coinbase", {}),
-                "SOL/BTC dagprijzen",
+                "Fallback SOL/BTC dagprijzen",
                 "Historisch gevalideerd",
                 f"{rows} dagrecords",
             ),
@@ -1079,6 +1233,34 @@ def source_row(
         or ("Dataset aanwezig" if ok else "n.v.t."),
         "warning": source.get("warning") or source.get("note") or "",
     }
+
+
+def price_consensus_summary(price_status: dict[str, Any]) -> str:
+    if not price_status:
+        return "n.v.t."
+    parts = []
+    for asset, row in price_status.items():
+        if not isinstance(row, dict):
+            continue
+        provider = row.get("provider", "prijsbron")
+        rows = row.get("rows", 0)
+        min_sources = row.get("min_source_count", "n.v.t.")
+        parts.append(f"{str(asset).upper()}: {provider}, {rows} rijen, min {min_sources} bronnen")
+    return "; ".join(parts) if parts else "n.v.t."
+
+
+def price_consensus_coverage(price_status: dict[str, Any]) -> str:
+    if not price_status:
+        return "Niet beschikbaar"
+    total_rows = sum(
+        int(row.get("rows") or 0) for row in price_status.values() if isinstance(row, dict)
+    )
+    outliers = sum(
+        int(row.get("outlier_count") or 0)
+        for row in price_status.values()
+        if isinstance(row, dict)
+    )
+    return f"{total_rows} consensusrijen; {outliers} genegeerde exchange-candles"
 
 
 def count_present_rows(df: pd.DataFrame, columns: list[str]) -> int:

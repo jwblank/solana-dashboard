@@ -1,4 +1,21 @@
 sources:
+  ccxt:
+    publication_lag_days: 0
+    min_sources: 2
+    max_exchange_deviation_pct: 5.0
+    exchanges:
+      - id: kraken
+        sol_symbol: "SOL/USD"
+        btc_symbol: "BTC/USD"
+      - id: coinbase
+        sol_symbol: "SOL/USD"
+        btc_symbol: "BTC/USD"
+      - id: okx
+        sol_symbol: "SOL/USDT"
+        btc_symbol: "BTC/USDT"
+      - id: kucoin
+        sol_symbol: "SOL/USDT"
+        btc_symbol: "BTC/USDT"
   coinbase:
     publication_lag_days: 0
     base_url: "https://api.exchange.coinbase.com"
@@ -22,10 +39,9 @@ sources:
     publication_lag_days: 0
     fallback_url: "https://api.mainnet-beta.solana.com"
 cross_source:
-  max_price_difference_pct: 2.0
+  max_price_difference_pct: 5.0
 fills:
   tvl: 3
   stablecoins: 3
   dex_volume: 2
   fees: 2
-
