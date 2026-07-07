@@ -164,4 +164,4 @@ def test_complete_required_values_adds_missing_dashboard_value():
     validated = validate_llm_output(completed, facts)
 
     assert warnings
-    assert "kapitaal 100/100" in validated["analysis_text"]
+    assert "kapitaalstromen 100/100" in validated["analysis_text"]

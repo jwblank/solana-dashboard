@@ -15,12 +15,12 @@
       <div>
         <p class="eyebrow">SOL Reality Check</p>
         <h1>SOL Reality Check</h1>
-        <p class="subtitle">Niet alleen wat Solana doet, maar hoe sterk het bewijs is.</p>
+        <p class="subtitle">Data, duiding en onderbouwing voor het actuele Solana-beeld.</p>
       </div>
       <dl class="meta" aria-label="Actuele metadata">
         <div><dt>SOL live</dt><dd id="sol-price">...</dd></div>
         <div><dt>Update</dt><dd id="updated-at">...</dd></div>
-        <div><dt>Datacutoff</dt><dd id="data-cutoff">...</dd></div>
+        <div><dt>Data t/m</dt><dd id="data-cutoff">...</dd></div>
         <div><dt>Methode</dt><dd id="method-version">...</dd></div>
       </dl>
     </header>
@@ -31,9 +31,9 @@
         <button class="tab active" data-tab="interpretation">Duiding</button>
         <button class="tab" data-tab="today">Vandaag</button>
         <button class="tab" data-tab="price">Prijs</button>
-        <button class="tab" data-tab="network">Netwerk & ecosysteem</button>
-        <button class="tab" data-tab="capital">Kapitaal</button>
-        <button class="tab" data-tab="evidence">Bewijs</button>
+        <button class="tab" data-tab="network">Gebruik & ecosysteem</button>
+        <button class="tab" data-tab="capital">Kapitaalstromen</button>
+        <button class="tab" data-tab="evidence">Onderbouwing</button>
       </nav>
 
       <section id="interpretation" class="panel active">
@@ -74,8 +74,8 @@
             <p id="interpretation-note" class="plain"></p>
           </div>
           <div class="score-pair">
-            <div><span>Marktsignaal</span><strong id="market-score">...</strong><small id="market-label"></small></div>
-            <div><span>Bewijskwaliteit</span><strong id="evidence-score">...</strong><small id="evidence-label"></small></div>
+            <div><span>Huidige sterkte</span><strong id="market-score">...</strong><small id="market-label"></small></div>
+            <div><span>Onderbouwing</span><strong id="evidence-score">...</strong><small id="evidence-label"></small></div>
           </div>
         </div>
         <p class="plain">De eindscore is een gewogen indicatorscore van 0 tot 100. Het is geen kanspercentage.</p>
@@ -116,8 +116,8 @@
         <div class="evidence-page">
           <section class="evidence-hero">
             <div>
-              <p class="eyebrow">Methodiek & bewijs</p>
-              <h2>Hoe sterk is dit signaal?</h2>
+              <p class="eyebrow">Methodiek & onderbouwing</p>
+              <h2>Hoe stevig is dit beeld?</h2>
               <p id="evidence-summary" class="plain"></p>
             </div>
             <div id="evidence-scorecard" class="evidence-scorecard"></div>
@@ -126,7 +126,7 @@
           <section class="evidence-section">
             <div class="section-head">
               <div>
-                <h3>Bewijs in het kort</h3>
+                <h3>Onderbouwing in het kort</h3>
                 <p class="plain">De belangrijkste kwaliteitscontroles achter de eindscore.</p>
               </div>
             </div>
@@ -137,7 +137,7 @@
             <div class="section-head">
               <div>
                 <h3>Indicatorbijdrage</h3>
-                <p class="plain">Welke blokken dragen bij aan het marktsignaal, en hoe zwaar tellen ze mee?</p>
+                <p class="plain">Welke blokken bepalen de huidige sterkte, en hoe zwaar tellen ze mee?</p>
               </div>
             </div>
             <div id="evidence-blocks" class="evidence-block-grid"></div>
@@ -146,7 +146,7 @@
           <section class="evidence-section">
             <div class="section-head">
               <div>
-                <h3>Backtest</h3>
+                <h3>Historische toets</h3>
                 <p id="edge-warning" class="plain"></p>
               </div>
             </div>

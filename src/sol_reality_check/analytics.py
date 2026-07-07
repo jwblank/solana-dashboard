@@ -89,14 +89,14 @@ def score_label(score: float | None) -> str:
 
 def evidence_label(score: float) -> str:
     if score <= 39:
-        return "zwak bewijs"
+        return "zwak onderbouwd"
     if score <= 59:
-        return "beperkt bewijs"
+        return "beperkt onderbouwd"
     if score <= 74:
-        return "redelijk bewijs"
+        return "redelijk onderbouwd"
     if score <= 89:
-        return "sterk bewijs"
-    return "uitzonderlijk sterk bewijs"
+        return "sterk onderbouwd"
+    return "uitzonderlijk sterk onderbouwd"
 
 
 def regime(
@@ -287,7 +287,7 @@ def evidence_quality(
         caps.append("Minder dan 20 effectieve analogieën")
     if (h7.get("brier_skill") or 0) <= 0:
         raw = min(raw, 55)
-        caps.append("Brier skill ≤ 0")
+        caps.append("Voorspelkwaliteit ≤ 0")
     if h7.get("prediction_count", 0) < 100:
         raw = min(raw, 55)
         caps.append("Minder dan 100 out-of-sample voorspellingen")

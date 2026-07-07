@@ -410,7 +410,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
         critical_error=source_status["critical_error"],
     )
     if breadth_score is not None:
-        quality["caps"].append("Ecosysteembreedte telt beperkt mee en is nog experimenteel.")
+        quality["caps"].append("Breedte in ecosysteem telt beperkt mee en is nog experimenteel.")
     if rpc_score is not None:
         quality["caps"].append("RPC-netwerkcontext telt alleen actueel mee, niet in de backtest.")
     generated = iso_z(now)
@@ -766,7 +766,7 @@ def block_details(
     return [
         {
             "key": "price_strength",
-            "title": "Prijssterkte",
+            "title": "Koerskracht",
             "weight": weights["price_strength"],
             "score": blocks.get("price_strength"),
             "score_label": score_band(blocks.get("price_strength")),
@@ -787,7 +787,7 @@ def block_details(
         },
         {
             "key": "network_usage",
-            "title": "Netwerkgebruik",
+            "title": "Gebruik",
             "weight": weights["network_usage"],
             "score": blocks.get("network_usage"),
             "score_label": score_band(blocks.get("network_usage")),
@@ -809,7 +809,7 @@ def block_details(
         },
         {
             "key": "capital",
-            "title": "Kapitaal",
+            "title": "Kapitaalstromen",
             "weight": weights["capital"],
             "score": blocks.get("capital"),
             "score_label": score_band(blocks.get("capital")),
@@ -829,7 +829,7 @@ def block_details(
         },
         {
             "key": "ecosystem_breadth",
-            "title": "Ecosysteembreedte",
+            "title": "Breedte in ecosysteem",
             "weight": weights["ecosystem_breadth"],
             "score": blocks.get("ecosystem_breadth"),
             "score_label": score_band(blocks.get("ecosystem_breadth")),
@@ -915,54 +915,54 @@ def build_indicator_tabs(
                     df,
                     {
                         "SOL slotkoers": "sol_close",
-                        "Prijssterkte": "price_strength_score",
+                        "Koerskracht": "price_strength_score",
                         "Relatief vs BTC 7d": "relative_strength_btc_7d",
                     },
                 ),
                 "series": [
                     {"key": "SOL slotkoers", "label": "SOL slotkoers", "unit": "$"},
-                    {"key": "Prijssterkte", "label": "Prijssterkte", "unit": "/100"},
+                    {"key": "Koerskracht", "label": "Koerskracht", "unit": "/100"},
                     {"key": "Relatief vs BTC 7d", "label": "Relatief vs BTC 7d", "unit": "%"},
                 ],
             },
         },
         "network": {
-            "title": "Netwerk & ecosysteem",
+            "title": "Gebruik & ecosysteem",
             "subtitle": "Gebruik van DeFi-activiteit, fees, actuele RPC-context en breedte.",
             "score": network_tab_score,
             "weight": network["weight"] + ecosystem["weight"],
-            "status": "Grotendeels gevalideerd; ecosysteembreedte is experimenteel",
+            "status": "Grotendeels gevalideerd; breedte in ecosysteem is experimenteel",
             "summary": (
-                f"{network['summary']} Ecosysteembreedte: {ecosystem['summary']}"
+                f"{network['summary']} Breedte in ecosysteem: {ecosystem['summary']}"
             ),
             "note": (
-                "Netwerkgebruik telt volledig mee binnen de backtest; RPC-context en "
-                "ecosysteembreedte zijn actueel en transparant beperkt meegewogen."
+                "Gebruik telt volledig mee binnen de historische toets; RPC-context en "
+                "breedte in ecosysteem zijn actueel en transparant beperkt meegewogen."
             ),
             "components": [
                 component(
                     "DEX-volume 7d/30d",
                     ratio_text(latest.get("dex_volume_ratio_7d_30d")),
                     latest.get("dex_volume_ratio_7d_30d__score"),
-                    "60% binnen netwerkgebruik",
+                    "60% binnen gebruik",
                     "Vergelijkt recente DEX-activiteit met het 30-daags gemiddelde.",
                 ),
                 component(
                     "Fees 7d/30d",
                     ratio_text(latest.get("fees_ratio_7d_30d")),
                     latest.get("fees_ratio_7d_30d__score"),
-                    "40% binnen netwerkgebruik",
+                    "40% binnen gebruik",
                     "Meet of betaalde fees boven of onder normaal liggen.",
                 ),
                 component(
                     "RPC-context",
                     f"{score_text(rpc_score)}; {number_text(rpc_metrics.get('non_vote_tps'))} TPS",
                     rpc_score,
-                    "15% correctie op netwerkgebruik",
+                    "15% correctie op gebruik",
                     "Actuele steekproef uit Solana RPC-performance samples.",
                 ),
                 component(
-                    "Ecosysteembreedte",
+                    "Breedte in ecosysteem",
                     breadth_value_text(breadth),
                     blocks.get("ecosystem_breadth"),
                     "10% van eindscore",
@@ -972,7 +972,7 @@ def build_indicator_tabs(
                     "Gevalideerde basis",
                     score_text(base_network_usage),
                     base_network_usage,
-                    "85% van netwerkgebruik",
+                    "85% van gebruik",
                     "Alleen DeFi/fee-data die historisch is meegetest.",
                 ),
             ],
@@ -981,20 +981,20 @@ def build_indicator_tabs(
                 "rows": trend_rows(
                     df,
                     {
-                        "Netwerkgebruik": "network_usage_score",
+                        "Gebruik": "network_usage_score",
                         "DEX 7d/30d": "dex_volume_ratio_7d_30d",
                         "Fees 7d/30d": "fees_ratio_7d_30d",
                     },
                 ),
                 "series": [
-                    {"key": "Netwerkgebruik", "label": "Netwerkgebruik", "unit": "/100"},
+                    {"key": "Gebruik", "label": "Gebruik", "unit": "/100"},
                     {"key": "DEX 7d/30d", "label": "DEX 7d/30d", "unit": "x"},
                     {"key": "Fees 7d/30d", "label": "Fees 7d/30d", "unit": "x"},
                 ],
             },
         },
         "capital": {
-            "title": "Kapitaal",
+            "title": "Kapitaalstromen",
             "subtitle": "Kapitaalstromen via stablecoinvoorraad en TVL op Solana.",
             "score": capital["score"],
             "weight": capital["weight"],
@@ -1029,13 +1029,13 @@ def build_indicator_tabs(
                 "rows": trend_rows(
                     df,
                     {
-                        "Kapitaal": "capital_score",
+                        "Kapitaalstromen": "capital_score",
                         "Stablecoins 30d": "stablecoin_change_30d",
                         "TVL 30d": "tvl_change_30d",
                     },
                 ),
                 "series": [
-                    {"key": "Kapitaal", "label": "Kapitaal", "unit": "/100"},
+                    {"key": "Kapitaalstromen", "label": "Kapitaalstromen", "unit": "/100"},
                     {"key": "Stablecoins 30d", "label": "Stablecoins 30d", "unit": "%"},
                     {"key": "TVL 30d", "label": "TVL 30d", "unit": "%"},
                 ],
@@ -1172,14 +1172,14 @@ def block_summary(key: str, value: float | None) -> str:
         if score >= 66:
             return "SOL toont duidelijke koerskracht, ook relatief tegen de markt."
         if score >= 45:
-            return "Prijssterkte is gemengd: nog geen overtuigende koersbevestiging."
+            return "Koerskracht is gemengd: nog geen overtuigende koersbevestiging."
         return "SOL blijft qua koers achter; prijs bevestigt de onderliggende data nog niet."
     if key == "network_usage":
         if score >= 66:
             return "Gebruik op en rond Solana ligt ruim boven normaal."
         if score >= 45:
-            return "Netwerkgebruik is rond normaal tot licht positief."
-        return "Netwerkgebruik geeft nog weinig bevestiging."
+            return "Gebruik is rond normaal tot licht positief."
+        return "Gebruik geeft nog weinig bevestiging."
     if key == "capital":
         if is_capped(value):
             return "Kapitaalstromen staan extreem hoog op de historische schaal."
@@ -1259,7 +1259,7 @@ def build_data_audit(
         ),
         "freshness": [
             metric("Update-run", generated),
-            metric("Datacutoff", cutoff),
+            metric("Data t/m", cutoff),
             metric("Historie", f"{first_date} t/m {last_date}"),
             metric("Records", str(rows)),
             metric("Prijsreparaties", str(len(price_repairs))),
@@ -1296,7 +1296,7 @@ def build_data_audit(
             source_row(
                 "CoinGecko",
                 sources.get("coingecko", {}),
-                "Liveprijs en ecosysteembreedte",
+                "Liveprijs en breedte in ecosysteem",
                 "Actueel/contextueel",
                 f"{breadth.get('token_count', 0)} ecosysteemtokens",
             ),
@@ -1410,26 +1410,26 @@ def interpret_market(
     if reg == "building_under_surface":
         title = "Onderliggende kracht bouwt op"
         body = (
-            "Netwerkgebruik en kapitaalstromen zijn sterk, terwijl prijssterkte nog "
+            "Gebruik en kapitaalstromen zijn sterk, terwijl koerskracht nog "
             "achterblijft. Dat wijst op verbetering onder de oppervlakte, niet op een "
             "volledig bevestigde trend."
         )
     elif reg == "confirmed_trend":
         title = "Trend wordt breed bevestigd"
         body = (
-            "Prijssterkte, netwerkgebruik en kapitaal wijzen dezelfde kant op. Dit is "
+            "Koerskracht, gebruik en kapitaalstromen wijzen dezelfde kant op. Dit is "
             "het meest overtuigende type positief signaal binnen deze methode."
         )
     elif reg == "fragile_rally":
         title = "Prijs loopt vooruit op bevestiging"
         body = (
-            "De koers oogt sterk, maar netwerkgebruik en kapitaal bevestigen die beweging "
+            "De koers oogt sterk, maar gebruik en kapitaalstromen bevestigen die beweging "
             "nog onvoldoende. Dat maakt het signaal kwetsbaarder."
         )
     elif reg == "risk_regime":
         title = "Zwak marktbeeld"
         body = (
-            "Prijssterkte en onderliggende bevestiging zijn zwak. De methode vraagt hier "
+            "Koerskracht en onderliggende bevestiging zijn zwak. De methode vraagt hier "
             "om terughoudendheid."
         )
     else:
@@ -1439,13 +1439,14 @@ def interpret_market(
             "interpretatie."
         )
 
-    note_parts = [f"Eindscore {signal_text}; bewijskwaliteit {evidence_text}."]
+    note_parts = [f"Huidige sterkte {signal_text}; onderbouwing {evidence_text}."]
     if history_is_mixed:
         note_parts.append(
-            f"Historische analogieën zijn gemengd: {pct_text(positive_frequency)} was positief."
+            "Vergelijkbare eerdere dagen zijn gemengd: "
+            f"{pct_text(positive_frequency)} was positief."
         )
     if weak_evidence:
-        note_parts.append("De bewijskwaliteit is beperkt, dus de conclusie is geen hard signaal.")
+        note_parts.append("De onderbouwing is beperkt, dus de conclusie is geen hard signaal.")
     if capital >= 99.5:
         note_parts.append("Kapitaal staat op 100 omdat de score op het maximum is afgekapt.")
     if price < 55 and (network >= 70 or capital >= 70):
@@ -1467,7 +1468,7 @@ def deterministic_conclusion(reg: str, signal: float | None, quality: float) -> 
         "risk_regime": "Zowel koers als bevestigende data zijn zwak.",
         "mixed": "Het actuele beeld is gemengd en vraagt om terughoudende interpretatie.",
     }.get(reg, "Het actuele beeld is nog onvoldoende duidelijk.")
-    return f"{phrase} De bewijskwaliteit is {quality:.0f}/100."
+    return f"{phrase} De onderbouwing is {quality:.0f}/100."
 
 
 def rounded_or_none(value: float | None) -> float | None:
@@ -1483,17 +1484,17 @@ def what_would_change(blocks: dict[str, float | None]) -> list[str]:
     else:
         items.append("SOL herwint duidelijke relatieve sterkte ten opzichte van BTC.")
     if (blocks.get("network_usage") or 0) < 55:
-        items.append("Netwerkgebruik, DEX-volume en fees stijgen boven hun normale niveau.")
+        items.append("Gebruik, DEX-volume en fees stijgen boven hun normale niveau.")
     else:
-        items.append("Netwerkgebruik of DEX-volume zakt terug onder het normale niveau.")
+        items.append("Gebruik of DEX-volume zakt terug onder het normale niveau.")
     if (blocks.get("capital") or 0) < 55:
         items.append("Stablecoinvoorraad en TVL beginnen duidelijk toe te nemen.")
     else:
         items.append("TVL-groei of stablecoinvoorraad draait om.")
     if (blocks.get("ecosystem_breadth") or 0) < 55:
-        items.append("Meer Solana-ecosysteemtokens gaan tegelijk meedoen aan de stijging.")
+        items.append("Meer Solana-ecosysteemtokens gaan tegelijk meedoen aan de beweging.")
     else:
-        items.append("De stijging versmalt naar minder Solana-ecosysteemtokens.")
+        items.append("De beweging versmalt naar minder Solana-ecosysteemtokens.")
     return items
 
 

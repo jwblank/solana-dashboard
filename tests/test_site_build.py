@@ -12,8 +12,10 @@ def test_site_contains_required_tabs(monkeypatch):
         "Duiding",
         "Vandaag",
         "Prijs",
-        "Bewijs",
-        "Backtest",
+        "Gebruik & ecosysteem",
+        "Kapitaalstromen",
+        "Onderbouwing",
+        "Historische toets",
         "Open logboek",
         "Zo werkt het",
     ]

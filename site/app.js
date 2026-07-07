@@ -165,7 +165,7 @@ function renderAnalysisText(targetId, interpretation) {
 
 function parseAnalysisBlocks(text) {
   const normalized = String(text || "").replace(/\r/g, "").trim();
-  const headingPattern = /(?:^|\n)\s*(Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)\s*:\s*/g;
+  const headingPattern = /(?:^|\n)\s*(Kort beeld|Wat trekt omhoog\?|Wat houdt tegen\?|Hoe stevig is dit\?|Conclusie|Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)\s*:\s*/g;
   const matches = Array.from(normalized.matchAll(headingPattern));
   if (!matches.length) {
     return splitPlainAnalysis(normalized);
@@ -173,8 +173,19 @@ function parseAnalysisBlocks(text) {
   return matches.map((match, index) => {
     const start = match.index + match[0].length;
     const end = index + 1 < matches.length ? matches[index + 1].index : normalized.length;
-    return {heading: match[1], text: normalized.slice(start, end).trim()};
+    return {heading: normalizeAnalysisHeading(match[1]), text: normalized.slice(start, end).trim()};
   }).filter((block) => block.text);
+}
+
+function normalizeAnalysisHeading(heading) {
+  const map = {
+    "Kernbeeld": "Kort beeld",
+    "Spanning in de data": "Wat trekt omhoog?",
+    "Bewijskracht": "Hoe stevig is dit?",
+    "Waarop letten": "Wat houdt tegen?",
+    "Eindbeeld": "Conclusie"
+  };
+  return map[heading] || heading;
 }
 
 function splitPlainAnalysis(text) {
@@ -192,16 +203,16 @@ function splitPlainAnalysis(text) {
 
 function renderInterpretationAudit(interpretation) {
   const statusText = interpretation.status === "llm_success"
-    ? "LLM-call geslaagd"
-    : "Fallback gebruikt";
+    ? "Automatische analyse gelukt"
+    : "Vaste fallbacktekst gebruikt";
   const items = [
     ["Status", statusText],
     ["Model", interpretation.model || "n.v.t."],
     ["Provider", interpretation.provider || "n.v.t."],
-    ["LLM-call", interpretation.llm_called_at_utc || "Niet aangeroepen"],
+    ["Analyse gemaakt", interpretation.llm_called_at_utc || "Niet aangeroepen"],
     ["Update", interpretation.generated_at_utc || "n.v.t."],
     ["Duiding voor", interpretation.interpretation_date || "n.v.t."],
-    ["Datacutoff", interpretation.data_cutoff_utc || "n.v.t."]
+    ["Data t/m", interpretation.data_cutoff_utc || "n.v.t."]
   ];
   const target = document.getElementById("llm-audit");
   target.replaceChildren(...items.map(([label, value]) => {
@@ -244,7 +255,7 @@ function renderInterpretationArchive(archiveIndex) {
     const title = document.createElement("strong");
     title.textContent = entry.title || "Duiding";
     const meta = document.createElement("span");
-    meta.textContent = `${entry.date} · ${entry.market_signal || "n.v.t."} · bewijs ${entry.evidence_quality || "n.v.t."}`;
+    meta.textContent = `${entry.date} · sterkte ${entry.market_signal || "n.v.t."} · onderbouwing ${entry.evidence_quality || "n.v.t."}`;
     button.append(title, meta);
     button.addEventListener("click", async () => {
       try {
@@ -306,16 +317,16 @@ function emptyArchiveMessage() {
 
 function renderInterpretationInputs(facts) {
   const items = [
-    ["Marktsignaal", facts.market_signal],
-    ["Bewijskwaliteit", facts.evidence_quality],
-    ["Prijssterkte", facts.price_strength],
-    ["Netwerkgebruik", facts.network_usage],
-    ["Kapitaal", facts.capital],
-    ["Ecosysteembreedte", facts.ecosystem_breadth],
+    ["Huidige sterkte", facts.market_signal],
+    ["Onderbouwing", facts.evidence_quality],
+    ["Koerskracht", facts.price_strength],
+    ["Gebruik", facts.network_usage],
+    ["Kapitaalstromen", facts.capital],
+    ["Breedte ecosysteem", facts.ecosystem_breadth],
     ["SOL", facts.sol_price],
     ["Analoge dagen", facts.analog_count],
     ["Historisch positief", facts.analog_positive_frequency],
-    ["7d backtest", `${facts.backtest_7d?.prediction_count || 0} runs`]
+    ["Historische toets 7d", `${facts.backtest_7d?.prediction_count || 0} runs`]
   ];
   document.getElementById("llm-inputs").replaceChildren(...items.map(([label, value]) => {
     const div = document.createElement("div");
@@ -332,8 +343,8 @@ function renderInterpretationInputs(facts) {
 function renderEvidenceScorecard(dashboard) {
   const target = document.getElementById("evidence-scorecard");
   target.replaceChildren(
-    labeledValue("Bewijskwaliteit", fmtScore100(dashboard.scores.evidence_quality)),
-    labeledValue("Marktsignaal", fmtScore100(dashboard.scores.market_signal)),
+    labeledValue("Onderbouwing", fmtScore100(dashboard.scores.evidence_quality)),
+    labeledValue("Huidige sterkte", fmtScore100(dashboard.scores.market_signal)),
     labeledValue("Duiding", dashboard.summary.evidence_label)
   );
 }
@@ -355,15 +366,15 @@ function renderEvidenceKpis(dashboard, backtest) {
       interpretation: highIsBetter(components.sample_adequacy)
     },
     {
-      label: "Out-of-sample kwaliteit",
+      label: "Test op ongeziene data",
       value: fmtScore100(components.out_of_sample_quality),
       text: "Meet prestaties op latere data die niet gebruikt is om het signaal te vormen.",
       interpretation: highIsBetter(components.out_of_sample_quality)
     },
     {
-      label: "Backtest 7d",
+      label: "Historische toets 7d",
       value: formatDecimal(horizon7.brier_skill),
-      text: "Brier skill vergelijkt de methode met een simpele basislijn.",
+      text: "Vergelijkt de methode met een simpele basislijn.",
       interpretation: brierSkillText(horizon7.brier_skill)
     },
     {
@@ -425,7 +436,7 @@ function renderBacktest(backtest) {
   const cards = entries.map(([horizon, row]) => explainerCard({
     label: `${horizon} horizon`,
     value: `${row.prediction_count || 0} runs`,
-    text: `Richting: ${formatPctLike(row.directional_accuracy)}. Brier skill: ${formatDecimal(row.brier_skill)}.`,
+    text: `Richting: ${formatPctLike(row.directional_accuracy)}. Voorspelkwaliteit: ${formatDecimal(row.brier_skill)}.`,
     interpretation: backtestInterpretation(row)
   }));
   document.getElementById("backtest-cards").replaceChildren(...cards);
@@ -441,9 +452,9 @@ function renderBacktest(backtest) {
     "Horizon",
     "Voorspellingen",
     "Richting",
-    "Brier",
-    "Brier skill",
-    "Kalibratiefout"
+    "Gemiddelde fout",
+    "Voorspelkwaliteit",
+    "Kans-afwijking"
   ], bRows));
   const skill7 = backtest.horizons?.["7d"]?.brier_skill;
   document.getElementById("edge-warning").textContent = skill7 > 0
@@ -493,27 +504,27 @@ function renderMethodSteps() {
 function renderTermExplainers() {
   const terms = [
     {
-      label: "Out-of-sample kwaliteit",
+      label: "Test op ongeziene data",
       value: "Controle buiten trainingsdata",
       text: "De methode wordt beoordeeld op latere data die niet gebruikt is om het signaal te bepalen.",
       interpretation: "Hoger is beter; laag betekent dat het signaal historisch nog kwetsbaar is."
     },
     {
-      label: "Brier skill",
+      label: "Voorspelkwaliteit",
       value: "Meerwaarde t.o.v. basislijn",
       text: "Vergelijkt de fout van dit model met een simpele referentie zoals historische frequentie.",
       interpretation: "Boven 0 is beter dan de basislijn; onder 0 is slechter."
     },
     {
-      label: "Kalibratiefout",
+      label: "Kans-afwijking",
       value: "Betrouwbaarheid van kansen",
       text: "Meet of uitspraken over waarschijnlijkheid passen bij wat later werkelijk gebeurde.",
       interpretation: "Lager is beter; hoog betekent dat kansen te zeker of te voorzichtig kunnen zijn."
     },
     {
-      label: "Caps",
+      label: "Voorzichtigheidsregels",
       value: "Voorzichtigheidsregels",
-      text: "Beperkingen die voorkomen dat een score te stellig wordt bij weinig bewijs.",
+      text: "Beperkingen die voorkomen dat een score te stellig wordt bij beperkte onderbouwing.",
       interpretation: "Caps maken de conclusie conservatiever en transparanter."
     }
   ];
@@ -694,7 +705,7 @@ function evidenceSummaryText(dashboard, backtest) {
   const count = dashboard.analog_summary?.count || 0;
   const skill7 = backtest.horizons?.["7d"]?.brier_skill;
   const skillText = skill7 > 0 ? "lichte historische meerwaarde" : "nog beperkte meerwaarde";
-  return `De bewijskwaliteit is ${fmtScore100(dashboard.scores.evidence_quality)}. De huidige conclusie steunt op ${count} vergelijkbare historische dagen en een backtest met ${skillText}.`;
+  return `De onderbouwing is ${fmtScore100(dashboard.scores.evidence_quality)}. De huidige conclusie steunt op ${count} vergelijkbare eerdere dagen en een historische toets met ${skillText}.`;
 }
 
 function highIsBetter(value) {
@@ -715,10 +726,10 @@ function backtestInterpretation(row) {
   const skill = row.brier_skill;
   const accuracy = row.directional_accuracy;
   if ((skill || 0) > 0 && (accuracy || 0) > 0.5) {
-    return "Deze horizon draagt voorzichtig positief bewijs bij.";
+    return "Deze horizon draagt voorzichtig positieve onderbouwing bij.";
   }
   if ((skill || 0) > 0) return "De foutscore is licht positief, maar richting blijft gemengd.";
-  return "Deze horizon bewijst nog weinig voorspellende meerwaarde.";
+  return "Deze horizon toont nog weinig voorspellende meerwaarde.";
 }
 
 function formatDecimal(value) {

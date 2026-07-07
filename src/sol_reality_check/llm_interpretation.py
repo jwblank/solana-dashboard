@@ -14,10 +14,18 @@ DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 ROUTER_URL = "https://router.huggingface.co/v1/chat/completions"
 LEGACY_HEADINGS = [
     "Kort beeld",
+    "Wat trekt omhoog?",
+    "Wat houdt tegen?",
+    "Hoe stevig is dit?",
+    "Conclusie",
+    "Kernbeeld",
+    "Spanning in de data",
+    "Bewijskracht",
+    "Waarop letten",
+    "Eindbeeld",
     "Wat valt op?",
     "Wat ondersteunt het beeld?",
     "Wat maakt het onzeker?",
-    "Eindbeeld",
 ]
 FORBIDDEN_TERMS = [
     "koop",
@@ -171,7 +179,8 @@ def call_huggingface_interpretation(token: str, model: str, facts: dict[str, Any
                     "Gebruik alleen de aangeleverde feiten. Geen beleggingsadvies, geen koop- "
                     "of verkoopsignalen, geen garanties. Leg termen kort uit als je ze gebruikt. "
                     "Vermijd herhaling. Beschrijf niet alleen cijfers, maar duid de spanning "
-                    "tussen prijs, netwerk, kapitaal, ecosysteembreedte en bewijskwaliteit. "
+                    "tussen koerskracht, gebruik, kapitaalstromen, breedte in ecosysteem "
+                    "en onderbouwing. "
                     "Schrijf geen redenering, geen markdown-intro en geen JSON."
                 ),
             },
@@ -202,23 +211,23 @@ def llm_prompt(facts: dict[str, Any]) -> str:
         "Gebruik exact dit outputformat:\n\n"
         "TITEL: korte titel\n"
         "ANALYSE:\n"
-        "Kernbeeld: 2 korte zinnen\n"
-        "Spanning in de data: 2 tot 3 korte zinnen\n"
-        "Bewijskracht: 2 korte zinnen\n"
-        "Waarop letten: 1 tot 2 korte zinnen\n"
-        "Eindbeeld: 1 scherpe slotzin\n\n"
+        "Kort beeld: 2 korte zinnen\n"
+        "Wat trekt omhoog?: 2 tot 3 korte zinnen\n"
+        "Wat houdt tegen?: 1 tot 2 korte zinnen\n"
+        "Hoe stevig is dit?: 2 korte zinnen\n"
+        "Conclusie: 1 scherpe slotzin\n\n"
         f"Interpretatiekader: {frame}.\n"
         "Gebruik de vijf kopjes exact zoals hierboven. Schrijf onder elk kopje gewone zinnen, "
         "geen bullets. Gebruik eenvoudige maar scherpe taal.\n"
         "Verwerk deze exacte waarden letterlijk in de tekst: "
-        f"marktsignaal {facts['market_signal']}, "
-        f"bewijskwaliteit {facts['evidence_quality']}, "
-        f"prijssterkte {facts['price_strength']}, "
-        f"netwerkgebruik {facts['network_usage']}, "
-        f"kapitaal {facts['capital']}, "
-        f"ecosysteembreedte {facts['ecosystem_breadth']}.\n"
+        f"huidige sterkte {facts['market_signal']}, "
+        f"onderbouwing {facts['evidence_quality']}, "
+        f"koerskracht {facts['price_strength']}, "
+        f"gebruik {facts['network_usage']}, "
+        f"kapitaalstromen {facts['capital']}, "
+        f"breedte in ecosysteem {facts['ecosystem_breadth']}.\n"
         "Gebruik daarnaast waar relevant SOL-prijs, historische vergelijking en backtestwaarden. "
-        "Leg kort uit wat bewijskwaliteit betekent als je die term gebruikt. "
+        "Leg kort uit wat onderbouwing betekent als je die term gebruikt. "
         "Geen adviestaal, geen JSON, geen bulletlijst, geen herhaling.\n\n"
         "Feiten:\n"
         f"{json.dumps(facts, ensure_ascii=False, sort_keys=True)}"
@@ -238,7 +247,7 @@ def interpretation_frame(facts: dict[str, Any]) -> str:
     if price < 55 and (network >= 60 or capital >= 60 or breadth >= 65):
         return "onderliggende kracht zonder volledige koersbevestiging"
     if evidence < 60:
-        return "positief of gemengd signaal met beperkte bewijskracht"
+        return "positief of gemengd beeld met beperkte onderbouwing"
     return "gemengd beeld; de blokken spreken elkaar deels tegen"
 
 
@@ -352,8 +361,8 @@ def infer_intro(content: str, first_heading_start: int, facts: dict[str, Any] | 
         return preamble[:360]
     if facts:
         return (
-            f"Het marktsignaal staat op {facts['market_signal']} "
-            f"({facts['market_signal_label']}) en de bewijskwaliteit op "
+            f"De huidige sterkte staat op {facts['market_signal']} "
+            f"({facts['market_signal_label']}) en de onderbouwing op "
             f"{facts['evidence_quality']} ({facts['evidence_label']}). Deze duiding gebruikt "
             f"de dashboardwaarden tot {facts['data_cutoff_utc']}."
         )
@@ -406,12 +415,12 @@ def complete_required_values(
 
 def required_dashboard_values(facts: dict[str, Any]) -> list[tuple[str, str]]:
     return [
-        ("marktsignaal", facts["market_signal"]),
-        ("bewijskwaliteit", facts["evidence_quality"]),
-        ("prijssterkte", facts["price_strength"]),
-        ("netwerkgebruik", facts["network_usage"]),
-        ("kapitaal", facts["capital"]),
-        ("ecosysteembreedte", facts["ecosystem_breadth"]),
+        ("huidige sterkte", facts["market_signal"]),
+        ("onderbouwing", facts["evidence_quality"]),
+        ("koerskracht", facts["price_strength"]),
+        ("gebruik", facts["network_usage"]),
+        ("kapitaalstromen", facts["capital"]),
+        ("breedte in ecosysteem", facts["ecosystem_breadth"]),
     ]
 
 
@@ -449,14 +458,16 @@ def with_fallback(
         "llm_called_at_utc": called_at,
         "title": fallback_title(facts),
         "intro": (
-            f"Het marktsignaal staat op {facts['market_signal']} ({facts['market_signal_label']}) "
-            f"en de bewijskwaliteit op {facts['evidence_quality']} ({facts['evidence_label']}). "
+            f"De huidige sterkte staat op {facts['market_signal']} "
+            f"({facts['market_signal_label']}) "
+            f"en de onderbouwing op {facts['evidence_quality']} ({facts['evidence_label']}). "
             f"Deze duiding gebruikt de dashboardwaarden tot {facts['data_cutoff_utc']}."
         ),
         "analysis_text": fallback_analysis(facts),
         "warnings": [warning],
         "footer_note": (
-            "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de LLM-call niet "
+            "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de automatische analyse "
+            "niet "
             "beschikbaar of niet geldig was. Dit is geen beleggingsadvies."
         ),
     }
@@ -468,26 +479,26 @@ def fallback_title(facts: dict[str, Any]) -> str:
 
 def fallback_analysis(facts: dict[str, Any]) -> str:
     return (
-        "Kernbeeld: "
-        f"SOL staat rond {facts['sol_price']} en het dashboard geeft een marktsignaal van "
+        "Kort beeld: "
+        f"SOL staat rond {facts['sol_price']} en het dashboard geeft een huidige sterkte van "
         f"{facts['market_signal']}. De dashboardlezing is: {facts['regime_title']}.\n\n"
-        "Spanning in de data: "
-        f"De belangrijkste verhouding zit tussen prijssterkte {facts['price_strength']}, "
-        f"netwerkgebruik {facts['network_usage']}, kapitaal {facts['capital']} en "
-        f"ecosysteembreedte {facts['ecosystem_breadth']}. Als prijs sterker is dan netwerk en "
-        "kapitaal, loopt de markt mogelijk vooruit op bredere bevestiging; als netwerk en "
-        "kapitaal meebewegen, wordt het beeld steviger.\n\n"
-        "Bewijskracht: "
-        f"De bewijskwaliteit is {facts['evidence_quality']}. Bewijskwaliteit betekent hoe "
+        "Wat trekt omhoog?: "
+        f"De belangrijkste verhouding zit tussen koerskracht {facts['price_strength']}, "
+        f"gebruik {facts['network_usage']}, kapitaalstromen {facts['capital']} en "
+        f"breedte in ecosysteem {facts['ecosystem_breadth']}. Als koerskracht sterker is dan "
+        "gebruik en kapitaalstromen, loopt de markt mogelijk vooruit op bredere bevestiging; "
+        "als gebruik en kapitaalstromen meebewegen, wordt het beeld steviger.\n\n"
+        "Wat houdt tegen?: "
+        "De dashboardblokken lopen niet altijd gelijk, waardoor het beeld genuanceerd blijft.\n\n"
+        "Hoe stevig is dit?: "
+        f"De onderbouwing is {facts['evidence_quality']}. Onderbouwing betekent hoe "
         "stevig de actuele conclusie historisch en datatechnisch onderbouwd is; bij beperkt "
-        "bewijs moet het signaal voorzichtig gelezen worden.\n\n"
-        "Waarop letten: "
+        "onderbouwde data moet het signaal voorzichtig gelezen worden.\n\n"
+        "Conclusie: "
         f"De historische vergelijking gebruikt {facts['analog_count']} vergelijkbare dagen; "
         f"daarvan was {facts['analog_positive_frequency']} positief, met een mediaan rendement "
-        f"van {facts['analog_median_return']}.\n\n"
-        "Eindbeeld: "
-        "Dit is een gestructureerde dataduiding van de actuele Solana-context, geen financieel "
-        "advies."
+        f"van {facts['analog_median_return']}. Dit is een gestructureerde dataduiding van de "
+        "actuele Solana-context, geen financieel advies."
     )
 
 
