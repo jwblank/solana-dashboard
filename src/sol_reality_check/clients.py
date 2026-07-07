@@ -12,6 +12,7 @@ import requests
 
 LOGGER = logging.getLogger(__name__)
 MAX_DAILY_PRICE_CHANGE = 0.40
+MAX_TRUSTED_DAILY_PRICE_CHANGE = 0.75
 CCXT_TIMEFRAME = "1d"
 CCXT_LIMIT = 1000
 
@@ -239,6 +240,7 @@ def repair_daily_price_outliers(
     price_columns: list[str],
     label: str,
     threshold: float = MAX_DAILY_PRICE_CHANGE,
+    trusted_threshold: float = MAX_TRUSTED_DAILY_PRICE_CHANGE,
     trusted_dates: set[str] | None = None,
 ) -> pd.DataFrame:
     """Replace implausible daily close jumps with the previous valid price."""
@@ -265,11 +267,11 @@ def repair_daily_price_outliers(
                 set_price_columns(repaired, idx, price_columns, previous_valid)
             continue
         current = float(close)
-        if trusted_dates and date in trusted_dates:
-            previous_valid = current
-            continue
         if previous_valid is not None:
             change = current / previous_valid - 1
+            if trusted_dates and date in trusted_dates and abs(change) <= trusted_threshold:
+                previous_valid = current
+                continue
             if abs(change) > threshold:
                 repairs.append(
                     price_repair_record(

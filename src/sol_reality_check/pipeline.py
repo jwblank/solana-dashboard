@@ -21,6 +21,7 @@ from sol_reality_check.analytics import (
     weighted_average,
 )
 from sol_reality_check.clients import (
+    MAX_TRUSTED_DAILY_PRICE_CHANGE,
     ApiError,
     fetch_ccxt_consensus_daily,
     fetch_coinbase_daily,
@@ -141,7 +142,7 @@ def fetch_history_window(
     merged = merged[merged["date"] < end_date]
     trusted_price_dates = trusted_dates_from_price_sources(sol, btc)
     merged = repair_history_prices(merged.sort_values("date"), trusted_price_dates)
-    assert_no_extreme_price_breaks(merged)
+    assert_no_extreme_price_breaks(merged, trusted_price_dates)
     merged.attrs["price_source_status"] = price_status
     return merged
 
@@ -155,7 +156,7 @@ def production_history_cache_is_usable(df: pd.DataFrame) -> tuple[bool, str]:
     for column in ["sol_close", "btc_close"]:
         if column not in df:
             return False, f"missing {column}"
-    break_reason = extreme_price_break_reason(df)
+    break_reason = extreme_price_break_reason(df, trusted_dates_from_history(df))
     if break_reason:
         return False, break_reason
     return True, ""
@@ -163,26 +164,41 @@ def production_history_cache_is_usable(df: pd.DataFrame) -> tuple[bool, str]:
 
 def extreme_price_break_reason(
     df: pd.DataFrame,
+    trusted_price_dates: dict[str, set[str]] | None = None,
     threshold: float = MAX_ALLOWED_CACHE_PRICE_BREAK,
 ) -> str:
     ordered = df.sort_values("date").reset_index(drop=True)
+    trusted_price_dates = trusted_price_dates or {}
     for column in ["sol_close", "btc_close"]:
         if column not in ordered:
             continue
         changes = pd.to_numeric(ordered[column], errors="coerce").pct_change().abs()
         bad = changes[changes > threshold]
-        if bad.empty:
-            continue
-        idx = int(bad.index[0])
-        return (
-            f"{column} daily break {bad.iloc[0]:.1%} between "
-            f"{ordered.at[idx - 1, 'date']} and {ordered.at[idx, 'date']}"
-        )
+        trusted_dates = trusted_price_dates.get(column, set())
+        for idx, change in bad.items():
+            row_idx = int(idx)
+            current_date = str(ordered.at[row_idx, "date"])
+            if current_date in trusted_dates and float(change) <= MAX_TRUSTED_DAILY_PRICE_CHANGE:
+                LOGGER.warning(
+                    "Allowing large %s move of %.1f%% on %s because it is backed by "
+                    "trusted price-source metadata.",
+                    column,
+                    float(change) * 100,
+                    current_date,
+                )
+                continue
+            return (
+                f"{column} daily break {change:.1%} between "
+                f"{ordered.at[row_idx - 1, 'date']} and {ordered.at[row_idx, 'date']}"
+            )
     return ""
 
 
-def assert_no_extreme_price_breaks(df: pd.DataFrame) -> None:
-    reason = extreme_price_break_reason(df)
+def assert_no_extreme_price_breaks(
+    df: pd.DataFrame,
+    trusted_price_dates: dict[str, set[str]] | None = None,
+) -> None:
+    reason = extreme_price_break_reason(df, trusted_price_dates)
     if reason:
         raise ApiError(f"Untrusted price history after rebuild: {reason}")
 
@@ -192,9 +208,13 @@ def trusted_dates_from_price_sources(
     btc: pd.DataFrame,
 ) -> dict[str, set[str]]:
     trusted: dict[str, set[str]] = {}
-    if sol.attrs.get("price_source_status", {}).get("provider") == "CCXT consensus":
+    if str(sol.attrs.get("price_source_status", {}).get("provider", "")).startswith(
+        "CCXT consensus"
+    ):
         trusted["sol_close"] = set(sol["date"].astype(str))
-    if btc.attrs.get("price_source_status", {}).get("provider") == "CCXT consensus":
+    if str(btc.attrs.get("price_source_status", {}).get("provider", "")).startswith(
+        "CCXT consensus"
+    ):
         trusted["btc_close"] = set(btc["date"].astype(str))
     return trusted
 
@@ -209,6 +229,7 @@ def fetch_price_history(
     start: datetime | pd.Timestamp,
     end: datetime | pd.Timestamp,
 ) -> pd.DataFrame:
+    cfg = settings()
     source_cfg = load_yaml("config/sources.yml")
     ccxt_cfg = source_cfg.get("sources", {}).get("ccxt", {})
     try:
@@ -225,10 +246,18 @@ def fetch_price_history(
             start,
             end,
             min_coverage_ratio=float(ccxt_cfg.get("min_coverage_ratio", 0.8)),
+            min_required_rows=minimum_price_history_rows(cfg),
+        )
+        frame = fill_price_history_gaps_with_coinbase(
+            frame,
+            coinbase_product_id,
+            start,
+            end,
         )
         frame.attrs["price_source_status"] = {
-            "provider": "CCXT consensus",
+            "provider": frame.attrs.get("provider", "CCXT consensus"),
             **frame.attrs.get("ccxt_status", {}),
+            **frame.attrs.get("coinbase_gap_fill_status", {}),
         }
         return frame
     except Exception as exc:  # pragma: no cover - exchange/network dependent
@@ -251,22 +280,107 @@ def fetch_price_history(
         return frame
 
 
+def fill_price_history_gaps_with_coinbase(
+    frame: pd.DataFrame,
+    coinbase_product_id: str,
+    start: datetime | pd.Timestamp,
+    end: datetime | pd.Timestamp,
+) -> pd.DataFrame:
+    gap_start = first_missing_daily_date(frame, start, end)
+    if gap_start is None:
+        return frame
+    coinbase = fetch_coinbase_daily(
+        coinbase_product_id,
+        pd.Timestamp(gap_start, tz=UTC).to_pydatetime(),
+        pd.Timestamp(end).to_pydatetime(),
+    )
+    coinbase = coinbase.copy()
+    coinbase["source_count"] = 1
+    coinbase["outlier_count"] = 0
+    coinbase["sources"] = "coinbase"
+    combined = pd.concat(
+        [
+            frame[frame["date"] < gap_start],
+            coinbase[available_columns(coinbase, list(frame.columns))],
+        ],
+        ignore_index=True,
+    )
+    combined = combined.drop_duplicates("date", keep="last").sort_values("date")
+    combined.attrs["provider"] = "CCXT consensus + Coinbase gap fill"
+    combined.attrs["ccxt_status"] = frame.attrs.get("ccxt_status", {})
+    combined.attrs["coinbase_gap_fill_status"] = {
+        "fallback_used": True,
+        "gap_fill_start": gap_start,
+        "gap_fill_rows": len(coinbase),
+        "warning": (
+            f"CCXT consensus had a daily history gap; Coinbase replaced prices from "
+            f"{gap_start} onward."
+        ),
+    }
+    LOGGER.warning(
+        "Filled %s price history from %s onward with Coinbase because CCXT had a daily gap.",
+        coinbase_product_id,
+        gap_start,
+    )
+    return combined
+
+
+def first_missing_daily_date(
+    frame: pd.DataFrame,
+    start: datetime | pd.Timestamp,
+    end: datetime | pd.Timestamp,
+) -> str | None:
+    if frame.empty or "date" not in frame:
+        return pd.Timestamp(start).date().isoformat()
+    dates = pd.to_datetime(frame["date"], utc=True).dt.date
+    available = set(dates.astype(str))
+    expected = pd.date_range(
+        pd.Timestamp(start).date(),
+        pd.Timestamp(end).date() - pd.Timedelta(days=1),
+        freq="D",
+    ).date.astype(str)
+    for date in expected:
+        if str(date) not in available:
+            return str(date)
+    return None
+
+
 def assert_price_coverage(
     frame: pd.DataFrame,
     start: datetime | pd.Timestamp,
     end: datetime | pd.Timestamp,
     min_coverage_ratio: float,
+    min_required_rows: int = 365,
 ) -> None:
     expected_days = max(1, (pd.Timestamp(end).date() - pd.Timestamp(start).date()).days)
-    min_rows = int(expected_days * min_coverage_ratio)
+    ratio_rows = int(expected_days * min_coverage_ratio)
+    min_rows = min(ratio_rows, min_required_rows)
     if expected_days >= 60:
         min_rows = max(30, min_rows)
     min_rows = max(1, min_rows)
     if len(frame) < min_rows:
         raise ApiError(
             f"CCXT consensus has insufficient history: {len(frame)} rows for "
-            f"{expected_days} requested days"
+            f"{expected_days} requested days; minimum usable rows is {min_rows}"
         )
+    if len(frame) < ratio_rows:
+        LOGGER.warning(
+            "CCXT consensus covers %s/%s requested days; continuing because minimum usable "
+            "history is %s rows.",
+            len(frame),
+            expected_days,
+            min_rows,
+        )
+
+
+def minimum_price_history_rows(cfg: dict[str, Any]) -> int:
+    history_cfg = cfg.get("history", {})
+    backtest_cfg = cfg.get("backtest", {})
+    warmup = int(history_cfg.get("minimum_warmup_days", 365))
+    robust_min = int(history_cfg.get("minimum_robust_observations", 180))
+    horizons = [int(value) for value in backtest_cfg.get("horizons_days", [30])]
+    max_horizon = max(horizons) if horizons else 30
+    return max(warmup, robust_min + 220, 365) + max_horizon
 
 
 def repair_history_prices(
