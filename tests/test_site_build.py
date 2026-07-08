@@ -14,6 +14,7 @@ def test_site_contains_required_tabs(monkeypatch):
         "Prijs",
         "Gebruik & ecosysteem",
         "Kapitaalstromen",
+        "Signaalonderzoek",
         "Onderbouwing",
         "Historische toets",
         "Open logboek",

@@ -47,6 +47,44 @@ PRICE_METADATA_COLUMNS = [
     "btc_price_sources",
 ]
 MAX_ALLOWED_CACHE_PRICE_BREAK = 0.40
+SIGNAL_RESEARCH_PATH = CURATED / "signaalonderzoek.parquet"
+SIGNAL_RESEARCH_LATEST_PATH = SITE_DATA / "signaalonderzoek.json"
+SIGNAL_RESEARCH_COLUMNS = [
+    "run_at_utc",
+    "data_cutoff_utc",
+    "method_version",
+    "mode",
+    "sol_price",
+    "btc_price",
+    "sol_live_price",
+    "btc_live_price",
+    "current_strength_score",
+    "support_score",
+    "price_strength_score",
+    "network_usage_score",
+    "capital_flows_score",
+    "ecosystem_breadth_score",
+    "regime",
+    "regime_title",
+    "sol_return_1d",
+    "sol_return_7d",
+    "sol_return_30d",
+    "btc_return_7d",
+    "btc_return_30d",
+    "relative_strength_btc_7d",
+    "relative_strength_btc_30d",
+    "price_vs_sma50",
+    "price_vs_sma200",
+    "realized_volatility_30d",
+    "drawdown_90d",
+    "dex_volume_ratio_7d_30d",
+    "dex_volume_change_30d",
+    "fees_ratio_7d_30d",
+    "tvl_change_7d",
+    "tvl_change_30d",
+    "stablecoin_change_7d",
+    "stablecoin_change_30d",
+]
 
 
 def load_or_fetch_history(mode: str) -> pd.DataFrame:
@@ -709,6 +747,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
         "model": llm_interpretation["model"],
         "llm_called_at_utc": llm_interpretation["llm_called_at_utc"],
     }
+    write_signal_research(dashboard, latest, generated, cutoff, mode)
     write_all_json(
         dashboard=dashboard,
         df=df,
@@ -1679,6 +1718,7 @@ def interpret_market(
     return {"title": title, "body": body, "note": " ".join(note_parts)}
 
 
+
 def deterministic_conclusion(reg: str, signal: float | None, quality: float) -> str:
     if signal is None:
         return "Er is onvoldoende actuele kerninformatie voor een gevalideerde conclusie."
@@ -1721,6 +1761,154 @@ def what_would_change(blocks: dict[str, float | None]) -> list[str]:
     else:
         items.append("De beweging versmalt naar minder Solana-ecosysteemtokens.")
     return items
+
+
+def signal_research_record(
+    dashboard: dict[str, Any],
+    latest: pd.Series,
+    generated: str,
+    cutoff: str,
+    mode: str,
+) -> dict[str, Any]:
+    blocks = dashboard.get("scores", {}).get("blocks", {})
+    current = dashboard.get("current", {})
+    summary = dashboard.get("summary", {})
+    return {
+        "run_at_utc": generated,
+        "data_cutoff_utc": cutoff,
+        "method_version": dashboard.get("method_version"),
+        "mode": mode,
+        "sol_price": rounded_or_none(current.get("sol_price")),
+        "btc_price": rounded_or_none(current.get("btc_price")),
+        "sol_live_price": rounded_or_none(current.get("live_sol_price")),
+        "btc_live_price": rounded_or_none(current.get("live_btc_price")),
+        "current_strength_score": rounded_or_none(dashboard.get("scores", {}).get("market_signal")),
+        "support_score": rounded_or_none(dashboard.get("scores", {}).get("evidence_quality")),
+        "price_strength_score": rounded_or_none(blocks.get("price_strength")),
+        "network_usage_score": rounded_or_none(blocks.get("network_usage")),
+        "capital_flows_score": rounded_or_none(blocks.get("capital")),
+        "ecosystem_breadth_score": rounded_or_none(blocks.get("ecosystem_breadth")),
+        "regime": summary.get("regime"),
+        "regime_title": summary.get("regime_title"),
+        "sol_return_1d": rounded_or_none(latest.get("sol_return_1d")),
+        "sol_return_7d": rounded_or_none(latest.get("sol_return_7d")),
+        "sol_return_30d": rounded_or_none(latest.get("sol_return_30d")),
+        "btc_return_7d": rounded_or_none(latest.get("btc_return_7d")),
+        "btc_return_30d": rounded_or_none(latest.get("btc_return_30d")),
+        "relative_strength_btc_7d": rounded_or_none(latest.get("relative_strength_btc_7d")),
+        "relative_strength_btc_30d": rounded_or_none(latest.get("relative_strength_btc_30d")),
+        "price_vs_sma50": rounded_or_none(latest.get("price_vs_sma50")),
+        "price_vs_sma200": rounded_or_none(latest.get("price_vs_sma200")),
+        "realized_volatility_30d": rounded_or_none(latest.get("realized_volatility_30d")),
+        "drawdown_90d": rounded_or_none(latest.get("drawdown_90d")),
+        "dex_volume_ratio_7d_30d": rounded_or_none(latest.get("dex_volume_ratio_7d_30d")),
+        "dex_volume_change_30d": rounded_or_none(latest.get("dex_volume_change_30d")),
+        "fees_ratio_7d_30d": rounded_or_none(latest.get("fees_ratio_7d_30d")),
+        "tvl_change_7d": rounded_or_none(latest.get("tvl_change_7d")),
+        "tvl_change_30d": rounded_or_none(latest.get("tvl_change_30d")),
+        "stablecoin_change_7d": rounded_or_none(latest.get("stablecoin_change_7d")),
+        "stablecoin_change_30d": rounded_or_none(latest.get("stablecoin_change_30d")),
+    }
+
+
+def write_signal_research(
+    dashboard: dict[str, Any],
+    latest: pd.Series,
+    generated: str,
+    cutoff: str,
+    mode: str,
+) -> None:
+    CURATED.mkdir(parents=True, exist_ok=True)
+    SITE_DATA.mkdir(parents=True, exist_ok=True)
+    record = signal_research_record(dashboard, latest, generated, cutoff, mode)
+    if SIGNAL_RESEARCH_PATH.exists():
+        existing = pd.read_parquet(SIGNAL_RESEARCH_PATH)
+    else:
+        existing = pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
+    new_row = pd.DataFrame([record])
+    combined = new_row if existing.empty else pd.concat([existing, new_row], ignore_index=True)
+    combined = combined.drop_duplicates("run_at_utc", keep="last")
+    combined = combined.reindex(columns=SIGNAL_RESEARCH_COLUMNS)
+    combined = combined.sort_values("run_at_utc")
+    combined.to_parquet(SIGNAL_RESEARCH_PATH, index=False)
+    latest_rows = combined.tail(50).copy()
+    write_json(
+        SIGNAL_RESEARCH_LATEST_PATH,
+        {
+            "schema_version": "1.0",
+            "generated_at_utc": generated,
+            "data_cutoff_utc": cutoff,
+            "method_version": dashboard.get("method_version"),
+            "name": "Signaalonderzoek",
+            "summary": (
+                "Elke rij is een vastgelegde dashboardrun. De volledige dataset staat in "
+                "data/curated/signaalonderzoek.parquet en is bedoeld voor later "
+                "signaalonderzoek en modelvalidatie."
+            ),
+            "row_count_total": int(len(combined)),
+            "row_count_visible": int(len(latest_rows)),
+            "download_path": "./data/signaalonderzoek.parquet",
+            "columns": signal_research_columns(),
+            "rows": latest_rows.to_dict("records"),
+        },
+    )
+    SITE_DATA.mkdir(parents=True, exist_ok=True)
+    combined.to_parquet(SITE_DATA / "signaalonderzoek.parquet", index=False)
+
+
+def signal_research_columns() -> list[dict[str, str]]:
+    return [
+        {
+            "key": "run_at_utc",
+            "label": "Run",
+            "description": "Moment waarop GitHub Actions het dashboard heeft bijgewerkt.",
+        },
+        {
+            "key": "data_cutoff_utc",
+            "label": "Data t/m",
+            "description": "Laatste marktdag die in de berekening is gebruikt.",
+        },
+        {
+            "key": "sol_price",
+            "label": "SOL",
+            "description": "SOL-slotkoers uit de gevalideerde dagreeks.",
+        },
+        {
+            "key": "btc_price",
+            "label": "BTC",
+            "description": "BTC-slotkoers uit de gevalideerde dagreeks.",
+        },
+        {
+            "key": "current_strength_score",
+            "label": "Sterkte",
+            "description": "Gewogen dashboardscore van 0 tot 100.",
+        },
+        {
+            "key": "support_score",
+            "label": "Onderbouwing",
+            "description": "Hoe stevig de data en historische toets zijn, van 0 tot 100.",
+        },
+        {
+            "key": "price_strength_score",
+            "label": "Koerskracht",
+            "description": "Prijsblok: momentum, trend en relatieve sterkte van SOL.",
+        },
+        {
+            "key": "network_usage_score",
+            "label": "Gebruik",
+            "description": "Netwerk- en DeFi-gebruik op en rond Solana.",
+        },
+        {
+            "key": "capital_flows_score",
+            "label": "Kapitaalstromen",
+            "description": "TVL en stablecoinvoorraad als kapitaalindicatoren.",
+        },
+        {
+            "key": "ecosystem_breadth_score",
+            "label": "Ecosysteembreedte",
+            "description": "Hoe breed Solana-ecosysteemtokens meebewegen.",
+        },
+    ]
 
 
 def write_all_json(

@@ -33,6 +33,7 @@
         <button class="tab" data-tab="price">Prijs</button>
         <button class="tab" data-tab="network">Gebruik & ecosysteem</button>
         <button class="tab" data-tab="capital">Kapitaalstromen</button>
+        <button class="tab" data-tab="signal-research">Signaalonderzoek</button>
         <button class="tab" data-tab="evidence">Onderbouwing</button>
       </nav>
 
@@ -110,6 +111,22 @@
 
       <section id="capital" class="panel">
         <div id="capital-tab"></div>
+      </section>
+
+
+      <section id="signal-research" class="panel">
+        <section class="wide signal-research-page">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Onderzoeksdataset</p>
+              <h2>Signaalonderzoek</h2>
+              <p id="signal-research-summary" class="plain"></p>
+            </div>
+            <a class="button" href="./data/signaalonderzoek.parquet" download>Download Parquet</a>
+          </div>
+          <div id="signal-research-stats" class="stat-row"></div>
+          <div id="signal-research-table" class="table-wrap compact-table"></div>
+        </section>
       </section>
 
       <section id="evidence" class="panel">

@@ -539,6 +539,52 @@ function renderLedger(ledger) {
   );
 }
 
+
+function renderSignalResearch(research) {
+  setText("signal-research-summary", research.summary || "Nog geen signaalonderzoek beschikbaar.");
+  renderStats("signal-research-stats", [
+    {label: "Totaal runs", value: String(research.row_count_total || 0)},
+    {label: "Zichtbaar", value: `${research.row_count_visible || 0} laatste runs`},
+    {label: "Laatste update", value: research.generated_at_utc || "n.v.t."},
+    {label: "Opslag", value: "Parquet + JSON"}
+  ]);
+  const rows = (research.rows || []).slice().reverse();
+  const tableRows = rows.map((row) => [
+    formatDateTime(row.run_at_utc),
+    formatMoney(row.sol_price),
+    formatMoney(row.btc_price),
+    fmtScore100(row.current_strength_score),
+    fmtScore100(row.support_score),
+    fmtScore100(row.price_strength_score),
+    fmtScore100(row.network_usage_score),
+    fmtScore100(row.capital_flows_score),
+    fmtScore100(row.ecosystem_breadth_score),
+    row.regime_title || row.regime || "n.v.t."
+  ]);
+  document.getElementById("signal-research-table").replaceChildren(table([
+    "Run",
+    "SOL",
+    "BTC",
+    "Sterkte",
+    "Onderbouwing",
+    "Koerskracht",
+    "Gebruik",
+    "Kapitaal",
+    "Breedte",
+    "Beeld"
+  ], tableRows));
+}
+
+function formatDateTime(value) {
+  if (!value) return "n.v.t.";
+  return String(value).replace("T", " ").replace("Z", " UTC");
+}
+
+function formatMoney(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  return `$${Number(value).toLocaleString("en-US", {maximumFractionDigits: 2})}`;
+}
+
 function renderMethodSteps() {
   const steps = [
     ["1. Data ophalen", "Dagprijzen, DeFi-data, kapitaalstromen en actuele netwerkcontext worden opgehaald."],
@@ -825,13 +871,14 @@ function table(headers, rows) {
 
 async function main() {
   activateTabs();
-  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
     loadJson("./data/glossary.json"),
     loadJson("./data/interpretation.json"),
-    loadJson("./data/interpretations/index.json").catch(() => ({entries: []}))
+    loadJson("./data/interpretations/index.json").catch(() => ({entries: []})),
+    loadJson("./data/signaalonderzoek.json").catch(() => ({rows: [], row_count_total: 0, row_count_visible: 0}))
   ]);
   if (dashboard.demo_notice) {
     const notice = document.getElementById("demo-notice");
@@ -866,6 +913,7 @@ async function main() {
     return li;
   }));
   window.renderGlossary(glossary);
+  renderSignalResearch(signalResearch);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
 }

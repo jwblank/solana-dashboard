@@ -8,6 +8,7 @@ for tab in [
     "Prijs",
     "Gebruik & ecosysteem",
     "Kapitaalstromen",
+    "Signaalonderzoek",
     "Onderbouwing",
 ]:
     if tab not in html:
