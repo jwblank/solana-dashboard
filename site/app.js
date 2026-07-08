@@ -126,17 +126,28 @@ function priceBreakdown(rows) {
     });
     block.append(title, meta);
     const exchanges = (row.exchange_prices || []).slice(0, 5);
-    if (exchanges.length > 1) {
-      const exchangeLine = document.createElement("p");
-      exchangeLine.className = "source-prices";
-      exchangeLine.textContent = exchanges
-        .map((source) => `${source.exchange}: ${formatSourcePrice(source.close)}${source.used ? "" : " (genegeerd)"}`)
-        .join(" · ");
-      block.append(exchangeLine);
+    if (exchanges.length) {
+      const list = document.createElement("div");
+      list.className = "source-price-list";
+      exchanges.forEach((source) => {
+        const line = document.createElement("div");
+        line.className = "source-price-line";
+        const status = source.status || (source.used ? "succesvol gebruikt" : "succesvol geladen; genegeerd");
+        line.textContent = `${formatExchangeName(source.exchange)}: ${formatSourcePrice(source.close)} ${status}`;
+        list.append(line);
+      });
+      block.append(list);
     }
     wrap.append(block);
   });
   return wrap;
+}
+
+function formatExchangeName(value) {
+  const text = String(value || "").toLowerCase();
+  const names = { coinbase: "Coinbase", kraken: "Kraken", okx: "OKX", kucoin: "KuCoin" };
+  if (!text) return "Bron";
+  return names[text] || text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function formatSourcePrice(value) {

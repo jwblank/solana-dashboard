@@ -112,6 +112,7 @@ def fetch_ccxt_consensus_daily(
     available = [status for status in statuses if status["available"]]
     if len(available) < min_sources:
         raise ApiError(f"CCXT consensus for {asset} has only {len(available)} sources")
+    raw = pd.concat(frames, ignore_index=True)
     consensus = build_price_consensus(
         frames,
         asset=asset,
@@ -120,6 +121,8 @@ def fetch_ccxt_consensus_daily(
     )
     if consensus.empty:
         raise ApiError(f"CCXT consensus for {asset} returned no usable rows")
+    price_breakdown = latest_price_breakdown(raw, consensus, asset, statuses)
+    consensus.attrs["price_breakdown"] = price_breakdown
     consensus.attrs["ccxt_status"] = {
         "asset": asset.upper(),
         "available": True,
@@ -130,7 +133,7 @@ def fetch_ccxt_consensus_daily(
         "outlier_count": int(consensus["outlier_count"].sum()),
         "min_source_count": int(consensus["source_count"].min()),
         "max_source_count": int(consensus["source_count"].max()),
-        "price_breakdown": consensus.attrs.get("price_breakdown", {}),
+        "price_breakdown": price_breakdown,
     }
     return consensus
 
@@ -139,6 +142,7 @@ def latest_price_breakdown(
     raw: pd.DataFrame,
     consensus: pd.DataFrame,
     asset: str,
+    statuses: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     latest = consensus.sort_values("date").iloc[-1]
     latest_date = str(latest["date"])
@@ -146,20 +150,48 @@ def latest_price_breakdown(
     median = float(latest["close"])
     max_deviation = float("nan")
     rows: list[dict[str, Any]] = []
+    raw_by_exchange: dict[str, dict[str, Any]] = {}
     if not raw_day.empty:
         raw_day["deviation"] = (pd.to_numeric(raw_day["close"]) / median - 1).abs()
         max_deviation = float(raw_day["deviation"].max())
-        used_sources = set(str(latest["sources"]).split(","))
-        for _, row in raw_day.sort_values("exchange").iterrows():
+        raw_by_exchange = {str(row["exchange"]): dict(row) for _, row in raw_day.iterrows()}
+    used_sources = set(str(latest["sources"]).split(","))
+    status_by_exchange = {
+        str(row.get("exchange")): row
+        for row in (statuses or [])
+        if isinstance(row, dict) and row.get("exchange")
+    }
+    exchange_names = sorted(set(raw_by_exchange) | set(status_by_exchange))
+    for exchange in exchange_names:
+        status = status_by_exchange.get(exchange, {})
+        raw_row = raw_by_exchange.get(exchange)
+        if raw_row is None:
+            warning = str(status.get("warning") or "geen prijs op consensusdag")
             rows.append(
                 {
-                    "exchange": str(row["exchange"]),
-                    "symbol": str(row["symbol"]),
-                    "close": round(float(row["close"]), 8),
-                    "used": str(row["exchange"]) in used_sources,
-                    "deviation_pct": round(float(row["deviation"]) * 100, 3),
+                    "exchange": exchange,
+                    "symbol": str(status.get("symbol") or ""),
+                    "close": None,
+                    "used": False,
+                    "status": f"niet beschikbaar: {warning}",
+                    "deviation_pct": None,
                 }
             )
+            continue
+        rows.append(
+            {
+                "exchange": exchange,
+                "symbol": str(raw_row["symbol"]),
+                "close": round(float(raw_row["close"]), 8),
+                "used": exchange in used_sources,
+                "status": (
+                    "succesvol gebruikt"
+                    if exchange in used_sources
+                    else "succesvol geladen; genegeerd"
+                ),
+                "deviation_pct": round(float(raw_row["deviation"]) * 100, 3),
+            }
+        )
     return {
         "asset": asset.upper(),
         "date": latest_date,

@@ -246,6 +246,50 @@ def test_coinbase_gap_fill_breakdown_uses_last_ccxt_day_before_gap():
 
     breakdown = coinbase_gap_fill_breakdown(coinbase, ccxt, "2026-01-03")
 
+    assert breakdown["method"] == "Coinbase herstelbron"
     assert breakdown["used_close"] == 103.0
     assert breakdown["ccxt_last_date"] == "2026-01-02"
     assert breakdown["ccxt_last_close"] == 101.0
+    assert breakdown["exchange_prices"][0]["status"] == "succesvol gebruikt als herstelbron"
+
+
+def test_coinbase_gap_fill_breakdown_preserves_unavailable_exchange_status():
+    ccxt = pd.DataFrame(
+        {
+            "date": ["2026-01-01", "2026-01-02"],
+            "close": [100.0, 101.0],
+        }
+    )
+    ccxt.attrs["price_breakdown"] = {
+        "exchange_prices": [
+            {
+                "exchange": "kraken",
+                "symbol": "SOL/USD",
+                "close": 101.2,
+                "used": True,
+                "status": "succesvol gebruikt",
+            },
+            {
+                "exchange": "okx",
+                "symbol": "SOL/USDT",
+                "close": None,
+                "used": False,
+                "status": "niet beschikbaar: geen prijs op consensusdag",
+            },
+        ]
+    }
+    coinbase = pd.DataFrame(
+        {
+            "date": ["2026-01-03"],
+            "asset": ["SOL"],
+            "close": [102.0],
+        }
+    )
+
+    breakdown = coinbase_gap_fill_breakdown(coinbase, ccxt, "2026-01-03")
+
+    statuses = {row["exchange"]: row["status"] for row in breakdown["exchange_prices"]}
+    assert statuses["kraken"] == (
+        "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat"
+    )
+    assert statuses["okx"] == "niet beschikbaar: geen prijs op consensusdag"

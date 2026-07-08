@@ -360,12 +360,22 @@ def coinbase_gap_fill_breakdown(
         if not ccxt_before_gap.empty
         else ccxt_frame.sort_values("date").iloc[-1]
     )
+    reference_prices: list[dict[str, Any]] = []
+    ccxt_breakdown = ccxt_frame.attrs.get("price_breakdown", {})
+    if isinstance(ccxt_breakdown, dict):
+        for price in ccxt_breakdown.get("exchange_prices", []):
+            if price.get("exchange") == "coinbase":
+                continue
+            status = price.get("status") or "succesvol geladen"
+            if price.get("close") is not None:
+                status = "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat"
+            reference_prices.append({**price, "used": False, "status": status})
     return {
         "asset": str(latest_coinbase.get("asset", "")).upper(),
         "date": str(latest_coinbase["date"]),
-        "method": "Coinbase gap fill",
+        "method": "Coinbase herstelbron",
         "used_close": round(float(latest_coinbase["close"]), 8),
-        "source_count": 1,
+        "source_count": 1 + len(reference_prices),
         "outlier_count": 0,
         "gap_fill_start": gap_start,
         "ccxt_last_date": str(latest_ccxt["date"]),
@@ -376,8 +386,10 @@ def coinbase_gap_fill_breakdown(
                 "symbol": str(latest_coinbase.get("asset", "")) + "-USD",
                 "close": round(float(latest_coinbase["close"]), 8),
                 "used": True,
+                "status": "succesvol gebruikt als herstelbron",
                 "deviation_pct": 0.0,
-            }
+            },
+            *reference_prices,
         ],
     }
 
@@ -1502,7 +1514,7 @@ def source_row(
     )
     status = "Succesvol" if ok else "Niet beschikbaar"
     if gap_fill_used:
-        status = "Deels aangevuld"
+        status = "Coinbase herstelbron"
     elif fallback_used:
         status = "Fallback gebruikt"
     last_success = source.get("last_success_at_utc")
@@ -1510,7 +1522,7 @@ def source_row(
         if ok:
             last_success = "Dataset aanwezig"
         elif gap_fill_used:
-            last_success = "Consensus aangevuld met Coinbase"
+            last_success = "Echte Coinbase-data gebruikt"
         elif fallback_used:
             last_success = "Coinbase fallback actief"
         else:
@@ -1518,8 +1530,8 @@ def source_row(
     warning = source.get("warning") or source.get("note") or ""
     if gap_fill_used and not warning:
         warning = (
-            "CCXT leverde multi-exchange data, maar had een historisch gat. "
-            "Coinbase vult de reeks vanaf het gat aan."
+            "Geen fake data: CCXT leverde multi-exchange data, maar had een historisch gat. "
+            "Vanaf dat gat gebruikt het dashboard echte Coinbase-dagprijzen."
         )
     elif fallback_used and not warning:
         warning = "Multi-exchange consensus niet volledig beschikbaar; fallback is gebruikt."

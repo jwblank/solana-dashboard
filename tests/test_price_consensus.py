@@ -122,7 +122,52 @@ def test_source_row_labels_gap_fill_as_partial_and_exposes_price_breakdown():
         "1400 consensusrijen",
     )
 
-    assert row["status"] == "Deels aangevuld"
-    assert row["last_success_at_utc"] == "Consensus aangevuld met Coinbase"
+    assert row["status"] == "Coinbase herstelbron"
+    assert row["last_success_at_utc"] == "Echte Coinbase-data gebruikt"
     assert row["price_breakdown"][0]["used_close"] == 81.89
-    assert "historisch gat" in row["warning"]
+    assert "Geen fake data" in row["warning"]
+
+
+def test_latest_price_breakdown_lists_failed_exchange_status():
+    raw_frames = [
+        exchange_frame("kraken", [100.0, 101.0]),
+        exchange_frame("kucoin", [100.5, 101.5]),
+    ]
+    consensus = build_price_consensus(
+        raw_frames,
+        asset="sol",
+        min_sources=2,
+        max_deviation_pct=5.0,
+    )
+    breakdown = latest_price_breakdown(
+        pd.concat(raw_frames),
+        consensus,
+        "sol",
+        [
+            {
+                "exchange": "kraken",
+                "symbol": "SOL/USD",
+                "available": True,
+                "warning": "",
+                "rows": 2,
+            },
+            {
+                "exchange": "kucoin",
+                "symbol": "SOL/USDT",
+                "available": True,
+                "warning": "",
+                "rows": 2,
+            },
+            {
+                "exchange": "okx",
+                "symbol": "SOL/USDT",
+                "available": False,
+                "warning": "rate limit",
+                "rows": 0,
+            },
+        ],
+    )
+
+    okx = [row for row in breakdown["exchange_prices"] if row["exchange"] == "okx"][0]
+    assert okx["close"] is None
+    assert okx["status"] == "niet beschikbaar: rate limit"
