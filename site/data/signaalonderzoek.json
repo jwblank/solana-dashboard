@@ -1,0 +1,102 @@
+{
+  "columns": [
+    {
+      "description": "Moment waarop GitHub Actions het dashboard heeft bijgewerkt.",
+      "key": "run_at_utc",
+      "label": "Run"
+    },
+    {
+      "description": "Laatste marktdag die in de berekening is gebruikt.",
+      "key": "data_cutoff_utc",
+      "label": "Data t/m"
+    },
+    {
+      "description": "SOL-slotkoers uit de gevalideerde dagreeks.",
+      "key": "sol_price",
+      "label": "SOL"
+    },
+    {
+      "description": "BTC-slotkoers uit de gevalideerde dagreeks.",
+      "key": "btc_price",
+      "label": "BTC"
+    },
+    {
+      "description": "Gewogen dashboardscore van 0 tot 100.",
+      "key": "current_strength_score",
+      "label": "Sterkte"
+    },
+    {
+      "description": "Hoe stevig de data en historische toets zijn, van 0 tot 100.",
+      "key": "support_score",
+      "label": "Onderbouwing"
+    },
+    {
+      "description": "Prijsblok: momentum, trend en relatieve sterkte van SOL.",
+      "key": "price_strength_score",
+      "label": "Koerskracht"
+    },
+    {
+      "description": "Netwerk- en DeFi-gebruik op en rond Solana.",
+      "key": "network_usage_score",
+      "label": "Gebruik"
+    },
+    {
+      "description": "TVL en stablecoinvoorraad als kapitaalindicatoren.",
+      "key": "capital_flows_score",
+      "label": "Kapitaalstromen"
+    },
+    {
+      "description": "Hoe breed Solana-ecosysteemtokens meebewegen.",
+      "key": "ecosystem_breadth_score",
+      "label": "Ecosysteembreedte"
+    }
+  ],
+  "data_cutoff_utc": "2026-07-07T23:59:59Z",
+  "download_path": "./data/signaalonderzoek.parquet",
+  "generated_at_utc": "2026-07-08T20:14:28Z",
+  "method_version": "1.0.0",
+  "name": "Signaalonderzoek",
+  "row_count_total": 1,
+  "row_count_visible": 1,
+  "rows": [
+    {
+      "btc_live_price": 62201.0,
+      "btc_price": 63323.27,
+      "btc_return_30d": 0.0,
+      "btc_return_7d": 0.08,
+      "capital_flows_score": 50.85,
+      "current_strength_score": 58.12,
+      "data_cutoff_utc": "2026-07-07T23:59:59Z",
+      "dex_volume_change_30d": -0.19,
+      "dex_volume_ratio_7d_30d": 7.19,
+      "drawdown_90d": -0.17,
+      "ecosystem_breadth_score": 59.47,
+      "fees_ratio_7d_30d": 7.72,
+      "method_version": "1.0.0",
+      "mode": "production",
+      "network_usage_score": 57.02,
+      "price_strength_score": 61.66,
+      "price_vs_sma200": -0.13,
+      "price_vs_sma50": 0.07,
+      "realized_volatility_30d": 0.56,
+      "regime": "mixed",
+      "regime_title": "Gemengd marktbeeld",
+      "relative_strength_btc_30d": 0.21,
+      "relative_strength_btc_7d": 0.01,
+      "run_at_utc": "2026-07-08T20:14:28Z",
+      "sol_live_price": 77.38,
+      "sol_price": 80.52,
+      "sol_return_1d": -0.02,
+      "sol_return_30d": 0.21,
+      "sol_return_7d": 0.09,
+      "stablecoin_change_30d": 0.0,
+      "stablecoin_change_7d": -0.01,
+      "support_score": 77.09,
+      "tvl_change_30d": 0.09,
+      "tvl_change_7d": 0.05
+    }
+  ],
+  "schema_version": "1.0",
+  "storage": "Parquet + JSON",
+  "summary": "Elke rij is een productie-run van het dashboard. De volledige dataset staat in data/curated/signaalonderzoek.parquet en is bedoeld voor later signaalonderzoek en modelvalidatie."
+}
