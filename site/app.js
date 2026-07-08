@@ -541,14 +541,18 @@ function renderLedger(ledger) {
 
 
 function renderSignalResearch(research) {
+  const rawRows = research.rows || [];
+  const productionRows = rawRows.filter((row) => row.mode === "production");
+  const filteredLegacyRows = rawRows.length !== productionRows.length;
+  const totalRuns = filteredLegacyRows ? productionRows.length : (research.row_count_total || productionRows.length);
   setText("signal-research-summary", research.summary || "Nog geen signaalonderzoek beschikbaar.");
   renderStats("signal-research-stats", [
-    {label: "Totaal runs", value: String(research.row_count_total || 0)},
-    {label: "Zichtbaar", value: `${research.row_count_visible || 0} laatste runs`},
+    {label: "Totaal runs", value: String(totalRuns)},
+    {label: "Zichtbaar", value: `${productionRows.length} laatste runs`},
     {label: "Laatste update", value: research.generated_at_utc || "n.v.t."},
-    {label: "Opslag", value: "Parquet + JSON"}
+    {label: "Opslag", value: research.storage || "Parquet + JSON"}
   ]);
-  const rows = (research.rows || []).slice().reverse();
+  const rows = productionRows.slice().reverse();
   const tableRows = rows.map((row) => [
     formatDateTime(row.run_at_utc),
     formatMoney(row.sol_price),

@@ -1818,42 +1818,89 @@ def write_signal_research(
     cutoff: str,
     mode: str,
 ) -> None:
-    CURATED.mkdir(parents=True, exist_ok=True)
     SITE_DATA.mkdir(parents=True, exist_ok=True)
     record = signal_research_record(dashboard, latest, generated, cutoff, mode)
-    if SIGNAL_RESEARCH_PATH.exists():
-        existing = pd.read_parquet(SIGNAL_RESEARCH_PATH)
-    else:
-        existing = pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
-    new_row = pd.DataFrame([record])
+    if mode != "production":
+        demo_frame = pd.DataFrame([record]).reindex(columns=SIGNAL_RESEARCH_COLUMNS)
+        write_signal_research_public(
+            demo_frame,
+            generated=generated,
+            cutoff=cutoff,
+            method_version=dashboard.get("method_version"),
+            persisted=False,
+        )
+        return
+
+    CURATED.mkdir(parents=True, exist_ok=True)
+    existing = read_signal_research_history()
+    new_row = pd.DataFrame([record]).reindex(columns=SIGNAL_RESEARCH_COLUMNS)
     combined = new_row if existing.empty else pd.concat([existing, new_row], ignore_index=True)
-    combined = combined.drop_duplicates("run_at_utc", keep="last")
-    combined = combined.reindex(columns=SIGNAL_RESEARCH_COLUMNS)
-    combined = combined.sort_values("run_at_utc")
+    combined = clean_signal_research_frame(combined)
     combined.to_parquet(SIGNAL_RESEARCH_PATH, index=False)
-    latest_rows = combined.tail(50).copy()
+    write_signal_research_public(
+        combined,
+        generated=generated,
+        cutoff=cutoff,
+        method_version=dashboard.get("method_version"),
+        persisted=True,
+    )
+
+
+def read_signal_research_history() -> pd.DataFrame:
+    if not SIGNAL_RESEARCH_PATH.exists():
+        return pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
+    return clean_signal_research_frame(pd.read_parquet(SIGNAL_RESEARCH_PATH))
+
+
+def clean_signal_research_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
+    cleaned = frame.copy()
+    if "mode" not in cleaned:
+        cleaned["mode"] = None
+    cleaned = cleaned[cleaned["mode"] == "production"]
+    cleaned = cleaned.reindex(columns=SIGNAL_RESEARCH_COLUMNS)
+    cleaned = cleaned.dropna(subset=["run_at_utc"])
+    cleaned = cleaned.drop_duplicates("run_at_utc", keep="last")
+    return cleaned.sort_values("run_at_utc")
+
+
+def write_signal_research_public(
+    frame: pd.DataFrame,
+    generated: str,
+    cutoff: str,
+    method_version: str | None,
+    persisted: bool,
+) -> None:
+    latest_rows = frame.tail(50).copy()
+    storage_text = "Parquet + JSON" if persisted else "Demo JSON"
+    summary = (
+        "Elke rij is een productie-run van het dashboard. De volledige dataset staat in "
+        "data/curated/signaalonderzoek.parquet en is bedoeld voor later "
+        "signaalonderzoek en modelvalidatie."
+        if persisted
+        else "Demo-weergave voor lokale tests. Deze rijen worden niet opgeslagen in de "
+        "onderzoeksdataset en tellen niet mee voor signaalonderzoek."
+    )
     write_json(
         SIGNAL_RESEARCH_LATEST_PATH,
         {
             "schema_version": "1.0",
             "generated_at_utc": generated,
             "data_cutoff_utc": cutoff,
-            "method_version": dashboard.get("method_version"),
+            "method_version": method_version,
             "name": "Signaalonderzoek",
-            "summary": (
-                "Elke rij is een vastgelegde dashboardrun. De volledige dataset staat in "
-                "data/curated/signaalonderzoek.parquet en is bedoeld voor later "
-                "signaalonderzoek en modelvalidatie."
-            ),
-            "row_count_total": int(len(combined)),
+            "summary": summary,
+            "row_count_total": int(len(frame)),
             "row_count_visible": int(len(latest_rows)),
-            "download_path": "./data/signaalonderzoek.parquet",
+            "download_path": "./data/signaalonderzoek.parquet" if persisted else None,
+            "storage": storage_text,
             "columns": signal_research_columns(),
             "rows": latest_rows.to_dict("records"),
         },
     )
-    SITE_DATA.mkdir(parents=True, exist_ok=True)
-    combined.to_parquet(SITE_DATA / "signaalonderzoek.parquet", index=False)
+    if persisted:
+        frame.to_parquet(SITE_DATA / "signaalonderzoek.parquet", index=False)
 
 
 def signal_research_columns() -> list[dict[str, str]]:
