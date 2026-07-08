@@ -87,15 +87,61 @@ function sourceCards(cards) {
       chip.textContent = `${label}: ${value || "n.v.t."}`;
       meta.append(chip);
     });
+    const priceDetails = priceBreakdown(item.price_breakdown || []);
     if (item.warning) {
       const warning = document.createElement("small");
       warning.textContent = item.warning;
-      card.append(top, role, meta, warning);
+      card.append(top, role, meta, priceDetails, warning);
     } else {
-      card.append(top, role, meta);
+      card.append(top, role, meta, priceDetails);
     }
     return card;
   });
+}
+
+function priceBreakdown(rows) {
+  const wrap = document.createElement("div");
+  wrap.className = "price-breakdown";
+  if (!rows.length) return wrap;
+  rows.forEach((row) => {
+    const block = document.createElement("div");
+    block.className = "price-breakdown-block";
+    const title = document.createElement("strong");
+    title.textContent = `${row.asset}: ${formatSourcePrice(row.used_close)}`;
+    const meta = document.createElement("div");
+    meta.className = "metric-row";
+    [
+      ["Methode", row.method || row.provider],
+      ["Datum", row.date],
+      ["Bronnen", row.source_count ? String(row.source_count) : "n.v.t."],
+      ["Genegeerd", row.outlier_count !== undefined ? String(row.outlier_count) : "0"],
+      ["Spreiding", row.max_deviation_pct !== null && row.max_deviation_pct !== undefined ? `${row.max_deviation_pct}%` : "n.v.t."],
+      ["Gat vanaf", row.gap_fill_start],
+      ["CCXT laatst", row.ccxt_last_date ? `${row.ccxt_last_date} (${formatSourcePrice(row.ccxt_last_close)})` : ""]
+    ].filter(([, value]) => value).forEach(([label, value]) => {
+      const chip = document.createElement("span");
+      chip.className = "metric";
+      chip.textContent = `${label}: ${value}`;
+      meta.append(chip);
+    });
+    block.append(title, meta);
+    const exchanges = (row.exchange_prices || []).slice(0, 5);
+    if (exchanges.length > 1) {
+      const exchangeLine = document.createElement("p");
+      exchangeLine.className = "source-prices";
+      exchangeLine.textContent = exchanges
+        .map((source) => `${source.exchange}: ${formatSourcePrice(source.close)}${source.used ? "" : " (genegeerd)"}`)
+        .join(" · ");
+      block.append(exchangeLine);
+    }
+    wrap.append(block);
+  });
+  return wrap;
+}
+
+function formatSourcePrice(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  return `$${Number(value).toFixed(2)}`;
 }
 
 function renderStats(targetId, stats) {

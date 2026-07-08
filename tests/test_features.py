@@ -6,6 +6,7 @@ from sol_reality_check.demo import demo_history
 from sol_reality_check.pipeline import (
     ApiError,
     assert_price_coverage,
+    coinbase_gap_fill_breakdown,
     first_missing_daily_date,
     production_history_cache_is_usable,
     repair_history_prices,
@@ -226,3 +227,25 @@ def test_first_missing_daily_date_returns_none_for_complete_history():
     )
 
     assert missing is None
+
+
+def test_coinbase_gap_fill_breakdown_uses_last_ccxt_day_before_gap():
+    ccxt = pd.DataFrame(
+        {
+            "date": ["2026-01-01", "2026-01-02", "2026-01-04"],
+            "close": [100.0, 101.0, 150.0],
+        }
+    )
+    coinbase = pd.DataFrame(
+        {
+            "date": ["2026-01-03", "2026-01-04"],
+            "asset": ["SOL", "SOL"],
+            "close": [102.0, 103.0],
+        }
+    )
+
+    breakdown = coinbase_gap_fill_breakdown(coinbase, ccxt, "2026-01-03")
+
+    assert breakdown["used_close"] == 103.0
+    assert breakdown["ccxt_last_date"] == "2026-01-02"
+    assert breakdown["ccxt_last_close"] == 101.0

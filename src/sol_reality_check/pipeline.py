@@ -273,11 +273,33 @@ def fetch_price_history(
             "fallback_used": True,
             "warning": str(exc),
             "rows": len(frame),
+            "price_breakdown": coinbase_fallback_breakdown(frame, asset),
         }
         frame["source_count"] = 1
         frame["outlier_count"] = 0
         frame["sources"] = "coinbase"
         return frame
+
+
+def coinbase_fallback_breakdown(frame: pd.DataFrame, asset: str) -> dict[str, Any]:
+    latest = frame.sort_values("date").iloc[-1]
+    return {
+        "asset": asset.upper(),
+        "date": str(latest["date"]),
+        "method": "Coinbase fallback",
+        "used_close": round(float(latest["close"]), 8),
+        "source_count": 1,
+        "outlier_count": 0,
+        "exchange_prices": [
+            {
+                "exchange": "coinbase",
+                "symbol": str(latest.get("asset", asset.upper())) + "-USD",
+                "close": round(float(latest["close"]), 8),
+                "used": True,
+                "deviation_pct": 0.0,
+            }
+        ],
+    }
 
 
 def fill_price_history_gaps_with_coinbase(
@@ -312,6 +334,7 @@ def fill_price_history_gaps_with_coinbase(
         "fallback_used": True,
         "gap_fill_start": gap_start,
         "gap_fill_rows": len(coinbase),
+        "price_breakdown": coinbase_gap_fill_breakdown(coinbase, frame, gap_start),
         "warning": (
             f"CCXT consensus had a daily history gap; Coinbase replaced prices from "
             f"{gap_start} onward."
@@ -323,6 +346,40 @@ def fill_price_history_gaps_with_coinbase(
         gap_start,
     )
     return combined
+
+
+def coinbase_gap_fill_breakdown(
+    coinbase: pd.DataFrame,
+    ccxt_frame: pd.DataFrame,
+    gap_start: str,
+) -> dict[str, Any]:
+    latest_coinbase = coinbase.sort_values("date").iloc[-1]
+    ccxt_before_gap = ccxt_frame[ccxt_frame["date"] < gap_start]
+    latest_ccxt = (
+        ccxt_before_gap.sort_values("date").iloc[-1]
+        if not ccxt_before_gap.empty
+        else ccxt_frame.sort_values("date").iloc[-1]
+    )
+    return {
+        "asset": str(latest_coinbase.get("asset", "")).upper(),
+        "date": str(latest_coinbase["date"]),
+        "method": "Coinbase gap fill",
+        "used_close": round(float(latest_coinbase["close"]), 8),
+        "source_count": 1,
+        "outlier_count": 0,
+        "gap_fill_start": gap_start,
+        "ccxt_last_date": str(latest_ccxt["date"]),
+        "ccxt_last_close": round(float(latest_ccxt["close"]), 8),
+        "exchange_prices": [
+            {
+                "exchange": "coinbase",
+                "symbol": str(latest_coinbase.get("asset", "")) + "-USD",
+                "close": round(float(latest_coinbase["close"]), 8),
+                "used": True,
+                "deviation_pct": 0.0,
+            }
+        ],
+    }
 
 
 def first_missing_daily_date(
@@ -1432,25 +1489,39 @@ def source_row(
     role: str,
     validation: str,
     coverage: str,
-) -> dict[str, str]:
+) -> dict[str, Any]:
     ok = bool(source.get("available"))
+    context = source.get("context") or {}
     fallback_used = any(
         isinstance(row, dict) and row.get("fallback_used")
-        for row in (source.get("context") or {}).values()
+        for row in context.values()
+    )
+    gap_fill_used = any(
+        isinstance(row, dict) and row.get("provider") == "CCXT consensus + Coinbase gap fill"
+        for row in context.values()
     )
     status = "Succesvol" if ok else "Niet beschikbaar"
-    if fallback_used:
+    if gap_fill_used:
+        status = "Deels aangevuld"
+    elif fallback_used:
         status = "Fallback gebruikt"
     last_success = source.get("last_success_at_utc")
     if not last_success:
         if ok:
             last_success = "Dataset aanwezig"
+        elif gap_fill_used:
+            last_success = "Consensus aangevuld met Coinbase"
         elif fallback_used:
             last_success = "Coinbase fallback actief"
         else:
             last_success = "n.v.t."
     warning = source.get("warning") or source.get("note") or ""
-    if fallback_used and not warning:
+    if gap_fill_used and not warning:
+        warning = (
+            "CCXT leverde multi-exchange data, maar had een historisch gat. "
+            "Coinbase vult de reeks vanaf het gat aan."
+        )
+    elif fallback_used and not warning:
         warning = "Multi-exchange consensus niet volledig beschikbaar; fallback is gebruikt."
     return {
         "name": name,
@@ -1460,7 +1531,35 @@ def source_row(
         "coverage": coverage,
         "last_success_at_utc": str(last_success),
         "warning": str(warning),
+        "price_breakdown": price_source_breakdown(context),
     }
+
+
+def price_source_breakdown(price_status: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = []
+    for asset, row in sorted(price_status.items()):
+        if not isinstance(row, dict):
+            continue
+        breakdown = row.get("price_breakdown")
+        if not isinstance(breakdown, dict):
+            continue
+        rows.append(
+            {
+                "asset": str(asset).upper(),
+                "provider": row.get("provider", breakdown.get("method", "prijsbron")),
+                "date": breakdown.get("date"),
+                "method": breakdown.get("method"),
+                "used_close": breakdown.get("used_close"),
+                "source_count": breakdown.get("source_count"),
+                "outlier_count": breakdown.get("outlier_count"),
+                "max_deviation_pct": breakdown.get("max_deviation_pct"),
+                "gap_fill_start": breakdown.get("gap_fill_start"),
+                "ccxt_last_date": breakdown.get("ccxt_last_date"),
+                "ccxt_last_close": breakdown.get("ccxt_last_close"),
+                "exchange_prices": breakdown.get("exchange_prices", []),
+            }
+        )
+    return rows
 
 
 def price_consensus_summary(price_status: dict[str, Any]) -> str:

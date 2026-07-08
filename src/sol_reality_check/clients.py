@@ -130,8 +130,46 @@ def fetch_ccxt_consensus_daily(
         "outlier_count": int(consensus["outlier_count"].sum()),
         "min_source_count": int(consensus["source_count"].min()),
         "max_source_count": int(consensus["source_count"].max()),
+        "price_breakdown": consensus.attrs.get("price_breakdown", {}),
     }
     return consensus
+
+
+def latest_price_breakdown(
+    raw: pd.DataFrame,
+    consensus: pd.DataFrame,
+    asset: str,
+) -> dict[str, Any]:
+    latest = consensus.sort_values("date").iloc[-1]
+    latest_date = str(latest["date"])
+    raw_day = raw[raw["date"] == latest_date].copy()
+    median = float(latest["close"])
+    max_deviation = float("nan")
+    rows: list[dict[str, Any]] = []
+    if not raw_day.empty:
+        raw_day["deviation"] = (pd.to_numeric(raw_day["close"]) / median - 1).abs()
+        max_deviation = float(raw_day["deviation"].max())
+        used_sources = set(str(latest["sources"]).split(","))
+        for _, row in raw_day.sort_values("exchange").iterrows():
+            rows.append(
+                {
+                    "exchange": str(row["exchange"]),
+                    "symbol": str(row["symbol"]),
+                    "close": round(float(row["close"]), 8),
+                    "used": str(row["exchange"]) in used_sources,
+                    "deviation_pct": round(float(row["deviation"]) * 100, 3),
+                }
+            )
+    return {
+        "asset": asset.upper(),
+        "date": latest_date,
+        "method": "Multi-exchange mediaan",
+        "used_close": round(median, 8),
+        "source_count": int(latest["source_count"]),
+        "outlier_count": int(latest["outlier_count"]),
+        "max_deviation_pct": None if pd.isna(max_deviation) else round(max_deviation * 100, 3),
+        "exchange_prices": rows,
+    }
 
 
 def fetch_ccxt_exchange_daily(
@@ -216,7 +254,11 @@ def build_price_consensus(
                 "sources": ",".join(sorted(usable["exchange"].unique())),
             }
         )
-    return pd.DataFrame(rows).sort_values("date") if rows else pd.DataFrame()
+    if not rows:
+        return pd.DataFrame()
+    consensus = pd.DataFrame(rows).sort_values("date")
+    consensus.attrs["price_breakdown"] = latest_price_breakdown(raw, consensus, asset)
+    return consensus
 
 
 def ccxt_status(
