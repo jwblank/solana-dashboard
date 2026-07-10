@@ -59,7 +59,7 @@ De overzichtspagina bevat een driver-waterfall die laat zien waardoor de totaals
 gewogen bijdrage = blokscore x blokgewicht
 ```
 
-Voorbeelden van blokken zijn koerskracht, netwerkgebruik, kapitaalstromen en ecosysteembreedte. De waterfall vergelijkt de gewogen bijdrage van elk blok met de vorige officiële productierun. Als methodeversies niet betrouwbaar vergelijkbaar zijn, wordt geen misleidende waterfall getoond en valt de pagina terug op ruwe scoreveranderingen.
+Voorbeelden van blokken zijn koerskracht, netwerkgebruik, kapitaalstromen en ecosysteembreedte. De waterfall vergelijkt de gewogen bijdrage van elk blok met de vorige officiële productierun. De stappen zijn cumulatief: de balk voor netwerkgebruik begint op het niveau waar koerskracht eindigde. Als methodeversies niet betrouwbaar vergelijkbaar zijn, wordt geen misleidende waterfall getoond en valt de pagina terug op ruwe scoreveranderingen.
 
 Nieuwe runs slaan de gebruikte blokgewichten en gewogen bijdragen additief op in `data/curated/signaalonderzoek.parquet`. Bestaande historische rijen worden niet herschreven om latere visualisaties mooier te maken.
 
@@ -70,21 +70,41 @@ Het dashboard maakt expliciet onderscheid tussen:
 * **historische backtest:** toetsing op historische data;
 * **publiek forward trackrecord:** werkelijk gepubliceerde productieruns en later beschikbare uitkomsten.
 
-Een backtest wordt nooit gepresenteerd als live trackrecord. De maturiteitsstatus zegt alleen iets over de lengte van het publieke trackrecord:
+Een backtest wordt nooit gepresenteerd als live trackrecord. De maturiteitsstatus is gebaseerd op unieke officiële signalen uit het append-only prediction-ledger, niet op technische GitHub Actions-runs. Een technische rerun met dezelfde `prediction_id` telt dus niet als nieuw signaal.
+
+De maturiteitsstatus zegt alleen iets over de lengte van het publieke trackrecord:
 
 * 0-29 officiële runs: Startfase
 * 30-99 officiële runs: Opbouwfase
 * 100-249 officiële runs: Eerste structurele evaluatie mogelijk
 * 250 of meer officiële runs: Volwassen publiek trackrecord
 
-Meer observaties betekenen niet automatisch betere voorspellingen. Daarom toont het dashboard apart een conservatieve prestatiestatus op basis van afgeronde uitkomsten, Brier skill, kalibratie en steekproefomvang.
+Meer observaties betekenen niet automatisch betere voorspellingen. Daarom toont het dashboard apart:
+
+* technische updates;
+* officiële signalen;
+* afgeronde forward-uitkomsten;
+* historische backteststatistieken;
+* datakwaliteit en methode-informatie.
+
+Forwardstatus gebruikt uitsluitend forwardgegevens. Backteststatus gebruikt uitsluitend historische backtestgegevens.
+
+## Methodeversies
+
+Methodegewichten en methodebeschrijvingen staan centraal in:
+
+```text
+config/method_versions.yml
+```
+
+Deze configuratie wordt gebruikt voor de driver-waterfall, methodevergelijkbaarheid en methodewijzigingsmarkers in de scorehistorie. Wanneer meerdere methodeversies in de historie voorkomen, toont de grafiek de overgang zichtbaar en worden scorelijnen per methodeversie onderbroken, zodat een rekenkundige methodewijziging niet als marktbeweging wordt gelezen.
 
 ## Nieuwe Publicatiebestanden
 
 Naast de bestaande JSON-bestanden publiceert de pipeline:
 
 * `site/data/overview.json`: actuele vergelijking met de vorige officiële productierun, driver-waterfall en trackrecordstatus;
-* `site/data/overview_history.json`: compacte scorehistorie voor de homepagegrafiek;
+* `site/data/overview_history.json`: compacte scorehistorie en methodewijzigingen voor de homepagegrafiek;
 * `site/data/signaalonderzoek.parquet`: volledige publieke kopie van de bron-Parquet;
 * `site/data/signaalonderzoek.json`: compacte recente selectie voor de frontendtabel.
 

@@ -64,14 +64,14 @@ MATURITY_THRESHOLDS = [
     (100, "Eerste structurele evaluatie mogelijk"),
     (250, "Volwassen publiek trackrecord"),
 ]
-METHOD_VERSION_WEIGHTS = {
-    "1.0.0": {
-        "price_strength": 0.45,
-        "network_usage": 0.25,
-        "capital_flows": 0.20,
-        "ecosystem_breadth": 0.10,
-    }
-}
+WATERFALL_RESIDUAL_VISIBILITY_THRESHOLD = 0.05
+WATERFALL_RECONCILIATION_TOLERANCE = 1e-6
+DRIVER_ORDER = [
+    ("price_strength", "Koerskracht", "price_strength_score"),
+    ("network_usage", "Netwerkgebruik", "network_usage_score"),
+    ("capital_flows", "Kapitaalstromen", "capital_flows_score"),
+    ("ecosystem_breadth", "Ecosysteembreedte", "ecosystem_breadth_score"),
+]
 SIGNAL_RESEARCH_COLUMNS = [
     "run_at_utc",
     "data_cutoff_utc",
@@ -779,6 +779,7 @@ def build_outputs(mode: str) -> dict[str, Any]:
         "llm_called_at_utc": llm_interpretation["llm_called_at_utc"],
     }
     write_signal_research(dashboard, latest, generated, cutoff, mode)
+    maybe_append_prediction(dashboard, latest)
     write_all_json(
         dashboard=dashboard,
         df=df,
@@ -789,7 +790,6 @@ def build_outputs(mode: str) -> dict[str, Any]:
         generated=generated,
         cutoff=cutoff,
     )
-    maybe_append_prediction(dashboard, latest)
     return dashboard
 
 
@@ -1872,6 +1872,48 @@ def normalized_signal_weights(weights: dict[str, Any]) -> dict[str, float | None
     }
 
 
+def method_versions_config() -> dict[str, Any]:
+    data = load_yaml("config/method_versions.yml")
+    versions = data.get("method_versions", {})
+    if not isinstance(versions, dict):
+        raise ValueError("config/method_versions.yml must contain method_versions mapping")
+    for version, meta in versions.items():
+        weights = (meta or {}).get("weights", {})
+        validate_method_weights(str(version), weights)
+    return versions
+
+
+def validate_method_weights(version: str, weights: dict[str, Any]) -> None:
+    required = {key for key, _, _ in DRIVER_ORDER}
+    if set(weights) != required:
+        missing = sorted(required - set(weights))
+        extra = sorted(set(weights) - required)
+        raise ValueError(f"Method {version} weight mismatch; missing={missing}, extra={extra}")
+    total = 0.0
+    for key, value in weights.items():
+        if not isinstance(value, int | float) or value < 0:
+            raise ValueError(f"Method {version} has invalid weight for {key}: {value}")
+        total += float(value)
+    if abs(total - 1.0) > 1e-9:
+        raise ValueError(f"Method {version} weights sum to {total}, not 1.0")
+
+
+def method_weights(method_version: Any) -> dict[str, float]:
+    meta = method_versions_config().get(str(method_version), {})
+    return {key: float(value) for key, value in (meta.get("weights") or {}).items()}
+
+
+def method_metadata(method_version: Any) -> dict[str, Any]:
+    meta = method_versions_config().get(str(method_version), {})
+    if not meta:
+        return {
+            "label": f"Methode {method_version}",
+            "description": "Geen toelichting beschikbaar.",
+            "weights": {},
+        }
+    return meta
+
+
 def weighted_contribution(score: float | None, weight: float | None) -> float | None:
     if score is None or weight is None:
         return None
@@ -2238,6 +2280,7 @@ def build_overview_history(history: pd.DataFrame, generated: str) -> dict[str, A
         "row_count_total": int(len(production)),
         "legacy_or_nonproduction_rows_preserved": legacy_count,
         "rows": rows,
+        "method_transitions": method_transitions(rows),
     }
 
 
@@ -2279,8 +2322,9 @@ def build_overview(
     drivers = build_driver_changes(current, previous)
     waterfall = build_waterfall(current, previous, drivers)
     track_record = build_track_record(rows, ledger_payload, backtest, dashboard)
+    transitions = method_transitions(rows)
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "generated_at_utc": generated,
         "current_run": current,
         "previous_run": previous,
@@ -2289,9 +2333,31 @@ def build_overview(
         "largest_changes": largest_driver_changes(drivers),
         "waterfall": waterfall,
         "track_record": track_record,
+        "method_transitions": transitions,
         "what_would_change": dashboard.get("summary", {}).get("what_would_change", []),
         "warnings": warnings,
     }
+
+
+def method_transitions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    transitions = []
+    previous_version = None
+    for row in rows:
+        version = row.get("method_version")
+        if previous_version is not None and version != previous_version:
+            meta = method_metadata(version)
+            transitions.append(
+                {
+                    "run_at_utc": row.get("run_at_utc"),
+                    "data_cutoff_utc": row.get("data_cutoff_utc"),
+                    "previous_version": previous_version,
+                    "new_version": version,
+                    "label": f"Methode {version} gestart",
+                    "description": meta.get("description", "Geen toelichting beschikbaar."),
+                }
+            )
+        previous_version = version
+    return transitions
 
 
 def current_run_from_dashboard(dashboard: dict[str, Any]) -> dict[str, Any]:
@@ -2356,19 +2422,13 @@ def build_driver_changes(
     current: dict[str, Any],
     previous: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
-    driver_defs = [
-        ("price_strength", "Koerskracht", "price_strength_score"),
-        ("network_usage", "Netwerkgebruik", "network_usage_score"),
-        ("capital_flows", "Kapitaalstromen", "capital_flows_score"),
-        ("ecosystem_breadth", "Ecosysteembreedte", "ecosystem_breadth_score"),
-    ]
     current_method = current.get("method_version")
     previous_method = previous.get("method_version") if previous else None
-    current_weights = METHOD_VERSION_WEIGHTS.get(str(current_method), {})
-    previous_weights = METHOD_VERSION_WEIGHTS.get(str(previous_method), {})
+    current_weights = method_weights(current_method)
+    previous_weights = method_weights(previous_method)
     comparable = bool(previous) and current_method == previous_method and bool(current_weights)
     drivers = []
-    for key, label, score_key in driver_defs:
+    for key, label, score_key in DRIVER_ORDER:
         current_score = nullable_number(current.get(score_key))
         previous_score = nullable_number(previous.get(score_key)) if previous else None
         score_change = (
@@ -2426,8 +2486,20 @@ def change_label(delta: float | None) -> str:
 
 def largest_driver_changes(drivers: list[dict[str, Any]]) -> dict[str, Any]:
     changed = [driver for driver in drivers if driver.get("score_delta") is not None]
-    positive = sorted(changed, key=lambda item: item["score_delta"], reverse=True)[:2]
-    negative = sorted(changed, key=lambda item: item["score_delta"])[:2]
+    material_changed = [
+        driver
+        for driver in changed
+        if abs(float(driver["score_delta"])) >= SCORE_CHANGE_THRESHOLDS["unchanged"]
+    ]
+    positive = sorted(
+        [driver for driver in material_changed if float(driver["score_delta"]) > 0],
+        key=lambda item: item["score_delta"],
+        reverse=True,
+    )[:2]
+    negative = sorted(
+        [driver for driver in material_changed if float(driver["score_delta"]) < 0],
+        key=lambda item: item["score_delta"],
+    )[:2]
     material = [
         driver
         for driver in changed
@@ -2442,7 +2514,20 @@ def largest_driver_changes(drivers: list[dict[str, Any]]) -> dict[str, Any]:
             f"De beweging kwam vooral door {strongest['label'].lower()}, "
             f"dat {direction} trok."
         )
-    return {"positive": positive, "negative": negative, "conclusion": conclusion}
+    return {
+        "positive": positive,
+        "negative": negative,
+        "positive_empty_message": None
+        if positive
+        else "Geen materieel positieve driver sinds de vorige officiële meting.",
+        "negative_empty_message": None
+        if negative
+        else "Geen materieel negatieve driver sinds de vorige officiële meting.",
+        "all_unchanged_message": "Het beeld veranderde nauwelijks sinds de vorige officiële meting."
+        if not positive and not negative
+        else None,
+        "conclusion": conclusion,
+    }
 
 
 def build_waterfall(
@@ -2478,7 +2563,19 @@ def build_waterfall(
     numeric_deltas = [float(delta) for delta in deltas if delta is not None]
     driver_delta_sum = float(sum(numeric_deltas))
     residual = (end - start) - driver_delta_sum
-    visible_residual = rounded_or_none(residual) if abs(residual) >= 0.05 else 0.0
+    visible_residual = (
+        rounded_or_none(residual)
+        if abs(residual) >= WATERFALL_RESIDUAL_VISIBILITY_THRESHOLD
+        else 0.0
+    )
+    raw_steps = waterfall_steps(start, drivers, residual)
+    final_end = start + driver_delta_sum + residual
+    if abs(final_end - end) > WATERFALL_RECONCILIATION_TOLERANCE:
+        return {
+            "available": False,
+            "reason_unavailable": "Waterfall sluit numeriek niet aan op de totaalscore.",
+            "raw_driver_changes": drivers,
+        }
     return {
         "available": True,
         "reason_unavailable": None,
@@ -2486,8 +2583,63 @@ def build_waterfall(
         "end_score": rounded_or_none(end),
         "driver_delta_sum": rounded_or_none(driver_delta_sum),
         "residual_delta": visible_residual,
+        "steps": [rounded_waterfall_step(step) for step in raw_steps],
         "summary": waterfall_summary(drivers),
     }
+
+
+def waterfall_steps(
+    start_score: float,
+    drivers: list[dict[str, Any]],
+    residual: float,
+) -> list[dict[str, Any]]:
+    cursor = start_score
+    steps = []
+    for driver in drivers:
+        delta = float(driver["contribution_delta"])
+        next_value = cursor + delta
+        steps.append(
+            {
+                "key": driver["key"],
+                "label": driver["label"],
+                "delta": delta,
+                "start": cursor,
+                "end": next_value,
+                "direction": delta_direction(delta),
+                "kind": "driver",
+            }
+        )
+        cursor = next_value
+    if abs(residual) >= WATERFALL_RESIDUAL_VISIBILITY_THRESHOLD:
+        next_value = cursor + residual
+        steps.append(
+            {
+                "key": "residual",
+                "label": "Rest",
+                "delta": residual,
+                "start": cursor,
+                "end": next_value,
+                "direction": delta_direction(residual),
+                "kind": "residual",
+            }
+        )
+        cursor = next_value
+    else:
+        cursor += residual
+    return steps
+
+
+def rounded_waterfall_step(step: dict[str, Any]) -> dict[str, Any]:
+    rounded = dict(step)
+    for key in ["delta", "start", "end"]:
+        rounded[key] = rounded_or_none(rounded[key])
+    return rounded
+
+
+def delta_direction(delta: float) -> str:
+    if abs(delta) < 1e-12:
+        return "neutral"
+    return "positive" if delta > 0 else "negative"
 
 
 def waterfall_summary(drivers: list[dict[str, Any]]) -> str:
@@ -2520,29 +2672,58 @@ def build_track_record(
     backtest: dict[str, Any],
     dashboard: dict[str, Any],
 ) -> dict[str, Any]:
-    first = rows[0] if rows else None
-    latest = rows[-1] if rows else None
-    predictions = ledger_payload.get("predictions", [])
+    predictions_raw = ledger_payload.get("predictions", [])
     outcomes = ledger_payload.get("outcomes", [])
+    official_signals, legacy_predictions = unique_official_signals(predictions_raw)
+    first_signal = official_signals[0] if official_signals else None
+    latest_signal = official_signals[-1] if official_signals else None
     horizon_7d = backtest.get("7d", {}) if backtest else {}
     method_versions = sorted(
-        {str(row.get("method_version")) for row in rows if row.get("method_version")}
+        {
+            str(row.get("method_version"))
+            for row in official_signals
+            if row.get("method_version")
+        }
     )
-    production_count = len(rows)
+    official_count = len(official_signals)
+    resolved_by_horizon_counts = resolved_by_horizon(outcomes)
+    forward_metrics = forward_metrics_by_horizon(official_signals, outcomes)
+    resolved_prediction_ids = {
+        row.get("prediction_id") for row in outcomes if row.get("prediction_id")
+    }
     return {
-        "production_run_count": production_count,
-        "first_run_at_utc": first.get("run_at_utc") if first else None,
-        "latest_run_at_utc": latest.get("run_at_utc") if latest else None,
-        "calendar_span_days": calendar_span_days(first, latest),
+        "technical_run_count": len(rows),
+        "production_run_count": len(rows),
+        "first_run_at_utc": rows[0].get("run_at_utc") if rows else None,
+        "latest_run_at_utc": rows[-1].get("run_at_utc") if rows else None,
+        "calendar_span_days": calendar_span_days(rows[0], rows[-1]) if rows else 0,
+        "official_signal_count": official_count,
+        "prediction_count": official_count,
+        "open_signal_count": max(official_count - len(resolved_prediction_ids), 0),
+        "resolved_outcome_count": len(outcomes),
+        "resolved_by_horizon": resolved_by_horizon_counts,
+        "first_prediction_at_utc": first_signal.get("created_at_utc") if first_signal else None,
+        "last_prediction_at_utc": latest_signal.get("created_at_utc") if latest_signal else None,
+        "unique_prediction_days": unique_prediction_days(official_signals),
+        "legacy_prediction_count": len(legacy_predictions),
         "method_versions": method_versions,
         "method_version_count": len(method_versions),
         "current_method_version": dashboard.get("method_version"),
-        "maturity_status": maturity_status(production_count),
-        "next_maturity_threshold": next_maturity_threshold(production_count),
-        "prediction_count": len(predictions),
-        "resolved_outcome_count": len(outcomes),
-        "resolved_by_horizon": resolved_by_horizon(outcomes),
-        "performance_status": performance_status(len(outcomes), horizon_7d),
+        "maturity_status": maturity_status(official_count),
+        "next_maturity_threshold": next_maturity_threshold(official_count),
+        "forward_status": forward_status(len(outcomes)),
+        "backtest_status": backtest_status(horizon_7d),
+        "forward_metrics": forward_metrics,
+        "backtest_metrics": {
+            "7d": {
+                "prediction_count": horizon_7d.get("prediction_count"),
+                "directional_accuracy": horizon_7d.get("directional_accuracy"),
+                "brier_score": horizon_7d.get("brier_score"),
+                "brier_skill": horizon_7d.get("brier_skill"),
+                "calibration_error": horizon_7d.get("calibration_error"),
+                "status": backtest_status(horizon_7d),
+            }
+        },
         "backtest_7d": {
             "prediction_count": horizon_7d.get("prediction_count"),
             "directional_accuracy": horizon_7d.get("directional_accuracy"),
@@ -2552,6 +2733,10 @@ def build_track_record(
         },
         "evidence_status": dashboard.get("summary", {}).get("evidence_label"),
         "quality_caps": dashboard.get("scores", {}).get("quality_caps", []),
+        "explanation": (
+            "Technische updates kunnen meerdere keren per datadag plaatsvinden. Alleen "
+            "unieke, vooraf vastgelegde voorspellingen tellen mee als officieel signaal."
+        ),
     }
 
 
@@ -2578,17 +2763,105 @@ def next_maturity_threshold(count: int) -> int | None:
     return None
 
 
-def performance_status(outcome_count: int, horizon_7d: dict[str, Any]) -> str:
+def unique_official_signals(
+    predictions: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    legacy = []
+    for prediction in predictions:
+        prediction_id = prediction.get("prediction_id")
+        if not prediction_id:
+            legacy.append(prediction)
+            continue
+        if prediction_id not in by_id:
+            by_id[prediction_id] = prediction
+    return sorted(by_id.values(), key=lambda row: str(row.get("created_at_utc", ""))), legacy
+
+
+def unique_prediction_days(predictions: list[dict[str, Any]]) -> int:
+    days = {
+        str(prediction.get("data_cutoff_utc", ""))[:10]
+        for prediction in predictions
+        if prediction.get("data_cutoff_utc")
+    }
+    return len(days)
+
+
+def forward_status(outcome_count: int) -> str:
+    if outcome_count == 0:
+        return "Nog geen afgeronde publieke voorspellingen."
+    if outcome_count < 10:
+        return "Nog onvoldoende afgeronde publieke voorspellingen."
+    if outcome_count < 30:
+        return "Eerste indicatieve forwardresultaten; steekproef blijft beperkt."
+    if outcome_count < 100:
+        return "Forward-trackrecord in opbouw."
+    return "Structurele forwardevaluatie mogelijk."
+
+
+def backtest_status(horizon_7d: dict[str, Any]) -> str:
+    predictions = horizon_7d.get("prediction_count") or 0
     skill = horizon_7d.get("brier_skill")
     calibration = horizon_7d.get("calibration_error")
-    predictions = horizon_7d.get("prediction_count") or 0
-    if outcome_count < 10 or predictions < 30:
-        return "Nog onvoldoende afgeronde uitkomsten."
+    if predictions < 30:
+        return "Onvoldoende historische voorspellingen."
     if skill is None or skill <= 0:
-        return "Nog geen aantoonbare meerwaarde boven de basislijn."
-    if skill > 0.05 and (calibration is None or calibration <= 0.08):
-        return "Positieve meerwaarde, maar blijf de steekproef volgen."
+        return "Niet beter dan de basislijn."
+    if skill > 0.05 and (calibration is None or calibration <= 0.08) and predictions >= 100:
+        return "Historisch stabiele meerwaarde over voldoende perioden."
+    if skill > 0.05:
+        return "Positieve historische meerwaarde, maar steekproef blijft beperkt."
     return "Lichte historische meerwaarde."
+
+
+def forward_metrics_by_horizon(
+    predictions: list[dict[str, Any]],
+    outcomes: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    predictions_by_id = {row.get("prediction_id"): row for row in predictions}
+    grouped: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = {}
+    for outcome in outcomes:
+        prediction = predictions_by_id.get(outcome.get("prediction_id"))
+        if not prediction:
+            continue
+        horizon = str(outcome.get("horizon") or "onbekend")
+        grouped.setdefault(horizon, []).append((prediction, outcome))
+    return {horizon: forward_metric(values) for horizon, values in grouped.items()}
+
+
+def forward_metric(rows: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, Any]:
+    if not rows:
+        return {"resolved_count": 0}
+    directions = []
+    brier_values = []
+    returns = []
+    for prediction, outcome in rows:
+        actual_direction = bool(outcome.get("actual_direction"))
+        predicted_probability = predicted_positive_probability(prediction, outcome.get("horizon"))
+        if predicted_probability is not None:
+            directions.append((predicted_probability >= 0.5) == actual_direction)
+            brier_values.append((predicted_probability - float(actual_direction)) ** 2)
+        if outcome.get("actual_return") is not None:
+            returns.append(float(outcome["actual_return"]))
+    return {
+        "resolved_count": len(rows),
+        "directional_accuracy": round(sum(directions) / len(directions), 4)
+        if directions
+        else None,
+        "brier_score": round(sum(brier_values) / len(brier_values), 4)
+        if brier_values
+        else None,
+        "average_return": round(sum(returns) / len(returns), 4) if returns else None,
+        "median_return": round(float(pd.Series(returns).median()), 4) if returns else None,
+    }
+
+
+def predicted_positive_probability(prediction: dict[str, Any], horizon: Any) -> float | None:
+    horizon_data = (prediction.get("horizons") or {}).get(str(horizon), {})
+    probability = horizon_data.get("positive_frequency")
+    if probability is None:
+        return None
+    return float(probability)
 
 
 def resolved_by_horizon(outcomes: list[dict[str, Any]]) -> dict[str, int]:

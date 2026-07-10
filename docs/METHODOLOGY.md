@@ -18,11 +18,15 @@ De driver-waterfall gebruikt gewogen bijdragen:
 gewogen bijdrage = blokscore x blokgewicht
 ```
 
-Voor nieuwe runs worden blokgewichten en gewogen bijdragen additief opgeslagen in `data/curated/signaalonderzoek.parquet`. Bestaande historische rijen worden niet herschreven wanneer nieuwe visualisaties of kolommen worden toegevoegd.
+De waterfall is cumulatief: iedere stap begint op het niveau waar de vorige stap eindigde. Voor nieuwe runs worden blokgewichten en gewogen bijdragen additief opgeslagen in `data/curated/signaalonderzoek.parquet`. Bestaande historische rijen worden niet herschreven wanneer nieuwe visualisaties of kolommen worden toegevoegd.
+
+Methodeversies, beschrijvingen en blokgewichten staan centraal in `config/method_versions.yml`. Dezelfde configuratie wordt gebruikt voor waterfallvergelijkbaarheid en methodewijzigingsmarkers in de scorehistorie.
 
 ## Backtest versus publiek trackrecord
 
-Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. De backtest gebruikt historische data om de methode te toetsen. Het publieke trackrecord bestaat uit werkelijk gepubliceerde productieruns en later beschikbare uitkomsten.
+Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. De backtest gebruikt historische data om de methode te toetsen. Het publieke trackrecord bestaat uit werkelijk vooraf vastgelegde officiële signalen en later beschikbare uitkomsten.
+
+Technische productieruns zijn niet hetzelfde als officiële signalen. Een GitHub Actions-rerun kan meerdere technische updates op dezelfde datadag veroorzaken. Alleen unieke `prediction_id`-waarden in het append-only prediction-ledger tellen mee als officieel signaal.
 
 De maturiteitsstatus van het publieke trackrecord zegt alleen iets over de lengte van dat openbare spoor:
 
@@ -31,4 +35,4 @@ De maturiteitsstatus van het publieke trackrecord zegt alleen iets over de lengt
 * 100-249 officiële runs: Eerste structurele evaluatie mogelijk
 * 250 of meer officiële runs: Volwassen publiek trackrecord
 
-Deze status is geen prestatieclaim en zegt niets over winstgevendheid.
+Forwardstatus wordt uitsluitend bepaald door afgeronde publieke uitkomsten. Backteststatus wordt uitsluitend bepaald door historische backteststatistieken. Deze statussen zijn geen prestatieclaim en zeggen niets over winstgevendheid.
