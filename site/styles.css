@@ -47,17 +47,19 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .change-card.negative { border-left: 4px solid var(--warn); }
 .chart-box { height: 320px; }
 .range-controls { display: flex; flex-wrap: wrap; gap: 8px; }
-.waterfall { min-height: 320px; overflow-x: auto; padding: 8px 0; }
-.waterfall canvas { min-width: 720px; min-height: 260px; }
-.waterfall-item { min-width: 90px; display: grid; grid-template-rows: auto 130px auto; gap: 8px; align-items: end; text-align: center; }
-.waterfall-item span { color: var(--muted); font-size: 12px; }
-.waterfall-item strong { font-size: 12px; }
-.waterfall-bar { width: 100%; max-width: 54px; justify-self: center; border-radius: 6px 6px 0 0; background: color-mix(in srgb, var(--accent), transparent 20%); }
-.waterfall-item.negative .waterfall-bar { background: color-mix(in srgb, var(--warn), transparent 20%); }
-.waterfall-item.base .waterfall-bar { background: color-mix(in srgb, var(--accent-2), transparent 18%); }
+.waterfall { max-width: 620px; padding: 2px 0 0; }
+.score-bridge { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.score-bridge-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, auto); align-items: center; gap: 16px; min-height: 44px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.score-bridge-row:last-child { border-bottom: 0; }
+.score-bridge-head { min-height: 36px; background: color-mix(in srgb, var(--muted), transparent 92%); color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.score-bridge-row .numeric { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.score-bridge-row.score-row { background: color-mix(in srgb, var(--accent-2), transparent 94%); font-weight: 700; }
+.score-bridge-row.current { background: color-mix(in srgb, var(--accent), transparent 91%); }
+.score-bridge-row.positive-row .numeric { color: var(--accent); }
+.score-bridge-row.negative-row .numeric { color: var(--warn); }
+.score-bridge-row.neutral-row .numeric { color: var(--muted); }
 .trackrecord-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .trackrecord-explanation { grid-column: 1 / -1; margin: 0; }
-.waterfall-table { margin-top: 10px; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
 .card strong, .component-card strong { display: block; font-size: 26px; }
 .card small, .card em, .component-card small, .mini-chart small { display: block; color: var(--muted); font-size: 12px; font-style: normal; }
@@ -157,6 +159,6 @@ summary { cursor: pointer; font-weight: 700; }
 @media (max-width: 800px) {
   .top, .conclusion, .indicator-hero, .evidence-hero, .evidence-two-col, .interpretation-hero, .overview-hero { grid-template-columns: 1fr; }
   .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list, .archive-select, .change-grid, .trackrecord-grid { grid-template-columns: 1fr; }
-  .waterfall canvas { min-width: 680px; }
+  .waterfall { max-width: none; }
   .section-head { display: block; }
 }

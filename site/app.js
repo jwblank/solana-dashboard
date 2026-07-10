@@ -3,7 +3,6 @@ const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
 const fmtScore100 = (x) => x === null || x === undefined ? ".../100" : `${Math.round(x)}/100`;
 const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
 let scoreHistoryChart = null;
-let waterfallChart = null;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
@@ -424,116 +423,76 @@ function renderMethodVersionNote(rows, transitions) {
 function renderWaterfall(waterfall, drivers) {
   const target = document.getElementById("waterfall-chart");
   setText("waterfall-note", waterfall.available
-    ? "Gewogen bijdrage per blok sinds de vorige officiële productierun."
+    ? "Scorebrug sinds de vorige officiële productierun."
     : (waterfall.reason_unavailable || "Waterfall niet beschikbaar."));
   setText("waterfall-summary", waterfall.summary || "");
   if (!waterfall.available) {
     target.replaceChildren(...drivers.map(rawDriverCard));
     return;
   }
-  const canvas = document.createElement("canvas");
-  canvas.setAttribute("aria-label", "Cumulatieve waterfall van de scoreverandering");
-  target.replaceChildren(canvas);
-  const items = waterfallChartItems(waterfall);
-  if (waterfallChart) waterfallChart.destroy();
-  const connectorPlugin = {
-    id: "waterfallConnectors",
-    afterDatasetsDraw(chart) {
-      const {ctx, scales} = chart;
-      ctx.save();
-      ctx.strokeStyle = "#5b6663";
-      ctx.setLineDash([3, 3]);
-      for (let index = 1; index < items.length - 2; index += 1) {
-        const current = items[index];
-        const next = items[index + 1];
-        const x1 = scales.x.getPixelForValue(index) + 24;
-        const x2 = scales.x.getPixelForValue(index + 1) - 24;
-        const y = scales.y.getPixelForValue(current.end);
-        const yNext = scales.y.getPixelForValue(next.start);
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x2, yNext);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-  };
-  waterfallChart = new Chart(canvas, {
-    type: "bar",
-    data: {
-      labels: items.map((item) => item.label),
-      datasets: [{
-        label: "Scorepad",
-        data: items.map((item) => [item.start, item.end]),
-        backgroundColor: items.map((item) => item.color),
-        borderColor: items.map((item) => item.border),
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {display: false},
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const item = items[context.dataIndex];
-              return `${item.label}: ${formatSignedPoint(item.delta)} (${item.start.toFixed(1)} → ${item.end.toFixed(1)})`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {min: 0, max: 100, title: {display: true, text: "Score 0-100"}},
-        x: {ticks: {autoSkip: false}}
-      }
-    },
-    plugins: [connectorPlugin]
-  });
-  target.append(waterfallTextTable(items));
+  target.replaceChildren(scoreBridgeTable(waterfall));
 }
 
-function waterfallChartItems(waterfall) {
+function scoreBridgeItems(waterfall) {
   const items = [{
     label: "Vorige score",
-    start: 0,
-    end: Number(waterfall.start_score),
-    delta: Number(waterfall.start_score),
-    color: "rgba(46,95,184,0.55)",
-    border: "#2e5fb8"
+    value: Number(waterfall.start_score),
+    delta: null,
+    kind: "score"
   }];
   (waterfall.steps || []).forEach((step) => {
-    const positive = Number(step.delta) >= 0;
     items.push({
       label: step.label,
-      start: Number(step.start),
-      end: Number(step.end),
+      value: Number(step.end),
       delta: Number(step.delta),
-      color: positive ? "rgba(22,122,100,0.45)" : "rgba(122,74,0,0.45)",
-      border: positive ? "#167a64" : "#7a4a00"
+      kind: step.kind || "driver"
     });
   });
   items.push({
     label: "Huidige score",
-    start: 0,
-    end: Number(waterfall.end_score),
-    delta: Number(waterfall.end_score),
-    color: "rgba(46,95,184,0.75)",
-    border: "#2e5fb8"
+    value: Number(waterfall.end_score),
+    delta: null,
+    kind: "score current"
   });
   return items;
 }
 
-function waterfallTextTable(items) {
-  const rows = items.map((item) => [
-    item.label,
-    item.label.includes("score") ? fmtScore100(item.end) : formatSignedPoint(item.delta)
-  ]);
+function scoreBridgeTable(waterfall) {
   const wrap = document.createElement("div");
-  wrap.className = "table-wrap compact-table waterfall-table";
-  wrap.append(table(["Stap", "Waarde"], rows));
+  wrap.className = "score-bridge";
+  const header = document.createElement("div");
+  header.className = "score-bridge-row score-bridge-head";
+  header.append(scoreBridgeCell("Stap"), scoreBridgeCell("Waarde"));
+  wrap.append(header);
+  scoreBridgeItems(waterfall).forEach((item) => {
+    const row = document.createElement("div");
+    row.className = `score-bridge-row ${scoreBridgeRowClass(item)}`;
+    row.append(
+      scoreBridgeCell(item.label),
+      scoreBridgeCell(
+        item.kind.includes("score") ? fmtScore100(item.value) : formatSignedPoint(item.delta),
+        true
+      )
+    );
+    wrap.append(row);
+  });
   return wrap;
+}
+
+function scoreBridgeCell(text, numeric = false) {
+  const cell = document.createElement("div");
+  cell.className = numeric ? "numeric" : "";
+  cell.textContent = text;
+  return cell;
+}
+
+function scoreBridgeRowClass(item) {
+  if (item.kind.includes("current")) return "score-row current";
+  if (item.kind.includes("score")) return "score-row";
+  if (!Number.isFinite(Number(item.delta)) || Math.abs(Number(item.delta)) < 0.005) {
+    return "neutral-row";
+  }
+  return Number(item.delta) > 0 ? "positive-row" : "negative-row";
 }
 
 function formatSignedPoint(value) {
