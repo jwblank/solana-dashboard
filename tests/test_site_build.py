@@ -9,6 +9,7 @@ def test_site_contains_required_tabs(monkeypatch):
     build_outputs("demo")
     html = Path("site/index.html").read_text(encoding="utf-8")
     required_text = [
+        "Overzicht",
         "Duiding",
         "Vandaag",
         "Prijs",
@@ -22,6 +23,7 @@ def test_site_contains_required_tabs(monkeypatch):
     ]
     for text in required_text:
         assert text in html
+    assert '<section id="overview" class="panel active">' in html
     assert "/data/dashboard.json" not in html
 
 

@@ -2,6 +2,7 @@ const fmtPct = (x) => x === null || x === undefined ? "n.v.t." : `${(x * 100).to
 const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
 const fmtScore100 = (x) => x === null || x === undefined ? ".../100" : `${Math.round(x)}/100`;
 const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
+let scoreHistoryChart = null;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
@@ -167,6 +168,249 @@ function renderStats(targetId, stats) {
     div.append(span, strong);
     return div;
   }));
+}
+
+function renderOverview(overview, overviewHistory) {
+  const current = overview.current_run || {};
+  const previous = overview.previous_run;
+  const changes = overview.changes || {};
+  const title = current.regime_title || current.regime || "Actueel beeld";
+  setText("overview-title", overviewTitle(title, current, changes));
+  setText("overview-subtitle", previous
+    ? "Vergelijking met de vorige officiële productierun."
+    : "Nog onvoldoende officiële runs voor een vergelijking; actuele scores worden wel getoond.");
+  renderStats("overview-meta", [
+    {label: "Huidige run", value: formatDateTime(current.run_at_utc)},
+    {label: "Vergelijkingsrun", value: previous ? formatDateTime(previous.run_at_utc) : "n.v.t."},
+    {label: "SOL-slotkoers", value: `${formatMoney(current.sol_price)}${formatMoneyDelta(changes.sol_price_absolute, changes.sol_price_pct)}`},
+    {label: "Methode", value: current.method_version || "n.v.t."}
+  ]);
+  renderOverviewScores(current, changes);
+  renderOverviewChanges(overview.largest_changes || {});
+  renderScoreHistory(overviewHistory?.rows || [], 90);
+  renderHistoryRangeControls(overviewHistory?.rows || []);
+  renderMethodVersionNote(overviewHistory?.rows || []);
+  renderWaterfall(overview.waterfall || {}, overview.drivers || []);
+  renderTrackRecord(overview.track_record || {});
+  document.getElementById("overview-watchlist").replaceChildren(...(overview.what_would_change || []).map((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    return li;
+  }));
+}
+
+function overviewTitle(title, current, changes) {
+  if (!changes?.available) return `${title} — eerste officiële meting`;
+  return `${title} — ${fmtScore100(current.current_strength_score)}, ${formatPointDelta(changes.market_score_points)}`;
+}
+
+function renderOverviewScores(current, changes) {
+  const target = document.getElementById("overview-scorebox");
+  target.replaceChildren(
+    scoreDeltaCard("Huidige sterkte", current.current_strength_score, changes.market_score_points),
+    scoreDeltaCard("Onderbouwing", current.support_score, changes.evidence_score_points)
+  );
+}
+
+function scoreDeltaCard(label, value, delta) {
+  const div = document.createElement("div");
+  const span = document.createElement("span");
+  span.textContent = label;
+  const strong = document.createElement("strong");
+  strong.textContent = fmtScore100(value);
+  const small = document.createElement("small");
+  small.textContent = formatPointDelta(delta);
+  div.append(span, strong, small);
+  return div;
+}
+
+function formatPointDelta(delta) {
+  if (delta === null || delta === undefined || !Number.isFinite(Number(delta))) return "geen vergelijking beschikbaar";
+  const value = Number(delta);
+  if (Math.abs(value) < 0.05) return "onveranderd sinds vorige run";
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)} punten sinds vorige run`;
+}
+
+function formatMoneyDelta(abs, pct) {
+  if (abs === null || abs === undefined || pct === null || pct === undefined) return "";
+  const absText = `${Number(abs) >= 0 ? "+" : ""}$${Math.abs(Number(abs)).toFixed(2)}`;
+  const pctText = `${Number(pct) >= 0 ? "+" : ""}${(Number(pct) * 100).toFixed(1)}%`;
+  return ` (${absText}, ${pctText})`;
+}
+
+function renderOverviewChanges(changes) {
+  setText("overview-change-conclusion", changes.conclusion || "Nog geen vergelijking beschikbaar.");
+  const items = [
+    ...(changes.positive || []).map((item) => ({...item, direction: "positief"})),
+    ...(changes.negative || []).map((item) => ({...item, direction: "negatief"}))
+  ];
+  const target = document.getElementById("overview-changes");
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "plain";
+    p.textContent = "Nog onvoldoende officiële runs voor positieve en negatieve veranderingen.";
+    target.replaceChildren(p);
+    return;
+  }
+  target.replaceChildren(...items.map((item) => {
+    const card = document.createElement("article");
+    card.className = `change-card ${item.score_delta >= 0 ? "positive" : "negative"}`;
+    const span = document.createElement("span");
+    span.textContent = item.direction === "positief" ? "Grootste positieve bijdrage" : "Grootste negatieve bijdrage";
+    const strong = document.createElement("strong");
+    strong.textContent = item.label;
+    const delta = document.createElement("p");
+    delta.textContent = `${formatPointDelta(item.score_delta)}; ${item.change_label}.`;
+    card.append(span, strong, delta);
+    return card;
+  }));
+}
+
+function renderHistoryRangeControls(rows) {
+  const target = document.getElementById("history-range");
+  const options = [
+    ["30", "30 runs"],
+    ["90", "90 runs"],
+    ["365", "365 runs"],
+    ["all", "Alles"]
+  ];
+  target.replaceChildren(...options.map(([value, label]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = value === "90" ? "button active-range" : "button";
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      target.querySelectorAll("button").forEach((b) => b.classList.remove("active-range"));
+      button.classList.add("active-range");
+      renderScoreHistory(rows, value === "all" ? rows.length : Number(value));
+    });
+    return button;
+  }));
+}
+
+function renderScoreHistory(rows, limit) {
+  const canvas = document.getElementById("score-history-chart");
+  if (!canvas || !window.Chart) return;
+  const selected = rows.slice(Math.max(rows.length - limit, 0));
+  const labels = selected.map((row) => String(row.run_at_utc || "").slice(0, 10));
+  const market = selected.map((row) => row.current_strength_score);
+  const evidence = selected.map((row) => row.support_score);
+  if (scoreHistoryChart) scoreHistoryChart.destroy();
+  scoreHistoryChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {label: "Huidige sterkte", data: market, borderColor: "#167a64", backgroundColor: "transparent", tension: 0.25},
+        {label: "Onderbouwing", data: evidence, borderColor: "#2e5fb8", backgroundColor: "transparent", tension: 0.25}
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {mode: "index", intersect: false},
+      scales: {y: {min: 0, max: 100, title: {display: true, text: "Score 0-100"}}},
+      plugins: {
+        tooltip: {
+          callbacks: {
+            afterBody: (items) => {
+              const row = selected[items[0].dataIndex] || {};
+              return [
+                `Run: ${formatDateTime(row.run_at_utc)}`,
+                `Data t/m: ${row.data_cutoff_utc || "n.v.t."}`,
+                `Regime: ${row.regime_title || row.regime || "n.v.t."}`,
+                `SOL: ${formatMoney(row.sol_price)}`,
+                `Methode: ${row.method_version || "n.v.t."}`
+              ];
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderMethodVersionNote(rows) {
+  const versions = Array.from(new Set(rows.map((row) => row.method_version).filter(Boolean)));
+  setText("method-version-note", versions.length > 1
+    ? `Let op: deze historie bevat ${versions.length} methodeversies. Scores over verschillende methodeversies zijn niet altijd één-op-één vergelijkbaar.`
+    : "Alle getoonde runs gebruiken dezelfde methodeversie.");
+}
+
+function renderWaterfall(waterfall, drivers) {
+  const target = document.getElementById("waterfall-chart");
+  setText("waterfall-note", waterfall.available
+    ? "Gewogen bijdrage per blok sinds de vorige officiële productierun."
+    : (waterfall.reason_unavailable || "Waterfall niet beschikbaar."));
+  setText("waterfall-summary", waterfall.summary || "");
+  if (!waterfall.available) {
+    target.replaceChildren(...drivers.map(rawDriverCard));
+    return;
+  }
+  const items = [
+    {label: "Vorige score", value: waterfall.start_score, kind: "base"},
+    ...drivers.map((driver) => ({label: driver.label, value: driver.contribution_delta, kind: "delta"})),
+  ];
+  if (Math.abs(Number(waterfall.residual_delta || 0)) >= 0.05) {
+    items.push({label: "Rest", value: waterfall.residual_delta, kind: "delta"});
+  }
+  items.push({label: "Huidige score", value: waterfall.end_score, kind: "base"});
+  target.replaceChildren(...items.map((item) => {
+    const div = document.createElement("div");
+    div.className = `waterfall-item ${item.kind} ${Number(item.value) >= 0 ? "positive" : "negative"}`;
+    const label = document.createElement("span");
+    label.textContent = item.label;
+    const bar = document.createElement("div");
+    bar.className = "waterfall-bar";
+    bar.style.height = `${Math.max(8, Math.min(120, Math.abs(Number(item.value || 0)) * 3))}px`;
+    const value = document.createElement("strong");
+    value.textContent = item.kind === "delta" ? formatPointDelta(item.value) : fmtScore100(item.value);
+    div.append(label, bar, value);
+    return div;
+  }));
+}
+
+function rawDriverCard(driver) {
+  const card = document.createElement("article");
+  card.className = "change-card";
+  const span = document.createElement("span");
+  span.textContent = driver.label;
+  const strong = document.createElement("strong");
+  strong.textContent = formatPointDelta(driver.score_delta);
+  const p = document.createElement("p");
+  p.textContent = "Ruwe scoreverandering; gewogen bijdrage niet betrouwbaar vergelijkbaar.";
+  card.append(span, strong, p);
+  return card;
+}
+
+function renderTrackRecord(track) {
+  const cards = [
+    {
+      label: "Live gepubliceerde runs",
+      value: String(track.production_run_count || 0),
+      text: `${track.maturity_status || "Startfase"}${track.next_maturity_threshold ? ` · op weg naar ${track.next_maturity_threshold} runs` : ""}`,
+      interpretation: `Eerste run: ${formatDateTime(track.first_run_at_utc)}. Laatste run: ${formatDateTime(track.latest_run_at_utc)}.`
+    },
+    {
+      label: "Forward-uitkomsten",
+      value: String(track.resolved_outcome_count || 0),
+      text: `${track.prediction_count || 0} voorspellingen in het append-only logboek.`,
+      interpretation: track.performance_status || "Nog onvoldoende uitkomsten."
+    },
+    {
+      label: "Historische backtest 7d",
+      value: `${track.backtest_7d?.prediction_count || 0} runs`,
+      text: `Richting ${formatPctLike(track.backtest_7d?.directional_accuracy)} · Brier ${formatDecimal(track.backtest_7d?.brier_score)}.`,
+      interpretation: `Brier skill ${formatDecimal(track.backtest_7d?.brier_skill)} · kans-afwijking ${formatDecimal(track.backtest_7d?.calibration_error)}.`
+    },
+    {
+      label: "Methodehistorie",
+      value: `${track.method_version_count || 0} versie(s)`,
+      text: `Actueel: ${track.current_method_version || "n.v.t."}.`,
+      interpretation: (track.quality_caps || []).join(" ") || `Onderbouwing: ${track.evidence_status || "n.v.t."}.`
+    }
+  ];
+  document.getElementById("trackrecord-cards").replaceChildren(...cards.map(explainerCard));
 }
 
 function renderBlockEvidence(data) {
@@ -875,14 +1119,16 @@ function table(headers, rows) {
 
 async function main() {
   activateTabs();
-  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, overview, overviewHistory] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
     loadJson("./data/glossary.json"),
     loadJson("./data/interpretation.json"),
     loadJson("./data/interpretations/index.json").catch(() => ({entries: []})),
-    loadJson("./data/signaalonderzoek.json").catch(() => ({rows: [], row_count_total: 0, row_count_visible: 0}))
+    loadJson("./data/signaalonderzoek.json").catch(() => ({rows: [], row_count_total: 0, row_count_visible: 0})),
+    loadJson("./data/overview.json").catch(() => ({current_run: null, previous_run: null, warnings: []})),
+    loadJson("./data/overview_history.json").catch(() => ({rows: []}))
   ]);
   if (dashboard.demo_notice) {
     const notice = document.getElementById("demo-notice");
@@ -920,6 +1166,29 @@ async function main() {
   renderSignalResearch(signalResearch);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
+  renderOverview(overview.current_run ? overview : fallbackOverview(dashboard), overviewHistory);
+}
+
+function fallbackOverview(dashboard) {
+  return {
+    current_run: {
+      run_at_utc: dashboard.generated_at_utc,
+      data_cutoff_utc: dashboard.data_cutoff_utc,
+      method_version: dashboard.method_version,
+      sol_price: dashboard.current?.sol_price,
+      current_strength_score: dashboard.scores?.market_signal,
+      support_score: dashboard.scores?.evidence_quality,
+      regime: dashboard.summary?.regime,
+      regime_title: dashboard.summary?.regime_title
+    },
+    previous_run: null,
+    changes: {available: false},
+    largest_changes: {},
+    drivers: [],
+    waterfall: {available: false, reason_unavailable: "Nog onvoldoende officiële runs voor een waterfall."},
+    track_record: {},
+    what_would_change: dashboard.summary?.what_would_change || []
+  };
 }
 
 main().catch((error) => {

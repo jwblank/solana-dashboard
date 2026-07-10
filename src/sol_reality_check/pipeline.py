@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -49,6 +50,28 @@ PRICE_METADATA_COLUMNS = [
 MAX_ALLOWED_CACHE_PRICE_BREAK = 0.40
 SIGNAL_RESEARCH_PATH = CURATED / "signaalonderzoek.parquet"
 SIGNAL_RESEARCH_LATEST_PATH = SITE_DATA / "signaalonderzoek.json"
+OVERVIEW_PATH = SITE_DATA / "overview.json"
+OVERVIEW_HISTORY_PATH = SITE_DATA / "overview_history.json"
+SIGNAL_RESEARCH_KEY = "run_at_utc"
+SCORE_CHANGE_THRESHOLDS = {
+    "unchanged": 0.5,
+    "light": 2.0,
+    "clear": 5.0,
+}
+MATURITY_THRESHOLDS = [
+    (0, "Startfase"),
+    (30, "Opbouwfase"),
+    (100, "Eerste structurele evaluatie mogelijk"),
+    (250, "Volwassen publiek trackrecord"),
+]
+METHOD_VERSION_WEIGHTS = {
+    "1.0.0": {
+        "price_strength": 0.45,
+        "network_usage": 0.25,
+        "capital_flows": 0.20,
+        "ecosystem_breadth": 0.10,
+    }
+}
 SIGNAL_RESEARCH_COLUMNS = [
     "run_at_utc",
     "data_cutoff_utc",
@@ -84,6 +107,14 @@ SIGNAL_RESEARCH_COLUMNS = [
     "tvl_change_30d",
     "stablecoin_change_7d",
     "stablecoin_change_30d",
+    "price_strength_weight",
+    "network_usage_weight",
+    "capital_flows_weight",
+    "ecosystem_breadth_weight",
+    "price_strength_contribution",
+    "network_usage_contribution",
+    "capital_flows_contribution",
+    "ecosystem_breadth_contribution",
 ]
 
 
@@ -1771,8 +1802,13 @@ def signal_research_record(
     mode: str,
 ) -> dict[str, Any]:
     blocks = dashboard.get("scores", {}).get("blocks", {})
+    weights = normalized_signal_weights(dashboard.get("scores", {}).get("block_weights", {}))
     current = dashboard.get("current", {})
     summary = dashboard.get("summary", {})
+    price_score = rounded_or_none(blocks.get("price_strength"))
+    network_score = rounded_or_none(blocks.get("network_usage"))
+    capital_score = rounded_or_none(blocks.get("capital"))
+    breadth_score = rounded_or_none(blocks.get("ecosystem_breadth"))
     return {
         "run_at_utc": generated,
         "data_cutoff_utc": cutoff,
@@ -1784,10 +1820,10 @@ def signal_research_record(
         "btc_live_price": rounded_or_none(current.get("live_btc_price")),
         "current_strength_score": rounded_or_none(dashboard.get("scores", {}).get("market_signal")),
         "support_score": rounded_or_none(dashboard.get("scores", {}).get("evidence_quality")),
-        "price_strength_score": rounded_or_none(blocks.get("price_strength")),
-        "network_usage_score": rounded_or_none(blocks.get("network_usage")),
-        "capital_flows_score": rounded_or_none(blocks.get("capital")),
-        "ecosystem_breadth_score": rounded_or_none(blocks.get("ecosystem_breadth")),
+        "price_strength_score": price_score,
+        "network_usage_score": network_score,
+        "capital_flows_score": capital_score,
+        "ecosystem_breadth_score": breadth_score,
         "regime": summary.get("regime"),
         "regime_title": summary.get("regime_title"),
         "sol_return_1d": rounded_or_none(latest.get("sol_return_1d")),
@@ -1808,7 +1844,38 @@ def signal_research_record(
         "tvl_change_30d": rounded_or_none(latest.get("tvl_change_30d")),
         "stablecoin_change_7d": rounded_or_none(latest.get("stablecoin_change_7d")),
         "stablecoin_change_30d": rounded_or_none(latest.get("stablecoin_change_30d")),
+        "price_strength_weight": weights.get("price_strength"),
+        "network_usage_weight": weights.get("network_usage"),
+        "capital_flows_weight": weights.get("capital_flows"),
+        "ecosystem_breadth_weight": weights.get("ecosystem_breadth"),
+        "price_strength_contribution": weighted_contribution(
+            price_score, weights.get("price_strength")
+        ),
+        "network_usage_contribution": weighted_contribution(
+            network_score, weights.get("network_usage")
+        ),
+        "capital_flows_contribution": weighted_contribution(
+            capital_score, weights.get("capital_flows")
+        ),
+        "ecosystem_breadth_contribution": weighted_contribution(
+            breadth_score, weights.get("ecosystem_breadth")
+        ),
     }
+
+
+def normalized_signal_weights(weights: dict[str, Any]) -> dict[str, float | None]:
+    return {
+        "price_strength": rounded_or_none(weights.get("price_strength")),
+        "network_usage": rounded_or_none(weights.get("network_usage")),
+        "capital_flows": rounded_or_none(weights.get("capital") or weights.get("capital_flows")),
+        "ecosystem_breadth": rounded_or_none(weights.get("ecosystem_breadth")),
+    }
+
+
+def weighted_contribution(score: float | None, weight: float | None) -> float | None:
+    if score is None or weight is None:
+        return None
+    return rounded_or_none(float(score) * float(weight))
 
 
 def write_signal_research(
@@ -1821,7 +1888,7 @@ def write_signal_research(
     SITE_DATA.mkdir(parents=True, exist_ok=True)
     record = signal_research_record(dashboard, latest, generated, cutoff, mode)
     if mode != "production":
-        demo_frame = pd.DataFrame([record]).reindex(columns=SIGNAL_RESEARCH_COLUMNS)
+        demo_frame = pd.DataFrame([record])
         write_signal_research_public(
             demo_frame,
             generated=generated,
@@ -1832,11 +1899,8 @@ def write_signal_research(
         return
 
     CURATED.mkdir(parents=True, exist_ok=True)
-    existing = read_signal_research_history()
-    new_row = pd.DataFrame([record]).reindex(columns=SIGNAL_RESEARCH_COLUMNS)
-    combined = new_row if existing.empty else pd.concat([existing, new_row], ignore_index=True)
-    combined = clean_signal_research_frame(combined)
-    combined.to_parquet(SIGNAL_RESEARCH_PATH, index=False)
+    new_row = pd.DataFrame([record])
+    combined = append_signal_research_atomic(SIGNAL_RESEARCH_PATH, new_row)
     write_signal_research_public(
         combined,
         generated=generated,
@@ -1849,20 +1913,187 @@ def write_signal_research(
 def read_signal_research_history() -> pd.DataFrame:
     if not SIGNAL_RESEARCH_PATH.exists():
         return pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
-    return clean_signal_research_frame(pd.read_parquet(SIGNAL_RESEARCH_PATH))
+    return pd.read_parquet(SIGNAL_RESEARCH_PATH)
 
 
 def clean_signal_research_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return production rows for public analysis without mutating source history."""
     if frame.empty:
         return pd.DataFrame(columns=SIGNAL_RESEARCH_COLUMNS)
     cleaned = frame.copy()
     if "mode" not in cleaned:
         cleaned["mode"] = None
     cleaned = cleaned[cleaned["mode"] == "production"]
-    cleaned = cleaned.reindex(columns=SIGNAL_RESEARCH_COLUMNS)
     cleaned = cleaned.dropna(subset=["run_at_utc"])
-    cleaned = cleaned.drop_duplicates("run_at_utc", keep="last")
+    if cleaned["run_at_utc"].duplicated().any():
+        raise ApiError("Production signaalonderzoek contains duplicate run_at_utc values")
     return cleaned.sort_values("run_at_utc")
+
+
+def append_signal_research_atomic(path: Path, new_row: pd.DataFrame) -> pd.DataFrame:
+    """Append one production row while preserving all existing Parquet rows and columns."""
+    if len(new_row) != 1:
+        raise ApiError("Signal research append expects exactly one new row")
+    before = parquet_snapshot(path) if path.exists() else None
+    existing = pd.DataFrame()
+    if path.exists():
+        existing = read_existing_signal_research(path)
+        if SIGNAL_RESEARCH_KEY not in existing:
+            raise ApiError("Existing signal research Parquet misses run_at_utc")
+        if existing[SIGNAL_RESEARCH_KEY].duplicated().any():
+            raise ApiError("Existing signal research Parquet contains duplicate run_at_utc keys")
+    combined, changed = combine_signal_research_rows(existing, new_row)
+    if not changed:
+        return combined
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        combined.to_parquet(tmp_path, index=False)
+        restored = pd.read_parquet(tmp_path)
+        validate_signal_research_write(existing, combined, restored, before)
+        os.replace(tmp_path, path)
+    except Exception:
+        if tmp_path.exists():
+            tmp_path.unlink()
+        raise
+    return pd.read_parquet(path)
+
+
+def read_existing_signal_research(path: Path) -> pd.DataFrame:
+    try:
+        return pd.read_parquet(path)
+    except Exception as exc:
+        message = f"Cannot read existing signal research Parquet; original left intact: {exc}"
+        raise ApiError(message) from exc
+
+
+def combine_signal_research_rows(
+    existing: pd.DataFrame,
+    new_row: pd.DataFrame,
+) -> tuple[pd.DataFrame, bool]:
+    columns = schema_union(existing.columns, SIGNAL_RESEARCH_COLUMNS, new_row.columns)
+    normalized_existing = (
+        existing.reindex(columns=columns)
+        if not existing.empty
+        else pd.DataFrame(columns=columns)
+    )
+    normalized_new = new_row.reindex(columns=columns)
+    key = str(normalized_new.iloc[0][SIGNAL_RESEARCH_KEY])
+    existing_keys = set(
+        normalized_existing.get(SIGNAL_RESEARCH_KEY, pd.Series(dtype="object")).astype(str)
+    )
+    if key in existing_keys:
+        existing_match = normalized_existing[
+            normalized_existing[SIGNAL_RESEARCH_KEY].astype(str) == key
+        ]
+        if len(existing_match) != 1:
+            raise ApiError(f"Duplicate signal research key conflict for {key}")
+        if stable_records_equal(existing_match.iloc[[0]], normalized_new):
+            sorted_existing = normalized_existing.sort_values(SIGNAL_RESEARCH_KEY).reset_index(
+                drop=True
+            )
+            return sorted_existing, False
+        raise ApiError(f"Signal research key conflict for {key}: existing row differs")
+    combined = (
+        normalized_new.copy()
+        if normalized_existing.empty
+        else pd.concat([normalized_existing, normalized_new], ignore_index=True)
+    )
+    return combined.sort_values(SIGNAL_RESEARCH_KEY).reset_index(drop=True), True
+
+
+def schema_union(*column_groups) -> list[str]:
+    columns: list[str] = []
+    for group in column_groups:
+        for column in list(group):
+            if column not in columns:
+                columns.append(str(column))
+    return columns
+
+
+def validate_signal_research_write(
+    existing: pd.DataFrame,
+    expected: pd.DataFrame,
+    restored: pd.DataFrame,
+    before: dict[str, Any] | None,
+) -> None:
+    if len(restored) != len(expected):
+        raise ApiError("Temporary signal research Parquet row count changed after write")
+    if list(restored.columns) != list(expected.columns):
+        raise ApiError("Temporary signal research Parquet schema changed after write")
+    if SIGNAL_RESEARCH_KEY not in restored:
+        raise ApiError("Temporary signal research Parquet misses run_at_utc")
+    if restored[SIGNAL_RESEARCH_KEY].duplicated().any():
+        raise ApiError("Temporary signal research Parquet contains duplicate run keys")
+    if before and len(restored) not in {before["row_count"], before["row_count"] + 1}:
+        raise ApiError("Unexpected signal research row count after append")
+    if not existing.empty:
+        restored_old = restored[
+            restored[SIGNAL_RESEARCH_KEY].astype(str).isin(existing[SIGNAL_RESEARCH_KEY].astype(str))
+        ]
+        old_hash = dataframe_content_hash(existing)
+        restored_hash = dataframe_content_hash(restored_old.reindex(columns=existing.columns))
+        if old_hash != restored_hash:
+            raise ApiError("Existing signal research rows changed during append")
+
+
+def parquet_snapshot(path: Path) -> dict[str, Any]:
+    frame = read_existing_signal_research(path)
+    key = frame[SIGNAL_RESEARCH_KEY] if SIGNAL_RESEARCH_KEY in frame else pd.Series(dtype="object")
+    return {
+        "path": str(path),
+        "row_count": int(len(frame)),
+        "columns": list(frame.columns),
+        "dtypes": {column: str(dtype) for column, dtype in frame.dtypes.items()},
+        "run_at_min": None if key.empty else str(key.min()),
+        "run_at_max": None if key.empty else str(key.max()),
+        "run_at_unique": int(key.nunique()) if not key.empty else 0,
+        "run_at_duplicates": int(key.duplicated().sum()) if not key.empty else 0,
+        "file_sha256": file_sha256(path),
+        "content_hash": dataframe_content_hash(frame),
+    }
+
+
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def dataframe_content_hash(frame: pd.DataFrame) -> str:
+    if frame.empty:
+        payload = {"columns": list(frame.columns), "rows": []}
+    else:
+        sortable = frame.copy()
+        if SIGNAL_RESEARCH_KEY in sortable:
+            sortable = sortable.sort_values(SIGNAL_RESEARCH_KEY)
+        sortable = sortable.reset_index(drop=True)
+        payload = {
+            "columns": list(sortable.columns),
+            "rows": [
+                {column: stable_json_value(row[column]) for column in sortable.columns}
+                for _, row in sortable.iterrows()
+            ],
+        }
+    text = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def stable_json_value(value: Any) -> Any:
+    if pd.isna(value):
+        return None
+    if isinstance(value, float):
+        return round(value, 12)
+    if hasattr(value, "item"):
+        try:
+            return stable_json_value(value.item())
+        except ValueError:
+            pass
+    return value
+
+
+def stable_records_equal(left: pd.DataFrame, right: pd.DataFrame) -> bool:
+    return dataframe_content_hash(left.reset_index(drop=True)) == dataframe_content_hash(
+        right.reset_index(drop=True)
+    )
 
 
 def write_signal_research_public(
@@ -1872,7 +2103,8 @@ def write_signal_research_public(
     method_version: str | None,
     persisted: bool,
 ) -> None:
-    latest_rows = frame.tail(50).copy()
+    production_frame = clean_signal_research_frame(frame) if persisted else frame.copy()
+    latest_rows = production_frame.tail(50).copy()
     storage_text = "Parquet + JSON" if persisted else "Demo JSON"
     summary = (
         "Elke rij is een productie-run van het dashboard. De volledige dataset staat in "
@@ -1896,11 +2128,20 @@ def write_signal_research_public(
             "download_path": "./data/signaalonderzoek.parquet" if persisted else None,
             "storage": storage_text,
             "columns": signal_research_columns(),
-            "rows": latest_rows.to_dict("records"),
+            "rows": dataframe_json_records(latest_rows),
         },
     )
     if persisted:
+        public_path = SITE_DATA / "signaalonderzoek.parquet"
+        public_path.parent.mkdir(parents=True, exist_ok=True)
         frame.to_parquet(SITE_DATA / "signaalonderzoek.parquet", index=False)
+
+
+def dataframe_json_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
+    return [
+        {column: stable_json_value(row[column]) for column in frame.columns}
+        for _, row in frame.iterrows()
+    ]
 
 
 def signal_research_columns() -> list[dict[str, str]]:
@@ -1956,6 +2197,405 @@ def signal_research_columns() -> list[dict[str, str]]:
             "description": "Hoe breed Solana-ecosysteemtokens meebewegen.",
         },
     ]
+
+
+def write_overview_outputs(
+    dashboard: dict[str, Any],
+    backtest: dict[str, Any],
+    ledger_payload: dict[str, Any],
+    generated: str,
+) -> None:
+    warnings = []
+    if dashboard.get("mode") != "production":
+        history = pd.DataFrame()
+    else:
+        try:
+            history = read_signal_research_history()
+        except ApiError as exc:
+            history = pd.DataFrame()
+            warnings = [str(exc)]
+    overview_history = build_overview_history(history, generated)
+    overview = build_overview(
+        dashboard, overview_history["rows"], backtest, ledger_payload, generated
+    )
+    overview["warnings"].extend(warnings)
+    write_json(OVERVIEW_HISTORY_PATH, overview_history)
+    write_json(OVERVIEW_PATH, overview)
+
+
+def build_overview_history(history: pd.DataFrame, generated: str) -> dict[str, Any]:
+    if history.empty:
+        production = pd.DataFrame()
+        legacy_count = 0
+    else:
+        mode_series = history.get("mode", pd.Series([None] * len(history)))
+        legacy_count = int((mode_series != "production").sum())
+        production = clean_signal_research_frame(history)
+    rows = [overview_history_row(row) for _, row in production.iterrows()]
+    return {
+        "schema_version": "1.0",
+        "generated_at_utc": generated,
+        "row_count_total": int(len(production)),
+        "legacy_or_nonproduction_rows_preserved": legacy_count,
+        "rows": rows,
+    }
+
+
+def overview_history_row(row: pd.Series) -> dict[str, Any]:
+    return {
+        "run_at_utc": row.get("run_at_utc"),
+        "data_cutoff_utc": row.get("data_cutoff_utc"),
+        "method_version": row.get("method_version"),
+        "sol_price": nullable_float(row.get("sol_price")),
+        "current_strength_score": nullable_float(row.get("current_strength_score")),
+        "support_score": nullable_float(row.get("support_score")),
+        "price_strength_score": nullable_float(row.get("price_strength_score")),
+        "network_usage_score": nullable_float(row.get("network_usage_score")),
+        "capital_flows_score": nullable_float(row.get("capital_flows_score")),
+        "ecosystem_breadth_score": nullable_float(row.get("ecosystem_breadth_score")),
+        "regime": row.get("regime"),
+        "regime_title": row.get("regime_title"),
+    }
+
+
+def nullable_float(value: Any) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return float(value)
+
+
+def build_overview(
+    dashboard: dict[str, Any],
+    rows: list[dict[str, Any]],
+    backtest: dict[str, Any],
+    ledger_payload: dict[str, Any],
+    generated: str,
+) -> dict[str, Any]:
+    current = rows[-1] if rows else current_run_from_dashboard(dashboard)
+    previous = rows[-2] if len(rows) >= 2 else None
+    warnings = []
+    if len(rows) < 2:
+        warnings.append("Nog onvoldoende officiële runs voor een vergelijking.")
+    drivers = build_driver_changes(current, previous)
+    waterfall = build_waterfall(current, previous, drivers)
+    track_record = build_track_record(rows, ledger_payload, backtest, dashboard)
+    return {
+        "schema_version": "1.0",
+        "generated_at_utc": generated,
+        "current_run": current,
+        "previous_run": previous,
+        "changes": build_topline_changes(current, previous),
+        "drivers": drivers,
+        "largest_changes": largest_driver_changes(drivers),
+        "waterfall": waterfall,
+        "track_record": track_record,
+        "what_would_change": dashboard.get("summary", {}).get("what_would_change", []),
+        "warnings": warnings,
+    }
+
+
+def current_run_from_dashboard(dashboard: dict[str, Any]) -> dict[str, Any]:
+    scores = dashboard.get("scores", {})
+    blocks = scores.get("blocks", {})
+    return {
+        "run_at_utc": dashboard.get("generated_at_utc"),
+        "data_cutoff_utc": dashboard.get("data_cutoff_utc"),
+        "method_version": dashboard.get("method_version"),
+        "sol_price": dashboard.get("current", {}).get("sol_price"),
+        "current_strength_score": scores.get("market_signal"),
+        "support_score": scores.get("evidence_quality"),
+        "price_strength_score": blocks.get("price_strength"),
+        "network_usage_score": blocks.get("network_usage"),
+        "capital_flows_score": blocks.get("capital"),
+        "ecosystem_breadth_score": blocks.get("ecosystem_breadth"),
+        "regime": dashboard.get("summary", {}).get("regime"),
+        "regime_title": dashboard.get("summary", {}).get("regime_title"),
+    }
+
+
+def build_topline_changes(
+    current: dict[str, Any],
+    previous: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if not previous:
+        return {
+            "market_score_points": None,
+            "evidence_score_points": None,
+            "sol_price_absolute": None,
+            "sol_price_pct": None,
+            "available": False,
+        }
+    return {
+        "market_score_points": rounded_or_none(
+            score_delta(current, previous, "current_strength_score")
+        ),
+        "evidence_score_points": rounded_or_none(score_delta(current, previous, "support_score")),
+        "sol_price_absolute": rounded_or_none(score_delta(current, previous, "sol_price")),
+        "sol_price_pct": rounded_or_none(
+            relative_delta(current.get("sol_price"), previous.get("sol_price"))
+        ),
+        "available": True,
+    }
+
+
+def score_delta(current: dict[str, Any], previous: dict[str, Any], key: str) -> float | None:
+    cur = current.get(key)
+    prev = previous.get(key)
+    if cur is None or prev is None:
+        return None
+    return float(cur) - float(prev)
+
+
+def relative_delta(current: Any, previous: Any) -> float | None:
+    if current is None or previous in [None, 0]:
+        return None
+    return (float(current) - float(previous)) / float(previous)
+
+
+def build_driver_changes(
+    current: dict[str, Any],
+    previous: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    driver_defs = [
+        ("price_strength", "Koerskracht", "price_strength_score"),
+        ("network_usage", "Netwerkgebruik", "network_usage_score"),
+        ("capital_flows", "Kapitaalstromen", "capital_flows_score"),
+        ("ecosystem_breadth", "Ecosysteembreedte", "ecosystem_breadth_score"),
+    ]
+    current_method = current.get("method_version")
+    previous_method = previous.get("method_version") if previous else None
+    current_weights = METHOD_VERSION_WEIGHTS.get(str(current_method), {})
+    previous_weights = METHOD_VERSION_WEIGHTS.get(str(previous_method), {})
+    comparable = bool(previous) and current_method == previous_method and bool(current_weights)
+    drivers = []
+    for key, label, score_key in driver_defs:
+        current_score = nullable_number(current.get(score_key))
+        previous_score = nullable_number(previous.get(score_key)) if previous else None
+        score_change = (
+            None
+            if current_score is None or previous_score is None
+            else current_score - previous_score
+        )
+        current_weight = current_weights.get(key)
+        previous_weight = previous_weights.get(key) if comparable else None
+        current_contribution = weighted_contribution(current_score, current_weight)
+        previous_contribution = weighted_contribution(previous_score, previous_weight)
+        drivers.append(
+            {
+                "key": key,
+                "label": label,
+                "current_score": current_score,
+                "previous_score": previous_score,
+                "score_delta": rounded_or_none(score_change),
+                "current_weight": current_weight,
+                "previous_weight": previous_weight,
+                "current_contribution": current_contribution,
+                "previous_contribution": previous_contribution,
+                "contribution_delta": rounded_or_none(
+                    None
+                    if current_contribution is None or previous_contribution is None
+                    else current_contribution - previous_contribution
+                ),
+                "comparison_status": "comparable"
+                if comparable
+                else "not_comparable",
+                "change_label": change_label(score_change),
+            }
+        )
+    return drivers
+
+
+def nullable_number(value: Any) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return float(value)
+
+
+def change_label(delta: float | None) -> str:
+    if delta is None:
+        return "niet vergelijkbaar"
+    magnitude = abs(delta)
+    if magnitude < SCORE_CHANGE_THRESHOLDS["unchanged"]:
+        return "praktisch onveranderd"
+    if magnitude < SCORE_CHANGE_THRESHOLDS["light"]:
+        return "licht veranderd"
+    if magnitude < SCORE_CHANGE_THRESHOLDS["clear"]:
+        return "duidelijk veranderd"
+    return "sterk veranderd"
+
+
+def largest_driver_changes(drivers: list[dict[str, Any]]) -> dict[str, Any]:
+    changed = [driver for driver in drivers if driver.get("score_delta") is not None]
+    positive = sorted(changed, key=lambda item: item["score_delta"], reverse=True)[:2]
+    negative = sorted(changed, key=lambda item: item["score_delta"])[:2]
+    material = [
+        driver
+        for driver in changed
+        if abs(driver["score_delta"]) >= SCORE_CHANGE_THRESHOLDS["light"]
+    ]
+    if not material:
+        conclusion = "Per saldo veranderde het beeld nauwelijks sinds de vorige officiële run."
+    else:
+        strongest = max(material, key=lambda item: abs(item["score_delta"]))
+        direction = "omhoog" if strongest["score_delta"] > 0 else "omlaag"
+        conclusion = (
+            f"De beweging kwam vooral door {strongest['label'].lower()}, "
+            f"dat {direction} trok."
+        )
+    return {"positive": positive, "negative": negative, "conclusion": conclusion}
+
+
+def build_waterfall(
+    current: dict[str, Any],
+    previous: dict[str, Any] | None,
+    drivers: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not previous:
+        return {
+            "available": False,
+            "reason_unavailable": "Nog onvoldoende officiële runs voor een waterfall.",
+        }
+    comparable = all(driver["comparison_status"] == "comparable" for driver in drivers)
+    if not comparable:
+        return {
+            "available": False,
+            "reason_unavailable": "De runs zijn methodisch niet betrouwbaar vergelijkbaar.",
+            "raw_driver_changes": drivers,
+        }
+    start = nullable_number(previous.get("current_strength_score"))
+    end = nullable_number(current.get("current_strength_score"))
+    if start is None or end is None:
+        return {
+            "available": False,
+            "reason_unavailable": "Begin- of eindscore ontbreekt.",
+        }
+    deltas = [driver.get("contribution_delta") for driver in drivers]
+    if any(delta is None for delta in deltas):
+        return {
+            "available": False,
+            "reason_unavailable": "Niet alle gewogen bijdragen zijn beschikbaar.",
+        }
+    driver_delta_sum = float(sum(deltas))
+    residual = (end - start) - driver_delta_sum
+    visible_residual = rounded_or_none(residual) if abs(residual) >= 0.05 else 0.0
+    return {
+        "available": True,
+        "reason_unavailable": None,
+        "start_score": rounded_or_none(start),
+        "end_score": rounded_or_none(end),
+        "driver_delta_sum": rounded_or_none(driver_delta_sum),
+        "residual_delta": visible_residual,
+        "summary": waterfall_summary(drivers),
+    }
+
+
+def waterfall_summary(drivers: list[dict[str, Any]]) -> str:
+    material = [
+        driver for driver in drivers if driver.get("contribution_delta") is not None
+        and abs(driver["contribution_delta"]) >= 0.1
+    ]
+    if not material:
+        return "De gewogen blokbijdragen veranderden nauwelijks sinds de vorige run."
+    up = sorted(
+        [d for d in material if d["contribution_delta"] > 0],
+        key=lambda d: d["contribution_delta"],
+        reverse=True,
+    )
+    down = sorted(
+        [d for d in material if d["contribution_delta"] < 0],
+        key=lambda d: d["contribution_delta"],
+    )
+    parts = []
+    if up:
+        parts.append(f"omhoog door {up[0]['label'].lower()}")
+    if down:
+        parts.append(f"omlaag door {down[0]['label'].lower()}")
+    return "De score bewoog vooral " + " en ".join(parts) + "."
+
+
+def build_track_record(
+    rows: list[dict[str, Any]],
+    ledger_payload: dict[str, Any],
+    backtest: dict[str, Any],
+    dashboard: dict[str, Any],
+) -> dict[str, Any]:
+    first = rows[0] if rows else None
+    latest = rows[-1] if rows else None
+    predictions = ledger_payload.get("predictions", [])
+    outcomes = ledger_payload.get("outcomes", [])
+    horizon_7d = backtest.get("7d", {}) if backtest else {}
+    method_versions = sorted(
+        {str(row.get("method_version")) for row in rows if row.get("method_version")}
+    )
+    production_count = len(rows)
+    return {
+        "production_run_count": production_count,
+        "first_run_at_utc": first.get("run_at_utc") if first else None,
+        "latest_run_at_utc": latest.get("run_at_utc") if latest else None,
+        "calendar_span_days": calendar_span_days(first, latest),
+        "method_versions": method_versions,
+        "method_version_count": len(method_versions),
+        "current_method_version": dashboard.get("method_version"),
+        "maturity_status": maturity_status(production_count),
+        "next_maturity_threshold": next_maturity_threshold(production_count),
+        "prediction_count": len(predictions),
+        "resolved_outcome_count": len(outcomes),
+        "resolved_by_horizon": resolved_by_horizon(outcomes),
+        "performance_status": performance_status(len(outcomes), horizon_7d),
+        "backtest_7d": {
+            "prediction_count": horizon_7d.get("prediction_count"),
+            "directional_accuracy": horizon_7d.get("directional_accuracy"),
+            "brier_score": horizon_7d.get("brier_score"),
+            "brier_skill": horizon_7d.get("brier_skill"),
+            "calibration_error": horizon_7d.get("calibration_error"),
+        },
+        "evidence_status": dashboard.get("summary", {}).get("evidence_label"),
+        "quality_caps": dashboard.get("scores", {}).get("quality_caps", []),
+    }
+
+
+def calendar_span_days(first: dict[str, Any] | None, latest: dict[str, Any] | None) -> int:
+    if not first or not latest:
+        return 0
+    start = pd.to_datetime(first.get("run_at_utc"), utc=True)
+    end = pd.to_datetime(latest.get("run_at_utc"), utc=True)
+    return int(max((end - start).days, 0))
+
+
+def maturity_status(count: int) -> str:
+    status = MATURITY_THRESHOLDS[0][1]
+    for threshold, label in MATURITY_THRESHOLDS:
+        if count >= threshold:
+            status = label
+    return status
+
+
+def next_maturity_threshold(count: int) -> int | None:
+    for threshold, _ in MATURITY_THRESHOLDS:
+        if count < threshold:
+            return threshold
+    return None
+
+
+def performance_status(outcome_count: int, horizon_7d: dict[str, Any]) -> str:
+    skill = horizon_7d.get("brier_skill")
+    calibration = horizon_7d.get("calibration_error")
+    predictions = horizon_7d.get("prediction_count") or 0
+    if outcome_count < 10 or predictions < 30:
+        return "Nog onvoldoende afgeronde uitkomsten."
+    if skill is None or skill <= 0:
+        return "Nog geen aantoonbare meerwaarde boven de basislijn."
+    if skill > 0.05 and (calibration is None or calibration <= 0.08):
+        return "Positieve meerwaarde, maar blijf de steekproef volgen."
+    return "Lichte historische meerwaarde."
+
+
+def resolved_by_horizon(outcomes: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for outcome in outcomes:
+        horizon = str(outcome.get("horizon") or "onbekend")
+        counts[horizon] = counts.get(horizon, 0) + 1
+    return counts
 
 
 def write_all_json(
@@ -2029,16 +2669,18 @@ def write_all_json(
         },
     )
     write_json(SITE_DATA / "sensitivity.json", sensitivity_stub(generated, method))
+    ledger_payload = {
+        "schema_version": "1.0",
+        "generated_at_utc": generated,
+        "method_version": method,
+        "predictions": read_jsonl(ROOT / "data/ledger/predictions.jsonl"),
+        "outcomes": read_jsonl(ROOT / "data/ledger/outcomes.jsonl"),
+    }
     write_json(
         SITE_DATA / "ledger.json",
-        {
-            "schema_version": "1.0",
-            "generated_at_utc": generated,
-            "method_version": method,
-            "predictions": read_jsonl(ROOT / "data/ledger/predictions.jsonl"),
-            "outcomes": read_jsonl(ROOT / "data/ledger/outcomes.jsonl"),
-        },
+        ledger_payload,
     )
+    write_overview_outputs(dashboard, backtest, ledger_payload, generated)
     glossary = Path(ROOT / "config/glossary.nl.json").read_text(encoding="utf-8")
     (SITE_DATA / "glossary.json").write_text(glossary, encoding="utf-8")
     write_json(

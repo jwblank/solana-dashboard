@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 html = (ROOT / "site/index.html").read_text(encoding="utf-8")
 for tab in [
+    "Overzicht",
     "Duiding",
     "Vandaag",
     "Prijs",
