@@ -232,6 +232,13 @@ function formatPointDelta(delta) {
   return `${value > 0 ? "+" : ""}${value.toFixed(1)} punten sinds vorige run`;
 }
 
+function formatBlockDelta(delta) {
+  if (delta === null || delta === undefined || !Number.isFinite(Number(delta))) return "geen vergelijking beschikbaar";
+  const value = Number(delta);
+  if (Math.abs(value) < 0.05) return "onveranderd sinds vorige run";
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)} blokpunten sinds vorige run`;
+}
+
 function formatMoneyDelta(abs, pct) {
   if (abs === null || abs === undefined || pct === null || pct === undefined) return "";
   const absText = `${Number(abs) >= 0 ? "+" : ""}$${Math.abs(Number(abs)).toFixed(2)}`;
@@ -269,7 +276,7 @@ function changeCard(item, direction) {
     const strong = document.createElement("strong");
     strong.textContent = item.label;
     const delta = document.createElement("p");
-    delta.textContent = `${formatPointDelta(item.score_delta)}; ${item.change_label}.`;
+    delta.textContent = `${formatBlockDelta(item.score_delta)}; ${item.change_label}.`;
     card.append(span, strong, delta);
     return card;
 }
@@ -423,7 +430,7 @@ function renderMethodVersionNote(rows, transitions) {
 function renderWaterfall(waterfall, drivers) {
   const target = document.getElementById("waterfall-chart");
   setText("waterfall-note", waterfall.available
-    ? "Scorebrug sinds de vorige officiële productierun."
+    ? "Gewogen scorebrug sinds de vorige officiële productierun. Blokveranderingen worden vermenigvuldigd met hun weging in de eindscore."
     : (waterfall.reason_unavailable || "Waterfall niet beschikbaar."));
   setText("waterfall-summary", waterfall.summary || "");
   if (!waterfall.available) {
@@ -462,7 +469,7 @@ function scoreBridgeTable(waterfall) {
   wrap.className = "score-bridge";
   const header = document.createElement("div");
   header.className = "score-bridge-row score-bridge-head";
-  header.append(scoreBridgeCell("Stap"), scoreBridgeCell("Waarde"));
+  header.append(scoreBridgeCell("Stap"), scoreBridgeCell("Bijdrage aan eindscore"));
   wrap.append(header);
   scoreBridgeItems(waterfall).forEach((item) => {
     const row = document.createElement("div");
@@ -498,7 +505,7 @@ function scoreBridgeRowClass(item) {
 function formatSignedPoint(value) {
   if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
   const number = Number(value);
-  return `${number > 0 ? "+" : ""}${number.toFixed(2)} punten`;
+  return `${number > 0 ? "+" : ""}${number.toFixed(2)} scorepunten`;
 }
 
 function rawDriverCard(driver) {
@@ -507,7 +514,7 @@ function rawDriverCard(driver) {
   const span = document.createElement("span");
   span.textContent = driver.label;
   const strong = document.createElement("strong");
-  strong.textContent = formatPointDelta(driver.score_delta);
+  strong.textContent = formatBlockDelta(driver.score_delta);
   const p = document.createElement("p");
   p.textContent = "Ruwe scoreverandering; gewogen bijdrage niet betrouwbaar vergelijkbaar.";
   card.append(span, strong, p);
