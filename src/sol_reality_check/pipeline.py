@@ -2475,7 +2475,8 @@ def build_waterfall(
             "available": False,
             "reason_unavailable": "Niet alle gewogen bijdragen zijn beschikbaar.",
         }
-    driver_delta_sum = float(sum(deltas))
+    numeric_deltas = [float(delta) for delta in deltas if delta is not None]
+    driver_delta_sum = float(sum(numeric_deltas))
     residual = (end - start) - driver_delta_sum
     visible_residual = rounded_or_none(residual) if abs(residual) >= 0.05 else 0.0
     return {
