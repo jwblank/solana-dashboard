@@ -31,13 +31,10 @@
       <p id="demo-notice" class="notice" hidden></p>
       <nav class="tabs primary-tabs" aria-label="Hoofdnavigatie">
         <button class="tab active" data-tab="actueel">Actueel</button>
-        <button class="tab" data-tab="analyse">Analyse</button>
+        <button class="tab" data-tab="prijs">Prijs</button>
+        <button class="tab" data-tab="netwerk">Netwerk</button>
+        <button class="tab" data-tab="kapitaal">Kapitaal</button>
         <button class="tab" data-tab="bewijs">Bewijs</button>
-      </nav>
-      <nav class="secondary-links" aria-label="Snelle links">
-        <button class="button link-button" data-jump="#bewijs-data">Archief</button>
-        <button class="button link-button" data-jump="#bewijs-methode">Begrippen</button>
-        <a class="button" href="https://github.com/jwblank/solana-dashboard">GitHub</a>
       </nav>
 
       <section id="actueel" class="panel active">
@@ -67,7 +64,7 @@
             <div class="section-head">
               <div>
                 <h3>Waarom veranderde het?</h3>
-                <p class="plain">Korte domeinsamenvatting. De volledige indicatoranalyse staat onder Analyse.</p>
+                <p class="plain">Korte domeinsamenvatting. De volledige indicatoranalyse staat op de pagina's Prijs, Netwerk en Kapitaal.</p>
               </div>
             </div>
             <div id="actueel-domain-cards" class="change-grid"></div>
@@ -99,91 +96,72 @@
               <button class="button link-button" data-jump="#bewijs-trackrecord">Bekijk trackrecord</button>
             </article>
           </section>
+
+          <section class="wide quiet-section">
+            <div class="section-head">
+              <div>
+                <h3>Ontwikkeling</h3>
+                <p class="plain">Korte trend van huidige sterkte en onderbouwing. De historische vergelijking staat onder Bewijs.</p>
+              </div>
+              <div id="history-range" class="range-controls" aria-label="Tijdselectie scoreverloop"></div>
+            </div>
+            <div class="chart-box">
+              <canvas id="score-history-chart" aria-label="Scoreverloop van huidige sterkte en onderbouwing" role="img"></canvas>
+            </div>
+            <p id="method-version-note" class="plain"></p>
+            <div id="method-transition-list" class="plain"></div>
+          </section>
+
+          <section class="wide quiet-section">
+            <h3>Scorebrug</h3>
+            <p id="waterfall-note" class="plain"></p>
+            <div id="waterfall-chart" class="waterfall" aria-label="Scorebrug van vorige score naar huidige score"></div>
+            <p id="waterfall-summary" class="plain"></p>
+          </section>
         </div>
       </section>
 
-      <section id="analyse" class="panel">
+      <section id="prijs" class="panel">
         <div class="overview-page">
-          <nav class="tabs sub-tabs" aria-label="Analyse navigatie">
-            <button class="tab active" data-subtab="analyse-totaal">Totaalbeeld</button>
-            <button class="tab" data-subtab="analyse-prijs">Prijs</button>
-            <button class="tab" data-subtab="analyse-netwerk">Netwerk</button>
-            <button class="tab" data-subtab="analyse-kapitaal">Kapitaal</button>
-            <button class="tab" data-subtab="analyse-ecosysteem">Ecosysteem</button>
-            <button class="tab" data-subtab="analyse-historie">Historie</button>
-          </nav>
+          <div id="price-tab"></div>
+        </div>
+      </section>
 
-          <section id="analyse-totaal" class="subpanel active">
-            <section class="wide">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Analyse</p>
-                  <h2>Totaalbeeld</h2>
-                  <p class="plain">De inhoudelijke bouwstenen achter het actuele marktbeeld.</p>
-                </div>
+      <section id="netwerk" class="panel">
+        <div class="overview-page">
+          <div id="network-tab"></div>
+          <section class="wide section-divider">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Ecosysteem</p>
+                <h2>Breedte van het Solana-ecosysteem</h2>
+                <p class="plain">Deze context hoort bij netwerkgebruik: beweegt alleen SOL, of beweegt het ecosysteem breder mee?</p>
               </div>
-              <div id="analysis-total-cards" class="grid"></div>
-            </section>
-            <section class="wide">
-              <h3>Scorebrug</h3>
-              <p id="waterfall-note" class="plain"></p>
-              <div id="waterfall-chart" class="waterfall" aria-label="Scorebrug van vorige score naar huidige score"></div>
-              <p id="waterfall-summary" class="plain"></p>
-            </section>
+            </div>
           </section>
+          <div id="ecosystem-tab"></div>
+        </div>
+      </section>
 
-          <section id="analyse-prijs" class="subpanel">
-            <div id="price-tab"></div>
-          </section>
-
-          <section id="analyse-netwerk" class="subpanel">
-            <div id="network-tab"></div>
-          </section>
-
-          <section id="analyse-kapitaal" class="subpanel">
-            <div id="capital-tab"></div>
-          </section>
-
-          <section id="analyse-ecosysteem" class="subpanel">
-            <div id="ecosystem-tab"></div>
-          </section>
-
-          <section id="analyse-historie" class="subpanel">
-            <section class="wide">
-              <div class="section-head">
-                <div>
-                  <h3>Scoreverloop</h3>
-                  <p class="plain">Huidige sterkte en onderbouwing per officiële productierun. Scores lopen van 0 tot 100.</p>
-                </div>
-                <div id="history-range" class="range-controls" aria-label="Tijdselectie scoreverloop"></div>
-              </div>
-              <div class="chart-box">
-                <canvas id="score-history-chart" aria-label="Scoreverloop van huidige sterkte en onderbouwing" role="img"></canvas>
-              </div>
-              <p id="method-version-note" class="plain"></p>
-              <div id="method-transition-list" class="plain"></div>
-            </section>
-            <section class="wide">
-              <h3>Historische vergelijkingen</h3>
-              <p id="analog-summary"></p>
-              <div id="analog-stats" class="stat-row"></div>
-            </section>
-          </section>
+      <section id="kapitaal" class="panel">
+        <div class="overview-page">
+          <div id="capital-tab"></div>
         </div>
       </section>
 
       <section id="bewijs" class="panel">
         <div class="evidence-page">
-          <nav class="tabs sub-tabs" aria-label="Bewijs navigatie">
-            <button class="tab active" data-subtab="bewijs-kwaliteit">Kwaliteit</button>
-            <button class="tab" data-subtab="bewijs-backtest">Backtest</button>
-            <button class="tab" data-subtab="bewijs-trackrecord">Trackrecord</button>
-            <button class="tab" data-subtab="bewijs-methode">Methode</button>
-            <button class="tab" data-subtab="bewijs-data">Data & logboek</button>
+          <nav class="section-links" aria-label="Onderdelen van bewijs">
+            <a href="#bewijs-kwaliteit">Datakwaliteit</a>
+            <a href="#bewijs-backtest">Backtest</a>
+            <a href="#bewijs-trackrecord">Trackrecord</a>
+            <a href="#bewijs-historie">Historie</a>
+            <a href="#bewijs-methode">Methode</a>
+            <a href="#bewijs-data">Data & logboek</a>
           </nav>
 
-          <section id="bewijs-kwaliteit" class="subpanel active">
-            <section class="evidence-hero">
+          <section id="bewijs-kwaliteit" class="evidence-section">
+            <section class="evidence-hero nested-hero">
               <div>
                 <p class="eyebrow">Bewijs</p>
                 <h2>Datakwaliteit en bronnen</h2>
@@ -191,58 +169,55 @@
               </div>
               <div id="evidence-scorecard" class="evidence-scorecard"></div>
             </section>
-            <section class="evidence-section">
-              <h3>Datakwaliteit in het kort</h3>
-              <div id="evidence-kpis" class="evidence-kpis"></div>
-            </section>
-            <section class="evidence-section">
-              <h3>Bronnen en bronstatus</h3>
-              <p id="audit-summary"></p>
-              <div id="audit-stats" class="stat-row"></div>
-              <div id="source-cards" class="source-grid"></div>
-              <p id="audit-warnings" class="plain"></p>
-            </section>
+
+            <h3>Datakwaliteit in het kort</h3>
+            <div id="evidence-kpis" class="evidence-kpis"></div>
+
+            <h3>Bronnen en bronstatus</h3>
+            <p id="audit-summary"></p>
+            <div id="audit-stats" class="stat-row"></div>
+            <div id="source-cards" class="source-grid"></div>
+            <p id="audit-warnings" class="plain"></p>
           </section>
 
-          <section id="bewijs-backtest" class="subpanel">
-            <section class="evidence-section">
-              <div class="section-head">
-                <div>
-                  <h2>Backtest</h2>
-                  <p id="edge-warning" class="plain"></p>
-                </div>
-              </div>
-              <div id="backtest-cards" class="backtest-grid"></div>
-              <div id="backtest-table" class="table-wrap compact-table"></div>
-            </section>
-          </section>
-
-          <section id="bewijs-trackrecord" class="subpanel">
-            <section class="evidence-section">
-              <h2>Publiek trackrecord</h2>
-              <p class="plain">Forward trackrecord van vooraf vastgelegde officiële signalen. Dit staat los van de historische backtest.</p>
-              <div id="trackrecord-cards" class="trackrecord-grid"></div>
-              <p class="notice">Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. Een langer trackrecord kan het inzicht verbeteren, maar garandeert geen voorspellende waarde of rendement.</p>
-            </section>
-            <section class="evidence-section">
-              <h3>Open logboek</h3>
-              <div id="ledger-summary" class="ledger-summary"></div>
-            </section>
-          </section>
-
-          <section id="bewijs-methode" class="subpanel">
-            <section class="evidence-section">
+          <section id="bewijs-backtest" class="evidence-section">
+            <div class="section-head">
               <div>
-                <p class="eyebrow">Methode</p>
-                <h2>Zo werkt het</h2>
-                <p class="plain">Berekening, indicatorbijdragen, begrippen en rol van duiding.</p>
+                <h2>Backtest</h2>
+                <p id="edge-warning" class="plain"></p>
               </div>
-              <h3>Indicatorbijdrage</h3>
-              <div id="evidence-blocks" class="evidence-block-grid"></div>
-              <h3>Berekeningsstappen</h3>
-              <div id="method-steps" class="method-steps"></div>
-            </section>
-            <section class="evidence-section">
+            </div>
+            <div id="backtest-cards" class="backtest-grid"></div>
+            <div id="backtest-table" class="table-wrap compact-table"></div>
+          </section>
+
+          <section id="bewijs-trackrecord" class="evidence-section">
+            <h2>Publiek trackrecord</h2>
+            <p class="plain">Forward trackrecord van vooraf vastgelegde officiële signalen. Dit staat los van de historische backtest.</p>
+            <div id="trackrecord-cards" class="trackrecord-grid"></div>
+            <p class="notice">Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. Een langer trackrecord kan het inzicht verbeteren, maar garandeert geen voorspellende waarde of rendement.</p>
+            <h3>Open logboek</h3>
+            <div id="ledger-summary" class="ledger-summary"></div>
+          </section>
+
+          <section id="bewijs-historie" class="evidence-section">
+            <h2>Historische vergelijking</h2>
+            <p id="analog-summary"></p>
+            <div id="analog-stats" class="stat-row"></div>
+          </section>
+
+          <section id="bewijs-methode" class="evidence-section">
+            <div>
+              <p class="eyebrow">Methode</p>
+              <h2>Zo werkt het</h2>
+              <p class="plain">Berekening, indicatorbijdragen, begrippen en rol van duiding.</p>
+            </div>
+            <h3>Indicatorbijdrage</h3>
+            <div id="evidence-blocks" class="evidence-block-grid"></div>
+            <h3>Berekeningsstappen</h3>
+            <div id="method-steps" class="method-steps"></div>
+
+            <section class="method-subsection">
               <div class="section-head">
                 <div>
                   <h3>Begrippen</h3>
@@ -255,7 +230,7 @@
             </section>
           </section>
 
-          <section id="bewijs-data" class="subpanel">
+          <section id="bewijs-data" class="evidence-section">
             <section class="interpretation-hero">
               <div>
                 <p class="eyebrow">Archief</p>

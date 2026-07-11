@@ -20,27 +20,28 @@ function setText(id, value) {
 
 const routes = {
   "#actueel": {tab: "actueel"},
-  "#analyse": {tab: "analyse", subtab: "analyse-totaal"},
-  "#analyse-totaal": {tab: "analyse", subtab: "analyse-totaal"},
-  "#analyse-prijs": {tab: "analyse", subtab: "analyse-prijs"},
-  "#analyse-netwerk": {tab: "analyse", subtab: "analyse-netwerk"},
-  "#analyse-kapitaal": {tab: "analyse", subtab: "analyse-kapitaal"},
-  "#analyse-ecosysteem": {tab: "analyse", subtab: "analyse-ecosysteem"},
-  "#analyse-historie": {tab: "analyse", subtab: "analyse-historie"},
-  "#bewijs": {tab: "bewijs", subtab: "bewijs-kwaliteit"},
-  "#bewijs-kwaliteit": {tab: "bewijs", subtab: "bewijs-kwaliteit"},
-  "#bewijs-backtest": {tab: "bewijs", subtab: "bewijs-backtest"},
-  "#bewijs-trackrecord": {tab: "bewijs", subtab: "bewijs-trackrecord"},
-  "#bewijs-methode": {tab: "bewijs", subtab: "bewijs-methode"},
-  "#bewijs-data": {tab: "bewijs", subtab: "bewijs-data"}
+  "#prijs": {tab: "prijs"},
+  "#netwerk": {tab: "netwerk"},
+  "#kapitaal": {tab: "kapitaal"},
+  "#bewijs": {tab: "bewijs"},
+  "#bewijs-kwaliteit": {tab: "bewijs", anchor: "bewijs-kwaliteit"},
+  "#bewijs-backtest": {tab: "bewijs", anchor: "bewijs-backtest"},
+  "#bewijs-trackrecord": {tab: "bewijs", anchor: "bewijs-trackrecord"},
+  "#bewijs-historie": {tab: "bewijs", anchor: "bewijs-historie"},
+  "#bewijs-methode": {tab: "bewijs", anchor: "bewijs-methode"},
+  "#bewijs-data": {tab: "bewijs", anchor: "bewijs-data"},
+  "#analyse": {tab: "actueel"},
+  "#analyse-totaal": {tab: "actueel"},
+  "#analyse-prijs": {tab: "prijs"},
+  "#analyse-netwerk": {tab: "netwerk"},
+  "#analyse-kapitaal": {tab: "kapitaal"},
+  "#analyse-ecosysteem": {tab: "netwerk"},
+  "#analyse-historie": {tab: "bewijs", anchor: "bewijs-historie"}
 };
 
 function activateNavigation() {
   document.querySelectorAll("[data-tab]").forEach((button) => {
     button.addEventListener("click", () => navigateTo(`#${button.dataset.tab}`));
-  });
-  document.querySelectorAll("[data-subtab]").forEach((button) => {
-    button.addEventListener("click", () => navigateTo(`#${button.dataset.subtab}`));
   });
   document.querySelectorAll("[data-jump]").forEach((button) => {
     button.addEventListener("click", () => navigateTo(button.dataset.jump));
@@ -66,19 +67,12 @@ function applyRouteFromHash() {
   document.querySelectorAll(".panel").forEach((panel) => {
     panel.classList.toggle("active", panel.id === route.tab);
   });
-  const subtab = route.subtab || defaultSubtab(route.tab);
-  document.querySelectorAll(`#${route.tab} [data-subtab]`).forEach((button) => {
-    button.classList.toggle("active", button.dataset.subtab === subtab);
-  });
-  document.querySelectorAll(`#${route.tab} .subpanel`).forEach((panel) => {
-    panel.classList.toggle("active", panel.id === subtab);
-  });
-}
-
-function defaultSubtab(tab) {
-  if (tab === "analyse") return "analyse-totaal";
-  if (tab === "bewijs") return "bewijs-kwaliteit";
-  return null;
+  if (route.anchor) {
+    const anchor = document.getElementById(route.anchor);
+    if (anchor) {
+      requestAnimationFrame(() => anchor.scrollIntoView({block: "start"}));
+    }
+  }
 }
 
 function scrollToTop() {
@@ -273,10 +267,10 @@ function renderActueelDomainCards(dashboard, drivers) {
   const details = dashboard?.scores?.block_details || [];
   const driverByKey = Object.fromEntries((drivers || []).map((driver) => [driver.key, driver]));
   const routeByKey = {
-    price_strength: "#analyse-prijs",
-    network_usage: "#analyse-netwerk",
-    capital_flows: "#analyse-kapitaal",
-    ecosystem_breadth: "#analyse-ecosysteem"
+    price_strength: "#prijs",
+    network_usage: "#netwerk",
+    capital_flows: "#kapitaal",
+    ecosystem_breadth: "#netwerk"
   };
   const cards = details.map((item) => {
     const driver = driverByKey[item.key] || {};
@@ -291,8 +285,8 @@ function renderActueelDomainCards(dashboard, drivers) {
     const link = document.createElement("button");
     link.className = "button link-button compact-button";
     link.type = "button";
-    link.textContent = "Open analyse";
-    link.addEventListener("click", () => navigateTo(routeByKey[item.key] || "#analyse-totaal"));
+    link.textContent = "Open pagina";
+    link.addEventListener("click", () => navigateTo(routeByKey[item.key] || "#actueel"));
     card.append(label, score, summary, link);
     return card;
   });
@@ -703,24 +697,25 @@ function renderEvidencePage(dashboard, backtest, ledger) {
 function renderInterpretationPage(interpretation, archiveIndex) {
   setText("llm-title", interpretation.title || "Duiding niet beschikbaar");
   setText("llm-date", interpretationDateText(interpretation));
-  renderAnalysisText("llm-analysis", interpretation);
+  renderAnalysisText("llm-analysis", interpretation, {withDefaultHeadings: true});
   renderInterpretationAudit(interpretation);
   renderInterpretationInputs(interpretation.input_snapshot || {});
   setText("llm-note", interpretation.footer_note || "");
   renderInterpretationArchive(archiveIndex);
 }
 
-function renderAnalysisText(targetId, interpretation) {
+function renderAnalysisText(targetId, interpretation, options = {}) {
   const target = document.getElementById(targetId);
   if (!target) return;
   const text = interpretation.analysis_text || interpretation.intro || "Geen analyse beschikbaar.";
-  const blocks = parseAnalysisBlocks(text);
-  target.replaceChildren(...blocks.map((block) => {
+  const blocks = parseAnalysisBlocks(text, options).slice(0, options.limit || Number.POSITIVE_INFINITY);
+  target.replaceChildren(...blocks.map((block, index) => {
     const section = document.createElement("section");
     section.className = "analysis-block";
-    if (block.heading) {
+    const heading = block.heading || (options.withDefaultHeadings ? defaultAnalysisHeading(index) : "");
+    if (heading) {
       const h3 = document.createElement("h3");
-      h3.textContent = block.heading;
+      h3.textContent = heading;
       section.append(h3);
     }
     const p = document.createElement("p");
@@ -730,12 +725,12 @@ function renderAnalysisText(targetId, interpretation) {
   }));
 }
 
-function parseAnalysisBlocks(text) {
+function parseAnalysisBlocks(text, options = {}) {
   const normalized = String(text || "").replace(/\r/g, "").trim();
   const headingPattern = /(?:^|\n)\s*(Kort beeld|Wat trekt omhoog\?|Wat houdt tegen\?|Hoe stevig is dit\?|Conclusie|Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)\s*:\s*/g;
   const matches = Array.from(normalized.matchAll(headingPattern));
   if (!matches.length) {
-    return splitPlainAnalysis(normalized);
+    return splitPlainAnalysis(normalized, options);
   }
   return matches.map((match, index) => {
     const start = match.index + match[0].length;
@@ -755,17 +750,34 @@ function normalizeAnalysisHeading(heading) {
   return map[heading] || heading;
 }
 
-function splitPlainAnalysis(text) {
+function splitPlainAnalysis(text, options = {}) {
   const paragraphs = text.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
   if (paragraphs.length > 1) {
-    return paragraphs.map((part) => ({heading: "", text: part}));
+    return paragraphs.map((part, index) => ({
+      heading: options.withDefaultHeadings ? defaultAnalysisHeading(index) : "",
+      text: part
+    }));
   }
   const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [text];
   const chunks = [];
   for (let index = 0; index < sentences.length; index += 3) {
-    chunks.push({heading: "", text: sentences.slice(index, index + 3).join(" ").trim()});
+    const chunkIndex = Math.floor(index / 3);
+    chunks.push({
+      heading: options.withDefaultHeadings ? defaultAnalysisHeading(chunkIndex) : "",
+      text: sentences.slice(index, index + 3).join(" ").trim()
+    });
   }
   return chunks.filter((block) => block.text);
+}
+
+function defaultAnalysisHeading(index) {
+  return [
+    "Kernbeeld",
+    "Wat trekt omhoog?",
+    "Wat houdt tegen?",
+    "Hoe sterk is het bewijs?",
+    "Waarop letten?"
+  ][index] || "Vervolg";
 }
 
 function renderInterpretationAudit(interpretation) {
@@ -829,7 +841,7 @@ function renderInterpretationArchive(archiveIndex) {
         const archived = await loadJson(entry.path);
         setText("llm-title", archived.title || "Duiding niet beschikbaar");
         setText("llm-date", interpretationDateText(archived));
-        renderAnalysisText("llm-analysis", archived);
+        renderAnalysisText("llm-analysis", archived, {withDefaultHeadings: true});
         renderInterpretationAudit(archived);
         renderInterpretationInputs(archived.input_snapshot || {});
         setText("llm-note", archived.footer_note || "");
@@ -862,7 +874,7 @@ function archiveSelect(entries) {
       const archived = await loadJson(select.value);
       setText("llm-title", archived.title || "Duiding niet beschikbaar");
       setText("llm-date", interpretationDateText(archived));
-      renderAnalysisText("llm-analysis", archived);
+      renderAnalysisText("llm-analysis", archived, {withDefaultHeadings: true});
       renderInterpretationAudit(archived);
       renderInterpretationInputs(archived.input_snapshot || {});
       setText("llm-note", archived.footer_note || "");
@@ -1475,7 +1487,6 @@ async function main() {
   setText("updated-at", dashboard.generated_at_utc);
   setText("data-cutoff", dashboard.data_cutoff_utc);
   setText("method-version", dashboard.method_version);
-  renderCards(dashboard);
   renderIndicatorTab("price-tab", dashboard.indicator_tabs?.price);
   renderIndicatorTab("network-tab", dashboard.indicator_tabs?.network);
   renderIndicatorTab("capital-tab", dashboard.indicator_tabs?.capital);
@@ -1490,7 +1501,7 @@ async function main() {
   renderSignalResearch(signalResearch);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
-  renderAnalysisText("actueel-duiding", interpretation);
+  renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 3});
   const effectiveOverview = overview.current_run ? overview : fallbackOverview(dashboard);
   effectiveOverview.dashboard = dashboard;
   renderOverview(effectiveOverview, overviewHistory);

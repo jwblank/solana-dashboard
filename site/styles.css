@@ -26,18 +26,16 @@ dt, .card span, .score-pair span { color: var(--muted); font-size: 12px; }
 dd { margin: 0; font-weight: 700; }
 main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
-.primary-tabs { margin-bottom: 10px; }
-.sub-tabs { margin: 0 0 14px; padding-bottom: 2px; }
+.primary-tabs { margin-bottom: 14px; position: sticky; top: 0; z-index: 2; padding: 8px 0; background: color-mix(in srgb, var(--bg), transparent 8%); }
 .secondary-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
 .tab, .button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 10px 12px; cursor: pointer; text-decoration: none; }
+.primary-tabs .tab { padding: 11px 15px; }
 .tab.active { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .button.active-range { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .link-button { color: var(--accent); }
 .compact-button { margin-top: 10px; padding: 7px 9px; font-size: 12px; }
 .panel { display: none; }
 .panel.active { display: block; }
-.subpanel { display: none; }
-.subpanel.active { display: block; }
 .conclusion { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); gap: 18px; margin-bottom: 16px; }
 .score-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .score-pair strong { display: block; font-size: 38px; line-height: 1; }
@@ -167,6 +165,13 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .status-ok { color: var(--accent); background: color-mix(in srgb, var(--accent), transparent 88%); }
 .status-warn { color: var(--warn); background: color-mix(in srgb, var(--warn), transparent 88%); }
 .wide { margin: 16px 0; }
+.quiet-section { background: color-mix(in srgb, var(--panel), var(--bg) 20%); }
+.section-divider { margin-top: 18px; margin-bottom: 10px; }
+.nested-hero { margin-bottom: 18px; }
+.method-subsection { margin-top: 18px; }
+.section-links { display: flex; flex-wrap: wrap; gap: 14px; margin: 0 0 16px; padding: 10px 0 14px; border-bottom: 1px solid var(--line); }
+.section-links a { color: var(--muted); font-weight: 700; text-decoration: none; }
+.section-links a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .clean { padding-left: 18px; }
 .inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 input, select { width: 100%; margin-top: 4px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); }
