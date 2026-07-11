@@ -6,7 +6,8 @@ let scoreHistoryChart = null;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
-  const response = await fetch(`${path}${separator}v=${Date.now()}`, {cache: "no-store"});
+  const buildVersion = window.SOL_REALITY_CHECK_BUILD || "dev";
+  const response = await fetch(`${path}${separator}v=${encodeURIComponent(buildVersion)}`, {cache: "no-cache"});
   if (!response.ok) throw new Error(`Kon ${path} niet laden`);
   return response.json();
 }

@@ -1,0 +1,169 @@
+{
+  "analysis_text": "Kort beeld: Solana staat met een gemengd marktbeeld, met een huidige sterkte van 52/100, onderbouwing van 55/100, en een koerskracht van 52/100. Gebruik en breedte in ecosysteem zijn ook gemengd, met respectievelijk 52/100 en 57/100. Wat trekt omhoog?: De huidige sterkte en onderbouwing zijn redelijk sterk, met respectievelijk 52/100 en 55/100. De huidige prijs van SOL is $77.68, wat een relatief stabiel punt biedt. De frequentie van positieve resultaten in de analoge dagen is 62.5%, wat positief is. Wat houdt tegen?: De koerskracht is gemengd, met 52/100. De kapitaalstromen zijn neutraal tot gemengd, met 48/100. De network usage is ook gemengd, met 52/100. Dit geeft aan dat de markt nog niet overtuigend is in de toekomstige prestaties van SOL. Hoe stevig is dit?: De onderbouwing is beperkt, met 55/100. De historische frequentie van positieve resultaten is 62.5%, maar de mediaan rendement is slechts 2.5%. De backtest resultaten zijn ook gemengd, met 48.5% richtingsaccurate voorspellingen.",
+  "data_cutoff_utc": "2026-07-10T23:59:59Z",
+  "footer_note": "Deze tekst is door een LLM opgesteld op basis van de exacte dashboardwaarden. De LLM bepaalt geen scores en geeft geen beleggingsadvies.",
+  "generated_at_utc": "2026-07-11T05:11:29Z",
+  "input_snapshot": {
+    "analog_count": 40,
+    "analog_median_return": "2.5%",
+    "analog_positive_frequency": "62.5%",
+    "backtest_7d": {
+      "brier_skill": "-0.028",
+      "calibration_error": "0.095",
+      "directional_accuracy": "48.5%",
+      "prediction_count": 130
+    },
+    "block_weights": {
+      "capital": "20%",
+      "ecosystem_breadth": "10%",
+      "network_usage": "25%",
+      "price_strength": "45%"
+    },
+    "capital": "48/100",
+    "capital_components": [
+      {
+        "label": "Stablecoins 30d",
+        "score": "43/100",
+        "value": "-1.7%",
+        "weight": "55% binnen kapitaalblok"
+      },
+      {
+        "label": "TVL 30d",
+        "score": "53/100",
+        "value": "3.7%",
+        "weight": "45% binnen kapitaalblok"
+      },
+      {
+        "label": "Schaalduiding",
+        "score": "48/100",
+        "value": "Relatief",
+        "weight": "Uitleg"
+      }
+    ],
+    "capital_summary": "Kapitaalstromen zijn neutraal tot gemengd.",
+    "data_cutoff_utc": "2026-07-10T23:59:59Z",
+    "data_freshness": [
+      {
+        "label": "Update-run",
+        "value": "2026-07-11T05:11:29Z"
+      },
+      {
+        "label": "Data t/m",
+        "value": "2026-07-10T23:59:59Z"
+      },
+      {
+        "label": "Historie",
+        "value": "2022-09-10 t/m 2026-07-10"
+      },
+      {
+        "label": "Records",
+        "value": "1400"
+      },
+      {
+        "label": "Prijsreparaties",
+        "value": "0"
+      },
+      {
+        "label": "Prijsconsensus",
+        "value": "SOL: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen; BTC: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen"
+      },
+      {
+        "label": "Analoge dagen",
+        "value": "40"
+      },
+      {
+        "label": "Ecosysteem tokens",
+        "value": "25"
+      },
+      {
+        "label": "RPC samples",
+        "value": "3"
+      }
+    ],
+    "data_quality_summary": "1400 historische records van 2022-09-10 t/m 2026-07-10. Laatste dagdata-cutoff: 2026-07-10T23:59:59Z. Update-run: 2026-07-11T05:11:29Z.",
+    "data_warnings": [
+      "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
+    ],
+    "ecosystem_breadth": "57/100",
+    "evidence_label": "beperkt onderbouwd",
+    "evidence_quality": "55/100",
+    "historical_summary": "Historische frequentie: 62.5% positief na 7 dagen. Mediaan 2.5%; midden 80% liep van -15.1% tot 13.7%.",
+    "market_signal": "52/100",
+    "market_signal_label": "neutraal of gemengd",
+    "network_components": [
+      {
+        "label": "DEX-volume 7d/30d",
+        "score": "50/100",
+        "value": "6.82x",
+        "weight": "60% binnen gebruik"
+      },
+      {
+        "label": "Fees 7d/30d",
+        "score": "56/100",
+        "value": "7.40x",
+        "weight": "40% binnen gebruik"
+      },
+      {
+        "label": "RPC-context",
+        "score": "52/100",
+        "value": "52/100; 1.130,9 TPS",
+        "weight": "15% correctie op gebruik"
+      },
+      {
+        "label": "Breedte in ecosysteem",
+        "score": "57/100",
+        "value": "60.0% positief 7d; 25 tokens",
+        "weight": "10% van eindscore"
+      },
+      {
+        "label": "Gevalideerde basis",
+        "score": "52/100",
+        "value": "52/100",
+        "weight": "85% van gebruik"
+      }
+    ],
+    "network_summary": "Gebruik is rond normaal tot licht positief. Breedte in ecosysteem: 60.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement 0.0%.",
+    "network_usage": "52/100",
+    "price_components": [
+      {
+        "label": "SOL 7 dagen",
+        "score": "44/100",
+        "value": "-5.1%",
+        "weight": "20% binnen prijsblok"
+      },
+      {
+        "label": "SOL 30 dagen",
+        "score": "66/100",
+        "value": "23.7%",
+        "weight": "15% binnen prijsblok"
+      },
+      {
+        "label": "Relatief vs BTC 7d",
+        "score": "36/100",
+        "value": "-7.7%",
+        "weight": "30% binnen prijsblok"
+      },
+      {
+        "label": "Afstand tot 50d trend",
+        "score": "55/100",
+        "value": "4.5%",
+        "weight": "20% binnen prijsblok"
+      }
+    ],
+    "price_strength": "52/100",
+    "price_summary": "Koerskracht is gemengd: nog geen overtuigende koersbevestiging.",
+    "regime_title": "Gemengd marktbeeld",
+    "sol_price": "$77.68",
+    "updated_at_utc": "2026-07-11T05:11:29Z"
+  },
+  "interpretation_date": "2026-07-10",
+  "intro": "De huidige sterkte staat op 52/100 (neutraal of gemengd) en de onderbouwing op 55/100 (beperkt onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-07-10T23:59:59Z.",
+  "llm_called_at_utc": "2026-07-11T05:13:12Z",
+  "method_version": "1.0.0",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "provider": "Hugging Face Inference Providers",
+  "schema_version": "1.0",
+  "status": "llm_success",
+  "title": "Solana (SOL) - Gemengd marktbeeld met beperkte onderbouwing",
+  "warnings": []
+}
