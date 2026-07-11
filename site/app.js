@@ -13,23 +13,83 @@ async function loadJson(path) {
 }
 
 function setText(id, value) {
-  document.getElementById(id).textContent = value;
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.textContent = value;
 }
 
-function activateTabs() {
-  document.querySelectorAll(".tab").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-      button.classList.add("active");
-      document.getElementById(button.dataset.tab).classList.add("active");
-    });
+const routes = {
+  "#actueel": {tab: "actueel"},
+  "#analyse": {tab: "analyse", subtab: "analyse-totaal"},
+  "#analyse-totaal": {tab: "analyse", subtab: "analyse-totaal"},
+  "#analyse-prijs": {tab: "analyse", subtab: "analyse-prijs"},
+  "#analyse-netwerk": {tab: "analyse", subtab: "analyse-netwerk"},
+  "#analyse-kapitaal": {tab: "analyse", subtab: "analyse-kapitaal"},
+  "#analyse-ecosysteem": {tab: "analyse", subtab: "analyse-ecosysteem"},
+  "#analyse-historie": {tab: "analyse", subtab: "analyse-historie"},
+  "#bewijs": {tab: "bewijs", subtab: "bewijs-kwaliteit"},
+  "#bewijs-kwaliteit": {tab: "bewijs", subtab: "bewijs-kwaliteit"},
+  "#bewijs-backtest": {tab: "bewijs", subtab: "bewijs-backtest"},
+  "#bewijs-trackrecord": {tab: "bewijs", subtab: "bewijs-trackrecord"},
+  "#bewijs-methode": {tab: "bewijs", subtab: "bewijs-methode"},
+  "#bewijs-data": {tab: "bewijs", subtab: "bewijs-data"}
+};
+
+function activateNavigation() {
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.addEventListener("click", () => navigateTo(`#${button.dataset.tab}`));
+  });
+  document.querySelectorAll("[data-subtab]").forEach((button) => {
+    button.addEventListener("click", () => navigateTo(`#${button.dataset.subtab}`));
+  });
+  document.querySelectorAll("[data-jump]").forEach((button) => {
+    button.addEventListener("click", () => navigateTo(button.dataset.jump));
+  });
+  window.addEventListener("hashchange", applyRouteFromHash);
+  applyRouteFromHash();
+}
+
+function navigateTo(hash) {
+  if (window.location.hash === hash) {
+    applyRouteFromHash();
+    scrollToTop();
+    return;
+  }
+  window.location.hash = hash;
+}
+
+function applyRouteFromHash() {
+  const route = routes[window.location.hash] || routes["#actueel"];
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === route.tab);
+  });
+  document.querySelectorAll(".panel").forEach((panel) => {
+    panel.classList.toggle("active", panel.id === route.tab);
+  });
+  const subtab = route.subtab || defaultSubtab(route.tab);
+  document.querySelectorAll(`#${route.tab} [data-subtab]`).forEach((button) => {
+    button.classList.toggle("active", button.dataset.subtab === subtab);
+  });
+  document.querySelectorAll(`#${route.tab} .subpanel`).forEach((panel) => {
+    panel.classList.toggle("active", panel.id === subtab);
   });
 }
 
-function renderCards(data) {
+function defaultSubtab(tab) {
+  if (tab === "analyse") return "analyse-totaal";
+  if (tab === "bewijs") return "bewijs-kwaliteit";
+  return null;
+}
+
+function scrollToTop() {
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function renderCards(data, targetId = "analysis-total-cards") {
   const cards = data.scores.block_details || [];
-  document.getElementById("cards").replaceChildren(...cards.map((item) => {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.replaceChildren(...cards.map((item) => {
     const card = document.createElement("article");
     card.className = "card";
     const span = document.createElement("span");
@@ -60,7 +120,9 @@ function renderCards(data) {
 
 function renderSources(audit) {
   const cards = audit?.sources || [];
-  document.getElementById("source-cards").replaceChildren(...sourceCards(cards));
+  const target = document.getElementById("source-cards");
+  if (!target) return;
+  target.replaceChildren(...sourceCards(cards));
 }
 
 function sourceCards(cards) {
@@ -159,6 +221,7 @@ function formatSourcePrice(value) {
 
 function renderStats(targetId, stats) {
   const target = document.getElementById(targetId);
+  if (!target) return;
   target.replaceChildren(...(stats || []).map((item) => {
     const div = document.createElement("div");
     div.className = "stat";
@@ -188,6 +251,9 @@ function renderOverview(overview, overviewHistory) {
   ]);
   renderOverviewScores(current, changes);
   renderOverviewChanges(overview.largest_changes || {});
+  renderActueelDomainCards(overview.dashboard || null, overview.drivers || []);
+  renderCurrentQualitySummary(overview.dashboard || null, overview.track_record || {});
+  renderCurrentTrackSummary(overview.track_record || {});
   const methodTransitions = overview.method_transitions || overviewHistory?.method_transitions || [];
   renderScoreHistory(overviewHistory?.rows || [], methodTransitions, 90);
   renderHistoryRangeControls(overviewHistory?.rows || [], methodTransitions);
@@ -199,6 +265,62 @@ function renderOverview(overview, overviewHistory) {
     li.textContent = item;
     return li;
   }));
+}
+
+function renderActueelDomainCards(dashboard, drivers) {
+  const target = document.getElementById("actueel-domain-cards");
+  if (!target) return;
+  const details = dashboard?.scores?.block_details || [];
+  const driverByKey = Object.fromEntries((drivers || []).map((driver) => [driver.key, driver]));
+  const routeByKey = {
+    price_strength: "#analyse-prijs",
+    network_usage: "#analyse-netwerk",
+    capital_flows: "#analyse-kapitaal",
+    ecosystem_breadth: "#analyse-ecosysteem"
+  };
+  const cards = details.map((item) => {
+    const driver = driverByKey[item.key] || {};
+    const card = document.createElement("article");
+    card.className = "change-card domain-card";
+    const label = document.createElement("span");
+    label.textContent = item.title;
+    const score = document.createElement("strong");
+    score.textContent = fmtScore100(item.score);
+    const summary = document.createElement("p");
+    summary.textContent = `${item.summary} ${driver.score_delta !== undefined ? formatBlockDelta(driver.score_delta) : ""}`.trim();
+    const link = document.createElement("button");
+    link.className = "button link-button compact-button";
+    link.type = "button";
+    link.textContent = "Open analyse";
+    link.addEventListener("click", () => navigateTo(routeByKey[item.key] || "#analyse-totaal"));
+    card.append(label, score, summary, link);
+    return card;
+  });
+  target.replaceChildren(...cards);
+}
+
+function renderCurrentQualitySummary(dashboard, track) {
+  setText(
+    "actueel-quality-title",
+    dashboard ? `${fmtScore100(dashboard.scores?.evidence_quality)} — ${dashboard.summary?.evidence_label || "onderbouwing"}` : "n.v.t."
+  );
+  const sources = dashboard?.data_audit?.sources || [];
+  const warnings = dashboard?.data_audit?.warnings || [];
+  const sourceStatus = sources.length
+    ? `${sources.filter((source) => source.status === "Succesvol").length}/${sources.length} bronnen succesvol`
+    : "geen bronstatus beschikbaar";
+  const trackText = track?.maturity_status ? `Trackrecordfase: ${track.maturity_status}.` : "";
+  setText("actueel-quality-text", `${sourceStatus}. ${warnings.length ? warnings[0] : "Geen datakwaliteitswaarschuwingen bij deze update."} ${trackText}`.trim());
+}
+
+function renderCurrentTrackSummary(track) {
+  const official = track.official_signal_count || 0;
+  const resolved = track.resolved_outcome_count || 0;
+  setText("actueel-track-title", `${official} officiële signalen`);
+  setText(
+    "actueel-track-text",
+    `${resolved} afgeronde forward-uitkomsten. ${track.forward_status || "Nog geen afgeronde publieke voorspellingen."}`
+  );
 }
 
 function overviewTitle(title, current, changes) {
@@ -590,6 +712,7 @@ function renderInterpretationPage(interpretation, archiveIndex) {
 
 function renderAnalysisText(targetId, interpretation) {
   const target = document.getElementById(targetId);
+  if (!target) return;
   const text = interpretation.analysis_text || interpretation.intro || "Geen analyse beschikbaar.";
   const blocks = parseAnalysisBlocks(text);
   target.replaceChildren(...blocks.map((block) => {
@@ -1082,13 +1205,82 @@ function renderIndicatorTab(targetId, tab) {
   const sources = document.createElement("section");
   sources.className = "wide";
   const sourceTitle = document.createElement("h3");
-  sourceTitle.textContent = "Bronnen voor dit blok";
-  const sourceGrid = document.createElement("div");
-  sourceGrid.className = "source-grid";
-  sourceGrid.replaceChildren(...sourceCards(tab.sources || []));
-  sources.append(sourceTitle, sourceGrid);
+  sourceTitle.textContent = "Datakwaliteit voor dit blok";
+  const sourceIntro = document.createElement("p");
+  sourceIntro.className = "plain";
+  sourceIntro.textContent = "Compacte bronstatus. De volledige broncontrole staat onder Bewijs.";
+  const sourceStats = document.createElement("div");
+  sourceStats.className = "stat-row";
+  const rows = tab.sources || [];
+  const ok = rows.filter((source) => source.status === "Succesvol").length;
+  sourceStats.replaceChildren(
+    statNode("Bronnen", String(rows.length)),
+    statNode("Succesvol", `${ok}/${rows.length || 0}`),
+    statNode("Laatste status", rows.map((source) => source.name).slice(0, 3).join(", ") || "n.v.t.")
+  );
+  const sourceLink = document.createElement("button");
+  sourceLink.type = "button";
+  sourceLink.className = "button link-button";
+  sourceLink.textContent = "Bekijk volledige broncontrole";
+  sourceLink.addEventListener("click", () => navigateTo("#bewijs-kwaliteit"));
+  sources.append(sourceTitle, sourceIntro, sourceStats, sourceLink);
 
   target.replaceChildren(hero, components, trend, sources);
+}
+
+function statNode(label, value) {
+  const div = document.createElement("div");
+  div.className = "stat";
+  const span = document.createElement("span");
+  span.textContent = label;
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  div.append(span, strong);
+  return div;
+}
+
+function ecosystemTabFromDashboard(dashboard) {
+  const networkTab = dashboard.indicator_tabs?.network || {};
+  const ecosystemBlock = (dashboard.scores?.block_details || []).find((item) => item.key === "ecosystem_breadth")
+    || (dashboard.scores?.block_details || []).find((item) => String(item.title || "").toLowerCase().includes("ecosysteem"))
+    || {};
+  const keywords = ["ecosysteem", "breedte", "token", "concentratie"];
+  const components = (networkTab.components || []).filter((component) => {
+    const text = `${component.label || ""} ${component.description || ""}`.toLowerCase();
+    return keywords.some((keyword) => text.includes(keyword));
+  });
+  const sources = [
+    ...(networkTab.sources || []),
+    ...(dashboard.data_audit?.sources || [])
+  ].filter((source, index, all) => {
+    const text = `${source.name || ""} ${source.role || ""}`.toLowerCase();
+    return (text.includes("coingecko") || text.includes("ecosysteem"))
+      && all.findIndex((candidate) => candidate.name === source.name && candidate.role === source.role) === index;
+  });
+  return {
+    title: "Ecosysteem",
+    subtitle: "Breedte van beweging binnen het Solana-ecosysteem.",
+    summary: ecosystemBlock.summary || "Meet of de beweging breder is dan alleen SOL zelf.",
+    note: ecosystemBlock.status || "Experimenteel: deze indicator weegt beperkt mee.",
+    score: ecosystemBlock.score ?? dashboard.current?.ecosystem_breadth_score,
+    weight: ecosystemBlock.weight ?? 0.1,
+    status: ecosystemBlock.status || "Experimenteel, beperkt meegewogen",
+    components: components.length ? components : (ecosystemBlock.metrics || []).map((metric) => ({
+      label: metric.label,
+      value: metric.value,
+      score: ecosystemBlock.score,
+      weight: "Binnen ecosysteemblok",
+      description: "Onderliggende maatstaf voor ecosysteembreedte."
+    })),
+    trend: {
+      rows: networkTab.trend?.rows || [],
+      series: (networkTab.trend?.series || []).filter((series) => {
+        const text = `${series.label || ""} ${series.key || ""}`.toLowerCase();
+        return keywords.some((keyword) => text.includes(keyword));
+      })
+    },
+    sources
+  };
 }
 
 function componentCard(item) {
@@ -1261,7 +1453,7 @@ function table(headers, rows) {
 }
 
 async function main() {
-  activateTabs();
+  activateNavigation();
   const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, overview, overviewHistory] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
@@ -1279,37 +1471,30 @@ async function main() {
     notice.textContent = dashboard.demo_notice;
   }
   const solPrice = dashboard.current.live_sol_price ?? dashboard.current.sol_price;
-  setText("sol-price", `$${solPrice.toFixed(2)}`);
+  setText("sol-price", Number.isFinite(Number(solPrice)) ? `$${Number(solPrice).toFixed(2)}` : "n.v.t.");
   setText("updated-at", dashboard.generated_at_utc);
   setText("data-cutoff", dashboard.data_cutoff_utc);
   setText("method-version", dashboard.method_version);
-  setText("regime", dashboard.summary.regime_title || dashboard.summary.regime.replaceAll("_", " "));
-  setText("conclusion-text", dashboard.summary.conclusion);
-  setText("interpretation-note", dashboard.summary.interpretation_note || "");
-  setText("market-score", fmtScore100(dashboard.scores.market_signal));
-  setText("market-label", dashboard.summary.market_signal_label);
-  setText("evidence-score", fmtScore100(dashboard.scores.evidence_quality));
-  setText("evidence-label", dashboard.summary.evidence_label);
   renderCards(dashboard);
   renderIndicatorTab("price-tab", dashboard.indicator_tabs?.price);
   renderIndicatorTab("network-tab", dashboard.indicator_tabs?.network);
   renderIndicatorTab("capital-tab", dashboard.indicator_tabs?.capital);
+  renderIndicatorTab("ecosystem-tab", ecosystemTabFromDashboard(dashboard));
   setText("analog-summary", dashboard.historical_context?.summary || "");
   renderStats("analog-stats", dashboard.historical_context?.stats || []);
   setText("audit-summary", dashboard.data_audit?.summary || "");
   renderStats("audit-stats", dashboard.data_audit?.freshness || []);
   renderSources(dashboard.data_audit);
   setText("audit-warnings", (dashboard.data_audit?.warnings || []).join(" ") || "Geen waarschuwingen bij deze update.");
-  document.getElementById("change-list").replaceChildren(...dashboard.summary.what_would_change.map((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    return li;
-  }));
   window.renderGlossary(glossary);
   renderSignalResearch(signalResearch);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
-  renderOverview(overview.current_run ? overview : fallbackOverview(dashboard), overviewHistory);
+  renderAnalysisText("actueel-duiding", interpretation);
+  const effectiveOverview = overview.current_run ? overview : fallbackOverview(dashboard);
+  effectiveOverview.dashboard = dashboard;
+  renderOverview(effectiveOverview, overviewHistory);
+  applyRouteFromHash();
 }
 
 function fallbackOverview(dashboard) {

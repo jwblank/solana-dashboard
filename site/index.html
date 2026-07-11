@@ -29,24 +29,25 @@
 
     <main>
       <p id="demo-notice" class="notice" hidden></p>
-      <nav class="tabs" aria-label="Hoofdnavigatie">
-        <button class="tab active" data-tab="overview">Overzicht</button>
-        <button class="tab" data-tab="interpretation">Duiding</button>
-        <button class="tab" data-tab="today">Vandaag</button>
-        <button class="tab" data-tab="price">Prijs</button>
-        <button class="tab" data-tab="network">Gebruik & ecosysteem</button>
-        <button class="tab" data-tab="capital">Kapitaalstromen</button>
-        <button class="tab" data-tab="signal-research">Signaalonderzoek</button>
-        <button class="tab" data-tab="evidence">Onderbouwing</button>
+      <nav class="tabs primary-tabs" aria-label="Hoofdnavigatie">
+        <button class="tab active" data-tab="actueel">Actueel</button>
+        <button class="tab" data-tab="analyse">Analyse</button>
+        <button class="tab" data-tab="bewijs">Bewijs</button>
+      </nav>
+      <nav class="secondary-links" aria-label="Snelle links">
+        <button class="button link-button" data-jump="#bewijs-data">Archief</button>
+        <button class="button link-button" data-jump="#bewijs-methode">Begrippen</button>
+        <a class="button" href="https://github.com/jwblank/solana-dashboard">GitHub</a>
       </nav>
 
-      <section id="overview" class="panel active">
+      <section id="actueel" class="panel active">
         <div class="overview-page">
-          <section class="overview-hero">
+          <section class="overview-hero actueel-hero">
             <div>
-              <p class="eyebrow">Wat veranderde?</p>
+              <p class="eyebrow">Actueel marktbeeld</p>
               <h2 id="overview-title">...</h2>
               <p id="overview-subtitle" class="plain"></p>
+              <div id="actueel-duiding" class="interpretation-analysis compact-analysis"></div>
               <div id="overview-meta" class="stat-row"></div>
             </div>
             <div id="overview-scorebox" class="score-pair"></div>
@@ -65,204 +66,232 @@
           <section class="wide">
             <div class="section-head">
               <div>
-                <h3>Scoreverloop</h3>
-                <p class="plain">Huidige sterkte en onderbouwing per officiële productierun. Scores lopen van 0 tot 100.</p>
+                <h3>Waarom veranderde het?</h3>
+                <p class="plain">Korte domeinsamenvatting. De volledige indicatoranalyse staat onder Analyse.</p>
               </div>
-              <div id="history-range" class="range-controls" aria-label="Tijdselectie scoreverloop"></div>
             </div>
-            <div class="chart-box">
-              <canvas id="score-history-chart" aria-label="Scoreverloop van huidige sterkte en onderbouwing" role="img"></canvas>
-            </div>
-            <p id="method-version-note" class="plain"></p>
-            <div id="method-transition-list" class="plain"></div>
+            <div id="actueel-domain-cards" class="change-grid"></div>
           </section>
 
           <section class="wide">
             <div class="section-head">
               <div>
-                <h3>Waardoor veranderde de score?</h3>
-                <p id="waterfall-note" class="plain"></p>
+                <h3>Hierop letten</h3>
+                <p class="plain">Watchlist en omslagpunten samengevoegd tot een compacte aandachtlijst.</p>
               </div>
             </div>
-            <div id="waterfall-chart" class="waterfall" aria-label="Scorebrug van vorige score naar huidige score"></div>
-            <p id="waterfall-summary" class="plain"></p>
-          </section>
-
-          <section class="wide">
-            <div class="section-head">
-              <div>
-                <h3>Publiek trackrecord</h3>
-                <p class="plain">Scheiding tussen historische backtest en live gepubliceerde productieruns.</p>
-              </div>
-            </div>
-            <div id="trackrecord-cards" class="trackrecord-grid"></div>
-            <p class="notice">Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. Een langer trackrecord kan het inzicht verbeteren, maar garandeert geen voorspellende waarde of rendement.</p>
-          </section>
-
-          <section class="wide">
-            <h3>Hier moet je vanaf nu op letten</h3>
             <div class="compact-list-wrap">
               <ul id="overview-watchlist" class="clean"></ul>
             </div>
           </section>
+
+          <section class="summary-strip">
+            <article class="summary-card">
+              <span>Datakwaliteit</span>
+              <strong id="actueel-quality-title">...</strong>
+              <p id="actueel-quality-text"></p>
+              <button class="button link-button" data-jump="#bewijs-kwaliteit">Bekijk datakwaliteit</button>
+            </article>
+            <article class="summary-card">
+              <span>Publiek trackrecord</span>
+              <strong id="actueel-track-title">...</strong>
+              <p id="actueel-track-text"></p>
+              <button class="button link-button" data-jump="#bewijs-trackrecord">Bekijk trackrecord</button>
+            </article>
+          </section>
         </div>
       </section>
 
-      <section id="interpretation" class="panel">
-        <div class="interpretation-page">
-          <section class="interpretation-hero">
-            <div>
-              <p class="eyebrow">Kwalitatieve duiding</p>
-              <p id="llm-date" class="plain"></p>
-              <h2 id="llm-title">...</h2>
-              <div id="llm-analysis" class="interpretation-analysis"></div>
-            </div>
-            <div id="llm-audit" class="interpretation-audit"></div>
-          </section>
-          <section class="wide">
-            <h3>Gebruikte dashboardwaarden</h3>
-            <div id="llm-inputs" class="stat-row"></div>
-            <p id="llm-note" class="plain"></p>
-          </section>
-          <section class="wide">
-            <div class="section-head">
-              <div>
-                <h3>Duidingsarchief</h3>
-                <p class="plain">Dagelijkse LLM-duidingen, geordend op de datadag waarop de analyse betrekking heeft.</p>
+      <section id="analyse" class="panel">
+        <div class="overview-page">
+          <nav class="tabs sub-tabs" aria-label="Analyse navigatie">
+            <button class="tab active" data-subtab="analyse-totaal">Totaalbeeld</button>
+            <button class="tab" data-subtab="analyse-prijs">Prijs</button>
+            <button class="tab" data-subtab="analyse-netwerk">Netwerk</button>
+            <button class="tab" data-subtab="analyse-kapitaal">Kapitaal</button>
+            <button class="tab" data-subtab="analyse-ecosysteem">Ecosysteem</button>
+            <button class="tab" data-subtab="analyse-historie">Historie</button>
+          </nav>
+
+          <section id="analyse-totaal" class="subpanel active">
+            <section class="wide">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Analyse</p>
+                  <h2>Totaalbeeld</h2>
+                  <p class="plain">De inhoudelijke bouwstenen achter het actuele marktbeeld.</p>
+                </div>
               </div>
-            </div>
-            <div id="llm-archive-controls" class="archive-controls"></div>
-            <div id="llm-archive" class="archive-list"></div>
+              <div id="analysis-total-cards" class="grid"></div>
+            </section>
+            <section class="wide">
+              <h3>Scorebrug</h3>
+              <p id="waterfall-note" class="plain"></p>
+              <div id="waterfall-chart" class="waterfall" aria-label="Scorebrug van vorige score naar huidige score"></div>
+              <p id="waterfall-summary" class="plain"></p>
+            </section>
+          </section>
+
+          <section id="analyse-prijs" class="subpanel">
+            <div id="price-tab"></div>
+          </section>
+
+          <section id="analyse-netwerk" class="subpanel">
+            <div id="network-tab"></div>
+          </section>
+
+          <section id="analyse-kapitaal" class="subpanel">
+            <div id="capital-tab"></div>
+          </section>
+
+          <section id="analyse-ecosysteem" class="subpanel">
+            <div id="ecosystem-tab"></div>
+          </section>
+
+          <section id="analyse-historie" class="subpanel">
+            <section class="wide">
+              <div class="section-head">
+                <div>
+                  <h3>Scoreverloop</h3>
+                  <p class="plain">Huidige sterkte en onderbouwing per officiële productierun. Scores lopen van 0 tot 100.</p>
+                </div>
+                <div id="history-range" class="range-controls" aria-label="Tijdselectie scoreverloop"></div>
+              </div>
+              <div class="chart-box">
+                <canvas id="score-history-chart" aria-label="Scoreverloop van huidige sterkte en onderbouwing" role="img"></canvas>
+              </div>
+              <p id="method-version-note" class="plain"></p>
+              <div id="method-transition-list" class="plain"></div>
+            </section>
+            <section class="wide">
+              <h3>Historische vergelijkingen</h3>
+              <p id="analog-summary"></p>
+              <div id="analog-stats" class="stat-row"></div>
+            </section>
           </section>
         </div>
       </section>
 
-      <section id="today" class="panel">
-        <div class="conclusion">
-          <div>
-            <p class="eyebrow">Actuele conclusie</p>
-            <h2 id="regime">...</h2>
-            <p id="conclusion-text"></p>
-            <p id="interpretation-note" class="plain"></p>
-          </div>
-          <div class="score-pair">
-            <div><span>Huidige sterkte</span><strong id="market-score">...</strong><small id="market-label"></small></div>
-            <div><span>Onderbouwing</span><strong id="evidence-score">...</strong><small id="evidence-label"></small></div>
-          </div>
-        </div>
-        <p class="plain">De eindscore is een gewogen indicatorscore van 0 tot 100. Het is geen kanspercentage.</p>
-        <div class="grid" id="cards"></div>
-        <section class="wide">
-          <h3>Historische vergelijkingen</h3>
-          <p id="analog-summary"></p>
-          <div id="analog-stats" class="stat-row"></div>
-        </section>
-        <section class="wide">
-          <h3>Datakwaliteit & bronnen</h3>
-          <p id="audit-summary"></p>
-          <div id="audit-stats" class="stat-row"></div>
-          <div id="source-cards" class="source-grid"></div>
-          <p id="audit-warnings" class="plain"></p>
-        </section>
-        <section class="wide">
-          <h3>Omslagpunten</h3>
-          <div class="compact-list-wrap">
-            <ul id="change-list" class="clean"></ul>
-          </div>
-        </section>
-      </section>
-
-      <section id="price" class="panel">
-        <div id="price-tab"></div>
-      </section>
-
-      <section id="network" class="panel">
-        <div id="network-tab"></div>
-      </section>
-
-      <section id="capital" class="panel">
-        <div id="capital-tab"></div>
-      </section>
-
-
-      <section id="signal-research" class="panel">
-        <section class="wide signal-research-page">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Onderzoeksdataset</p>
-              <h2>Signaalonderzoek</h2>
-              <p id="signal-research-summary" class="plain"></p>
-            </div>
-            <a class="button" href="./data/signaalonderzoek.parquet" download>Download Parquet</a>
-          </div>
-          <div id="signal-research-stats" class="stat-row"></div>
-          <div id="signal-research-table" class="table-wrap compact-table"></div>
-        </section>
-      </section>
-
-      <section id="evidence" class="panel">
+      <section id="bewijs" class="panel">
         <div class="evidence-page">
-          <section class="evidence-hero">
-            <div>
-              <p class="eyebrow">Methodiek & onderbouwing</p>
-              <h2>Hoe stevig is dit beeld?</h2>
-              <p id="evidence-summary" class="plain"></p>
-            </div>
-            <div id="evidence-scorecard" class="evidence-scorecard"></div>
-          </section>
+          <nav class="tabs sub-tabs" aria-label="Bewijs navigatie">
+            <button class="tab active" data-subtab="bewijs-kwaliteit">Kwaliteit</button>
+            <button class="tab" data-subtab="bewijs-backtest">Backtest</button>
+            <button class="tab" data-subtab="bewijs-trackrecord">Trackrecord</button>
+            <button class="tab" data-subtab="bewijs-methode">Methode</button>
+            <button class="tab" data-subtab="bewijs-data">Data & logboek</button>
+          </nav>
 
-          <section class="evidence-section">
-            <div class="section-head">
+          <section id="bewijs-kwaliteit" class="subpanel active">
+            <section class="evidence-hero">
               <div>
-                <h3>Onderbouwing in het kort</h3>
-                <p class="plain">De belangrijkste kwaliteitscontroles achter de eindscore.</p>
+                <p class="eyebrow">Bewijs</p>
+                <h2>Datakwaliteit en bronnen</h2>
+                <p id="evidence-summary" class="plain"></p>
               </div>
-            </div>
-            <div id="evidence-kpis" class="evidence-kpis"></div>
+              <div id="evidence-scorecard" class="evidence-scorecard"></div>
+            </section>
+            <section class="evidence-section">
+              <h3>Datakwaliteit in het kort</h3>
+              <div id="evidence-kpis" class="evidence-kpis"></div>
+            </section>
+            <section class="evidence-section">
+              <h3>Bronnen en bronstatus</h3>
+              <p id="audit-summary"></p>
+              <div id="audit-stats" class="stat-row"></div>
+              <div id="source-cards" class="source-grid"></div>
+              <p id="audit-warnings" class="plain"></p>
+            </section>
           </section>
 
-          <section class="evidence-section">
-            <div class="section-head">
-              <div>
-                <h3>Indicatorbijdrage</h3>
-                <p class="plain">Welke blokken bepalen de huidige sterkte, en hoe zwaar tellen ze mee?</p>
+          <section id="bewijs-backtest" class="subpanel">
+            <section class="evidence-section">
+              <div class="section-head">
+                <div>
+                  <h2>Backtest</h2>
+                  <p id="edge-warning" class="plain"></p>
+                </div>
               </div>
-            </div>
-            <div id="evidence-blocks" class="evidence-block-grid"></div>
+              <div id="backtest-cards" class="backtest-grid"></div>
+              <div id="backtest-table" class="table-wrap compact-table"></div>
+            </section>
           </section>
 
-          <section class="evidence-section">
-            <div class="section-head">
-              <div>
-                <h3>Historische toets</h3>
-                <p id="edge-warning" class="plain"></p>
-              </div>
-            </div>
-            <div id="backtest-cards" class="backtest-grid"></div>
-            <div id="backtest-table" class="table-wrap compact-table"></div>
-          </section>
-
-          <section class="evidence-section evidence-two-col">
-            <div>
+          <section id="bewijs-trackrecord" class="subpanel">
+            <section class="evidence-section">
+              <h2>Publiek trackrecord</h2>
+              <p class="plain">Forward trackrecord van vooraf vastgelegde officiële signalen. Dit staat los van de historische backtest.</p>
+              <div id="trackrecord-cards" class="trackrecord-grid"></div>
+              <p class="notice">Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. Een langer trackrecord kan het inzicht verbeteren, maar garandeert geen voorspellende waarde of rendement.</p>
+            </section>
+            <section class="evidence-section">
               <h3>Open logboek</h3>
               <div id="ledger-summary" class="ledger-summary"></div>
-            </div>
-            <div>
-              <h3>Zo werkt het</h3>
-              <div id="method-steps" class="method-steps"></div>
-            </div>
+            </section>
           </section>
 
-          <section class="evidence-section">
-            <div class="section-head">
+          <section id="bewijs-methode" class="subpanel">
+            <section class="evidence-section">
               <div>
-                <h3>Begrippen</h3>
-                <p class="plain">Korte uitleg bij statistische termen en dashboardbegrippen.</p>
+                <p class="eyebrow">Methode</p>
+                <h2>Zo werkt het</h2>
+                <p class="plain">Berekening, indicatorbijdragen, begrippen en rol van duiding.</p>
               </div>
-              <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
-            </div>
-            <div id="term-explainer" class="term-grid"></div>
-            <div id="glossary" class="glossary-grid"></div>
+              <h3>Indicatorbijdrage</h3>
+              <div id="evidence-blocks" class="evidence-block-grid"></div>
+              <h3>Berekeningsstappen</h3>
+              <div id="method-steps" class="method-steps"></div>
+            </section>
+            <section class="evidence-section">
+              <div class="section-head">
+                <div>
+                  <h3>Begrippen</h3>
+                  <p class="plain">Korte uitleg bij statistische termen en dashboardbegrippen.</p>
+                </div>
+                <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
+              </div>
+              <div id="term-explainer" class="term-grid"></div>
+              <div id="glossary" class="glossary-grid"></div>
+            </section>
+          </section>
+
+          <section id="bewijs-data" class="subpanel">
+            <section class="interpretation-hero">
+              <div>
+                <p class="eyebrow">Archief</p>
+                <p id="llm-date" class="plain"></p>
+                <h2 id="llm-title">...</h2>
+                <div id="llm-analysis" class="interpretation-analysis"></div>
+              </div>
+              <div id="llm-audit" class="interpretation-audit"></div>
+            </section>
+            <section class="wide">
+              <h3>Gebruikte dashboardwaarden</h3>
+              <div id="llm-inputs" class="stat-row"></div>
+              <p id="llm-note" class="plain"></p>
+            </section>
+            <section class="wide">
+              <div class="section-head">
+                <div>
+                  <h3>Duidingsarchief</h3>
+                  <p class="plain">Dagelijkse LLM-duidingen, geordend op de datadag waarop de analyse betrekking heeft.</p>
+                </div>
+              </div>
+              <div id="llm-archive-controls" class="archive-controls"></div>
+              <div id="llm-archive" class="archive-list"></div>
+            </section>
+            <section class="wide signal-research-page">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Onderzoeksdataset</p>
+                  <h2>Signaalonderzoek</h2>
+                  <p id="signal-research-summary" class="plain"></p>
+                </div>
+                <a class="button" href="./data/signaalonderzoek.parquet" download>Download Parquet</a>
+              </div>
+              <div id="signal-research-stats" class="stat-row"></div>
+              <div id="signal-research-table" class="table-wrap compact-table"></div>
+            </section>
           </section>
         </div>
       </section>

@@ -9,21 +9,30 @@ def test_site_contains_required_tabs(monkeypatch):
     build_outputs("demo")
     html = Path("site/index.html").read_text(encoding="utf-8")
     required_text = [
-        "Overzicht",
-        "Duiding",
-        "Vandaag",
+        "Actueel",
+        "Analyse",
+        "Bewijs",
+        "Totaalbeeld",
         "Prijs",
-        "Gebruik & ecosysteem",
-        "Kapitaalstromen",
+        "Netwerk",
+        "Kapitaal",
+        "Ecosysteem",
+        "Historie",
+        "Kwaliteit",
+        "Backtest",
+        "Trackrecord",
+        "Methode",
+        "Data & logboek",
         "Signaalonderzoek",
-        "Onderbouwing",
-        "Historische toets",
+        "Datakwaliteit en bronnen",
         "Open logboek",
         "Zo werkt het",
     ]
     for text in required_text:
         assert text in html
-    assert '<section id="overview" class="panel active">' in html
+    assert '<section id="actueel" class="panel active">' in html
+    assert 'data-subtab="analyse-prijs"' in html
+    assert 'data-subtab="bewijs-data"' in html
     assert "/data/dashboard.json" not in html
 
 
