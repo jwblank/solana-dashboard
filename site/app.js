@@ -726,17 +726,32 @@ function renderAnalysisText(targetId, interpretation, options = {}) {
 }
 
 function parseAnalysisBlocks(text, options = {}) {
-  const normalized = String(text || "").replace(/\r/g, "").trim();
+  const normalized = normalizeAnalysisTextForHeadings(text);
   const headingPattern = /(?:^|\n)\s*(Kort beeld|Wat trekt omhoog\?|Wat houdt tegen\?|Hoe stevig is dit\?|Conclusie|Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)\s*:\s*/g;
   const matches = Array.from(normalized.matchAll(headingPattern));
   if (!matches.length) {
     return splitPlainAnalysis(normalized, options);
   }
-  return matches.map((match, index) => {
+  const blocks = [];
+  const prefix = normalized.slice(0, matches[0].index).trim();
+  if (prefix) {
+    blocks.push({
+      heading: options.withDefaultHeadings ? defaultAnalysisHeading(0) : "",
+      text: prefix
+    });
+  }
+  matches.forEach((match, index) => {
     const start = match.index + match[0].length;
     const end = index + 1 < matches.length ? matches[index + 1].index : normalized.length;
-    return {heading: normalizeAnalysisHeading(match[1]), text: normalized.slice(start, end).trim()};
-  }).filter((block) => block.text);
+    blocks.push({heading: normalizeAnalysisHeading(match[1]), text: normalized.slice(start, end).trim()});
+  });
+  return blocks.filter((block) => block.text);
+}
+
+function normalizeAnalysisTextForHeadings(text) {
+  const normalized = String(text || "").replace(/\r/g, "").trim();
+  const headingLabels = "(Kort beeld|Wat trekt omhoog\\?|Wat houdt tegen\\?|Hoe stevig is dit\\?|Conclusie|Kernbeeld|Spanning in de data|Bewijskracht|Waarop letten|Eindbeeld)";
+  return normalized.replace(new RegExp(`\\s+${headingLabels}\\s*:\\s*`, "g"), "\n$1: ");
 }
 
 function normalizeAnalysisHeading(heading) {
@@ -1501,7 +1516,7 @@ async function main() {
   renderSignalResearch(signalResearch);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
-  renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 3});
+  renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 5});
   const effectiveOverview = overview.current_run ? overview : fallbackOverview(dashboard);
   effectiveOverview.dashboard = dashboard;
   renderOverview(effectiveOverview, overviewHistory);
