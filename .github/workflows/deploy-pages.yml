@@ -55,6 +55,8 @@ jobs:
             --sleep-seconds 10
           curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" | grep 'data-tab="actueel"'
           curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" | grep 'data-tab="prijs"'
+          curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" | grep 'data-tab="voorspellingskracht"'
           curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" | grep 'id="bewijs-data"'
           curl -fsSL "https://jwblank.github.io/solana-dashboard/data/overview.json?verify=${GITHUB_SHA}" >/dev/null
           curl -fsSL "https://jwblank.github.io/solana-dashboard/data/overview_history.json?verify=${GITHUB_SHA}" >/dev/null
+          curl -fsSL "https://jwblank.github.io/solana-dashboard/data/predictive_power.json?verify=${GITHUB_SHA}" >/dev/null

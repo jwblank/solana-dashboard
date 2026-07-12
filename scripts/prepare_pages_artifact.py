@@ -87,6 +87,7 @@ def validate_required(out_dir: Path) -> None:
         "data/ledger.json",
         "data/backtest_summary.json",
         "data/signaalonderzoek.json",
+        "data/predictive_power.json",
         "deployment-info.json",
     ]
     missing = [item for item in required if not (out_dir / item).exists()]

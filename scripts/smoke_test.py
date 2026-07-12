@@ -7,6 +7,7 @@ for tab in [
     "Prijs",
     "Netwerk",
     "Kapitaal",
+    "Voorspellingskracht",
     "Bewijs",
     "Ecosysteem",
     "Historische vergelijking",
@@ -16,6 +17,7 @@ for tab in [
     "Methode",
     "Data & logboek",
     "Signaalonderzoek",
+    "Lead-lag tabel",
 ]:
     if tab not in html:
         raise SystemExit(f"Missing tab: {tab}")

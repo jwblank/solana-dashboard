@@ -12,6 +12,7 @@ required = [
     "data/ledger.json",
     "data/backtest_summary.json",
     "data/signaalonderzoek.json",
+    "data/predictive_power.json",
 ]
 missing = [item for item in required if not (ROOT / "site" / item).exists()]
 if missing:

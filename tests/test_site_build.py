@@ -13,6 +13,7 @@ def test_site_contains_required_tabs(monkeypatch):
         "Prijs",
         "Netwerk",
         "Kapitaal",
+        "Voorspellingskracht",
         "Bewijs",
         "Ecosysteem",
         "Historische vergelijking",
@@ -22,6 +23,7 @@ def test_site_contains_required_tabs(monkeypatch):
         "Methode",
         "Data & logboek",
         "Signaalonderzoek",
+        "Lead-lag tabel",
         "Datakwaliteit en bronnen",
         "Open logboek",
         "Zo werkt het",
@@ -31,8 +33,19 @@ def test_site_contains_required_tabs(monkeypatch):
     assert '<section id="actueel" class="panel active">' in html
     assert 'data-tab="prijs"' in html
     assert 'data-tab="netwerk"' in html
+    assert 'data-tab="voorspellingskracht"' in html
     assert 'id="bewijs-data"' in html
     assert "/data/dashboard.json" not in html
+
+
+def test_predictive_power_is_published(monkeypatch):
+    monkeypatch.setenv("APP_MODE", "demo")
+    build_outputs("demo")
+    payload = json.loads(Path("site/data/predictive_power.json").read_text(encoding="utf-8"))
+    assert payload["name"] == "Voorspellingskracht"
+    assert payload["maturity"]["status"]
+    assert payload["sections"]
+    assert payload["warnings"]
 
 
 def test_interpretation_archive_is_published(monkeypatch):

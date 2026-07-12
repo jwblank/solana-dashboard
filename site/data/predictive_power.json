@@ -1,0 +1,656 @@
+{
+  "combination": {
+    "best": null,
+    "definition": "Huidige Sterkte >65 en Onderbouwing >=60.",
+    "rows": [
+      {
+        "baseline_positive_rate": 0.5,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 1,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      },
+      {
+        "baseline_positive_rate": 0.3333,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 2,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      },
+      {
+        "baseline_positive_rate": 0.0,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 3,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      },
+      {
+        "baseline_positive_rate": null,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 7,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      },
+      {
+        "baseline_positive_rate": null,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 14,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      },
+      {
+        "baseline_positive_rate": null,
+        "bucket_key": "combined",
+        "bucket_label": "Sterkte hoog + onderbouwing stevig",
+        "difference_vs_baseline": null,
+        "horizon_days": 30,
+        "median_return": null,
+        "observations": 0,
+        "positive_rate": null,
+        "reliability": "Geen meting"
+      }
+    ],
+    "title": "Sterkte hoog + onderbouwing stevig"
+  },
+  "data_cutoff_utc": "2026-07-11T23:59:59Z",
+  "generated_at_utc": "2026-07-12T16:57:16Z",
+  "horizons": [
+    1,
+    2,
+    3,
+    7,
+    14,
+    30
+  ],
+  "maturity": {
+    "min_reasonable_observations": 20,
+    "raw_rows": 6,
+    "status": "Trackrecord in opbouw",
+    "unique_signal_days": 5,
+    "usable_forward_observations": 9
+  },
+  "method_version": "1.0.0",
+  "methodology": [
+    "Per datadag telt alleen de laatste productierun mee, zodat meerdere runs op één dag niet dubbel wegen.",
+    "Voor elke horizon wordt alleen gekeken naar runs waarvoor de latere SOL-prijs al bekend is.",
+    "De baseline is het percentage positieve SOL-returns binnen exact dezelfde geldige observaties.",
+    "Er wordt geen toekomstinformatie gebruikt bij het vormen van de buckets.",
+    "Bij kleine aantallen is dit een trackrecord in opbouw, geen volwassen voorspelmodel."
+  ],
+  "name": "Voorspellingskracht",
+  "schema_version": "1.0",
+  "sections": [
+    {
+      "best": null,
+      "description": "De gewogen dashboardscore van 0 tot 100.",
+      "key": "current_strength_score",
+      "rows": [
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 1,
+          "median_return": -0.008,
+          "observations": 4,
+          "positive_rate": 0.5,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 1,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 1,
+          "median_return": -0.008,
+          "observations": 4,
+          "positive_rate": 0.5,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 1,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 2,
+          "median_return": -0.016,
+          "observations": 3,
+          "positive_rate": 0.3333,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 2,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 2,
+          "median_return": -0.016,
+          "observations": 3,
+          "positive_rate": 0.3333,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 2,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 3,
+          "median_return": -0.0218,
+          "observations": 2,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 3,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 3,
+          "median_return": -0.0218,
+          "observations": 2,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 3,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        }
+      ],
+      "title": "Huidige Sterkte"
+    },
+    {
+      "best": null,
+      "description": "Hoe stevig de data en historische toetsing achter het signaal zijn.",
+      "key": "support_score",
+      "rows": [
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 1,
+          "median_return": -0.008,
+          "observations": 4,
+          "positive_rate": 0.5,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 1,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.1667,
+          "horizon_days": 1,
+          "median_return": 0.001,
+          "observations": 3,
+          "positive_rate": 0.6667,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.5,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": -0.5,
+          "horizon_days": 1,
+          "median_return": -0.0343,
+          "observations": 1,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 2,
+          "median_return": -0.016,
+          "observations": 3,
+          "positive_rate": 0.3333,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 2,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.1667,
+          "horizon_days": 2,
+          "median_return": -0.006,
+          "observations": 2,
+          "positive_rate": 0.5,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.3333,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": -0.3333,
+          "horizon_days": 2,
+          "median_return": -0.0314,
+          "observations": 1,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 3,
+          "median_return": -0.0218,
+          "observations": 2,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 3,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 3,
+          "median_return": -0.0131,
+          "observations": 1,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": 0.0,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": 0.0,
+          "horizon_days": 3,
+          "median_return": -0.0304,
+          "observations": 1,
+          "positive_rate": 0.0,
+          "reliability": "Trackrecord in opbouw"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 7,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 14,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "all",
+          "bucket_label": "Alle signalen",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "low",
+          "bucket_label": "Laag (<45)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "mixed",
+          "bucket_label": "Gemengd (45-65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        },
+        {
+          "baseline_positive_rate": null,
+          "bucket_key": "high",
+          "bucket_label": "Hoog (>65)",
+          "difference_vs_baseline": null,
+          "horizon_days": 30,
+          "median_return": null,
+          "observations": 0,
+          "positive_rate": null,
+          "reliability": "Geen meting"
+        }
+      ],
+      "title": "Onderbouwing"
+    }
+  ],
+  "source": "data/curated/signaalonderzoek.parquet",
+  "summary": "Hier meten we wat er historisch gebeurde na vergelijkbare dashboardscores. Dit is geen voorspelling, maar een controle op de praktische waarde van het signaal.",
+  "warnings": [
+    "Historische prestaties garanderen geen toekomstige resultaten.",
+    "De analyse gebruikt alleen vastgelegde productieruns uit het append-only signaalonderzoek.",
+    "Het forward trackrecord is nog klein; percentages kunnen sterk bewegen door enkele nieuwe runs.",
+    "Regime-afhankelijkheid blijft mogelijk: bull-, bear- en zijwaartse markten kunnen anders reageren."
+  ]
+}

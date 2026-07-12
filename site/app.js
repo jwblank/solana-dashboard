@@ -23,6 +23,7 @@ const routes = {
   "#prijs": {tab: "prijs"},
   "#netwerk": {tab: "netwerk"},
   "#kapitaal": {tab: "kapitaal"},
+  "#voorspellingskracht": {tab: "voorspellingskracht"},
   "#bewijs": {tab: "bewijs"},
   "#bewijs-kwaliteit": {tab: "bewijs", anchor: "bewijs-kwaliteit"},
   "#bewijs-backtest": {tab: "bewijs", anchor: "bewijs-backtest"},
@@ -1116,6 +1117,120 @@ function renderSignalResearch(research) {
   ], tableRows));
 }
 
+function renderPredictivePower(power) {
+  setText("predictive-summary", power.summary || "Nog geen voorspellingskracht beschikbaar.");
+  const maturity = power.maturity || {};
+  renderStats("predictive-scorecard", [
+    {label: "Status", value: maturity.status || "Trackrecord in opbouw"},
+    {label: "Unieke signaaldagen", value: String(maturity.unique_signal_days || 0)},
+    {label: "Forward observaties", value: String(maturity.usable_forward_observations || 0)},
+    {label: "Redelijke ondergrens", value: `${maturity.min_reasonable_observations || 20} observaties`}
+  ]);
+  renderPredictiveHighlights(power);
+  const target = document.getElementById("predictive-sections");
+  const sections = power.sections || [];
+  target.replaceChildren(...sections.map(predictiveSectionElement));
+  const combination = power.combination || {};
+  setText("predictive-combination-definition", combination.definition || "Nog geen combinatie-analyse beschikbaar.");
+  document.getElementById("predictive-combination-table").replaceChildren(
+    predictiveTable(combination.rows || [])
+  );
+  document.getElementById("predictive-methodology").replaceChildren(
+    ...(power.methodology || []).map(listItem)
+  );
+  document.getElementById("predictive-warnings").replaceChildren(
+    ...(power.warnings || []).map(listItem)
+  );
+}
+
+function renderPredictiveHighlights(power) {
+  const target = document.getElementById("predictive-highlights");
+  const sections = power.sections || [];
+  const bestRows = sections.map((section) => ({section, row: section.best})).filter((item) => item.row);
+  const cards = [];
+  if (bestRows.length) {
+    bestRows.forEach(({section, row}) => {
+      cards.push(predictiveHighlightCard(
+        section.title,
+        `${row.bucket_label}, ${row.horizon_days} dagen`,
+        `${formatPctPlain(row.positive_rate)} historisch positief; ${formatPp(row.difference_vs_baseline)} vs baseline.`
+      ));
+    });
+  } else {
+    cards.push(predictiveHighlightCard(
+      "Nog geen volwassen signaal",
+      power.maturity?.status || "Trackrecord in opbouw",
+      "Er zijn nog te weinig forward observaties om één horizon of bucket als voorspellend te markeren."
+    ));
+  }
+  cards.push(predictiveHighlightCard(
+    "Bron",
+    power.source || "signaalonderzoek",
+    "Alleen vastgelegde productieruns uit het append-only signaalonderzoek tellen mee."
+  ));
+  cards.push(predictiveHighlightCard(
+    "Interpretatie",
+    "Baseline is leidend",
+    "Een hit-rate is pas interessant als die duidelijk boven de algemene baseline in dezelfde periode ligt."
+  ));
+  target.replaceChildren(...cards);
+}
+
+function predictiveHighlightCard(label, value, text) {
+  const card = document.createElement("article");
+  card.className = "explainer-card";
+  const span = document.createElement("span");
+  span.textContent = label;
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  const p = document.createElement("p");
+  p.textContent = text;
+  card.append(span, strong, p);
+  return card;
+}
+
+function predictiveSectionElement(section) {
+  const wrap = document.createElement("section");
+  wrap.className = "predictive-section";
+  const h3 = document.createElement("h3");
+  h3.textContent = section.title;
+  const p = document.createElement("p");
+  p.className = "plain";
+  p.textContent = section.description || "";
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "table-wrap compact-table";
+  tableWrap.append(predictiveTable(section.rows || []));
+  wrap.append(h3, p, tableWrap);
+  return wrap;
+}
+
+function predictiveTable(rows) {
+  const tableRows = (rows || []).map((row) => [
+    `${row.horizon_days}d`,
+    row.bucket_label,
+    formatPctPlain(row.positive_rate),
+    formatSignedPct(row.median_return),
+    String(row.observations || 0),
+    formatPp(row.difference_vs_baseline),
+    row.reliability || "n.v.t."
+  ]);
+  return table([
+    "Horizon",
+    "Scorebucket",
+    "Historisch positief",
+    "Mediaan rendement",
+    "Observaties",
+    "Vs baseline",
+    "Betrouwbaarheid"
+  ], tableRows);
+}
+
+function listItem(text) {
+  const li = document.createElement("li");
+  li.textContent = text;
+  return li;
+}
+
 function formatDateTime(value) {
   if (!value) return "n.v.t.";
   return String(value).replace("T", " ").replace("Z", " UTC");
@@ -1124,6 +1239,25 @@ function formatDateTime(value) {
 function formatMoney(value) {
   if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
   return `$${Number(value).toLocaleString("en-US", {maximumFractionDigits: 2})}`;
+}
+
+function formatSignedPct(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  const pct = Number(value) * 100;
+  const sign = pct > 0 ? "+" : "";
+  return `${sign}${pct.toFixed(1)}%`;
+}
+
+function formatPctPlain(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  return `${(Number(value) * 100).toFixed(1)}%`;
+}
+
+function formatPp(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "n.v.t.";
+  const pp = Number(value) * 100;
+  const sign = pp > 0 ? "+" : "";
+  return `${sign}${pp.toFixed(1)} pp`;
 }
 
 function renderMethodSteps() {
@@ -1481,7 +1615,7 @@ function table(headers, rows) {
 
 async function main() {
   activateNavigation();
-  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, overview, overviewHistory] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, predictivePower, overview, overviewHistory] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
@@ -1489,6 +1623,7 @@ async function main() {
     loadJson("./data/interpretation.json"),
     loadJson("./data/interpretations/index.json").catch(() => ({entries: []})),
     loadJson("./data/signaalonderzoek.json").catch(() => ({rows: [], row_count_total: 0, row_count_visible: 0})),
+    loadJson("./data/predictive_power.json").catch(() => ({sections: [], warnings: [], methodology: []})),
     loadJson("./data/overview.json").catch(() => ({current_run: null, previous_run: null, warnings: []})),
     loadJson("./data/overview_history.json").catch(() => ({rows: []}))
   ]);
@@ -1514,6 +1649,7 @@ async function main() {
   setText("audit-warnings", (dashboard.data_audit?.warnings || []).join(" ") || "Geen waarschuwingen bij deze update.");
   window.renderGlossary(glossary);
   renderSignalResearch(signalResearch);
+  renderPredictivePower(predictivePower);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
   renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 5});

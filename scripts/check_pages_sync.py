@@ -27,6 +27,7 @@ CHECK_FILES = [
     "data/ledger.json",
     "data/backtest_summary.json",
     "data/signaalonderzoek.json",
+    "data/predictive_power.json",
 ]
 
 

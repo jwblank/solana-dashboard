@@ -34,6 +34,7 @@
         <button class="tab" data-tab="prijs">Prijs</button>
         <button class="tab" data-tab="netwerk">Netwerk</button>
         <button class="tab" data-tab="kapitaal">Kapitaal</button>
+        <button class="tab" data-tab="voorspellingskracht">Voorspellingskracht</button>
         <button class="tab" data-tab="bewijs">Bewijs</button>
       </nav>
 
@@ -146,6 +147,46 @@
       <section id="kapitaal" class="panel">
         <div class="overview-page">
           <div id="capital-tab"></div>
+        </div>
+      </section>
+
+      <section id="voorspellingskracht" class="panel">
+        <div class="evidence-page predictive-page">
+          <section class="evidence-hero">
+            <div>
+              <p class="eyebrow">Forward trackrecord</p>
+              <h2>Voorspellingskracht</h2>
+              <p id="predictive-summary" class="plain"></p>
+            </div>
+            <div id="predictive-scorecard" class="evidence-scorecard"></div>
+          </section>
+
+          <section class="wide">
+            <h3>Kernbeeld</h3>
+            <div id="predictive-highlights" class="predictive-highlight-grid"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Lead-lag tabel</h3>
+                <p class="plain">Wat gebeurde er historisch na lage, gemengde en hoge dashboardscores?</p>
+              </div>
+            </div>
+            <div id="predictive-sections"></div>
+          </section>
+
+          <section class="wide">
+            <h3>Sterkte hoog + onderbouwing stevig</h3>
+            <p id="predictive-combination-definition" class="plain"></p>
+            <div id="predictive-combination-table" class="table-wrap compact-table"></div>
+          </section>
+
+          <section class="wide">
+            <h3>Methode en beperkingen</h3>
+            <ul id="predictive-methodology" class="clean"></ul>
+            <ul id="predictive-warnings" class="clean warning-list"></ul>
+          </section>
         </div>
       </section>
 

@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +50,7 @@ PRICE_METADATA_COLUMNS = [
 MAX_ALLOWED_CACHE_PRICE_BREAK = 0.40
 SIGNAL_RESEARCH_PATH = CURATED / "signaalonderzoek.parquet"
 SIGNAL_RESEARCH_LATEST_PATH = SITE_DATA / "signaalonderzoek.json"
+PREDICTIVE_POWER_PATH = SITE_DATA / "predictive_power.json"
 OVERVIEW_PATH = SITE_DATA / "overview.json"
 OVERVIEW_HISTORY_PATH = SITE_DATA / "overview_history.json"
 SIGNAL_RESEARCH_KEY = "run_at_utc"
@@ -2173,10 +2174,359 @@ def write_signal_research_public(
             "rows": dataframe_json_records(latest_rows),
         },
     )
+    write_predictive_power_public(
+        production_frame,
+        generated=generated,
+        cutoff=cutoff,
+        method_version=method_version,
+        persisted=persisted,
+    )
     if persisted:
         public_path = SITE_DATA / "signaalonderzoek.parquet"
         public_path.parent.mkdir(parents=True, exist_ok=True)
         frame.to_parquet(SITE_DATA / "signaalonderzoek.parquet", index=False)
+
+
+def write_predictive_power_public(
+    frame: pd.DataFrame,
+    generated: str,
+    cutoff: str,
+    method_version: str | None,
+    persisted: bool,
+) -> None:
+    write_json(
+        PREDICTIVE_POWER_PATH,
+        build_predictive_power(frame, generated, cutoff, method_version, persisted),
+    )
+
+
+def build_predictive_power(
+    frame: pd.DataFrame,
+    generated: str,
+    cutoff: str,
+    method_version: str | None,
+    persisted: bool = True,
+) -> dict[str, Any]:
+    clean = predictive_power_frame(frame, production_only=persisted)
+    horizons = [1, 2, 3, 7, 14, 30]
+    min_reasonable = 20
+    sections = [
+        predictive_power_section(
+            clean,
+            key="current_strength_score",
+            title="Huidige Sterkte",
+            description="De gewogen dashboardscore van 0 tot 100.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+        predictive_power_section(
+            clean,
+            key="support_score",
+            title="Onderbouwing",
+            description="Hoe stevig de data en historische toetsing achter het signaal zijn.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+    ]
+    combination = predictive_power_combination(clean, horizons, min_reasonable)
+    usable_forward_observations = sum(
+        row["observations"]
+        for row in sections[0]["rows"]
+        if row["bucket_key"] == "all"
+    ) if sections else 0
+    status = predictive_power_status(int(len(clean)), usable_forward_observations, min_reasonable)
+    return {
+        "schema_version": "1.0",
+        "generated_at_utc": generated,
+        "data_cutoff_utc": cutoff,
+        "method_version": method_version,
+        "name": "Voorspellingskracht",
+        "summary": (
+            "Hier meten we wat er historisch gebeurde na vergelijkbare dashboardscores. "
+            "Dit is geen voorspelling, maar een controle op de praktische waarde van het signaal."
+        ),
+        "source": "data/curated/signaalonderzoek.parquet" if persisted else "demo-run",
+        "maturity": {
+            "status": status,
+            "raw_rows": int(len(frame)),
+            "unique_signal_days": int(len(clean)),
+            "usable_forward_observations": int(usable_forward_observations),
+            "min_reasonable_observations": min_reasonable,
+        },
+        "warnings": predictive_power_warnings(clean, usable_forward_observations, min_reasonable),
+        "horizons": horizons,
+        "sections": sections,
+        "combination": combination,
+        "methodology": [
+            (
+                "Per datadag telt alleen de laatste productierun mee, zodat meerdere "
+                "runs op één dag niet dubbel wegen."
+            ),
+            (
+                "Voor elke horizon wordt alleen gekeken naar runs waarvoor de latere "
+                "SOL-prijs al bekend is."
+            ),
+            (
+                "De baseline is het percentage positieve SOL-returns binnen exact "
+                "dezelfde geldige observaties."
+            ),
+            "Er wordt geen toekomstinformatie gebruikt bij het vormen van de buckets.",
+            "Bij kleine aantallen is dit een trackrecord in opbouw, geen volwassen voorspelmodel.",
+        ],
+    }
+
+
+def predictive_power_frame(frame: pd.DataFrame, production_only: bool = True) -> pd.DataFrame:
+    required = {"data_cutoff_utc", "run_at_utc", "sol_price"}
+    if frame.empty or not required.issubset(frame.columns):
+        return pd.DataFrame()
+    clean = frame.copy()
+    if production_only and "mode" in clean:
+        clean = clean[clean["mode"] == "production"]
+    clean = clean.dropna(subset=["data_cutoff_utc", "run_at_utc", "sol_price"])
+    if clean.empty:
+        return clean
+    clean["signal_date"] = pd.to_datetime(clean["data_cutoff_utc"], utc=True).dt.date
+    clean["run_sort"] = pd.to_datetime(clean["run_at_utc"], utc=True)
+    clean = clean.sort_values(["signal_date", "run_sort"])
+    clean = clean.drop_duplicates(subset=["signal_date"], keep="last")
+    return clean.sort_values("signal_date").reset_index(drop=True)
+
+
+def predictive_power_section(
+    frame: pd.DataFrame,
+    key: str,
+    title: str,
+    description: str,
+    horizons: list[int],
+    min_reasonable: int,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    if frame.empty or key not in frame:
+        return {"key": key, "title": title, "description": description, "best": None, "rows": rows}
+    for horizon in horizons:
+        observations = future_return_observations(frame, key, horizon)
+        rows.extend(bucket_rows(observations, horizon, min_reasonable))
+    return {
+        "key": key,
+        "title": title,
+        "description": description,
+        "best": best_predictive_row(rows, min_reasonable),
+        "rows": rows,
+    }
+
+
+def predictive_power_combination(
+    frame: pd.DataFrame, horizons: list[int], min_reasonable: int
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    if frame.empty or "current_strength_score" not in frame or "support_score" not in frame:
+        return {
+            "title": "Sterkte hoog + onderbouwing stevig",
+            "definition": "Huidige Sterkte >65 en Onderbouwing >=60.",
+            "best": None,
+            "rows": rows,
+        }
+    for horizon in horizons:
+        observations = future_return_observations(
+            frame,
+            "current_strength_score",
+            horizon,
+            extra_mask=frame["support_score"].astype(float) >= 60,
+        )
+        all_observations = future_return_observations(frame, "current_strength_score", horizon)
+        high_only = [item for item in observations if item["bucket_key"] == "high"]
+        baseline = baseline_stats(all_observations)
+        stats = observation_stats(high_only)
+        rows.append(
+            predictive_row(
+                horizon=horizon,
+                bucket_key="combined",
+                bucket_label="Sterkte hoog + onderbouwing stevig",
+                stats=stats,
+                baseline=baseline,
+                min_reasonable=min_reasonable,
+            )
+        )
+    return {
+        "title": "Sterkte hoog + onderbouwing stevig",
+        "definition": "Huidige Sterkte >65 en Onderbouwing >=60.",
+        "best": best_predictive_row(rows, min_reasonable),
+        "rows": rows,
+    }
+
+
+def future_return_observations(
+    frame: pd.DataFrame,
+    signal_key: str,
+    horizon: int,
+    extra_mask: pd.Series | None = None,
+) -> list[dict[str, Any]]:
+    by_date = {row.signal_date: row for row in frame.itertuples()}
+    observations: list[dict[str, Any]] = []
+    mask = extra_mask if extra_mask is not None else pd.Series(True, index=frame.index)
+    for index, row in frame.iterrows():
+        if not bool(mask.loc[index]):
+            continue
+        target_date = row["signal_date"] + timedelta(days=horizon)
+        future = by_date.get(target_date)
+        signal = row.get(signal_key)
+        if future is None or pd.isna(signal):
+            continue
+        start_price = float(row["sol_price"])
+        if start_price <= 0:
+            continue
+        future_price = float(future.sol_price)
+        future_return = (future_price / start_price) - 1.0
+        observations.append(
+            {
+                "bucket_key": score_bucket_key(float(signal)),
+                "return": future_return,
+            }
+        )
+    return observations
+
+
+def score_bucket_key(value: float) -> str:
+    if value < 45:
+        return "low"
+    if value > 65:
+        return "high"
+    return "mixed"
+
+
+def bucket_rows(
+    observations: list[dict[str, Any]], horizon: int, min_reasonable: int
+) -> list[dict[str, Any]]:
+    baseline = baseline_stats(observations)
+    rows = [
+        predictive_row(
+            horizon=horizon,
+            bucket_key="all",
+            bucket_label="Alle signalen",
+            stats=baseline,
+            baseline=baseline,
+            min_reasonable=min_reasonable,
+        )
+    ]
+    labels = {
+        "low": "Laag (<45)",
+        "mixed": "Gemengd (45-65)",
+        "high": "Hoog (>65)",
+    }
+    for key, label in labels.items():
+        subset = [item for item in observations if item["bucket_key"] == key]
+        rows.append(
+            predictive_row(
+                horizon=horizon,
+                bucket_key=key,
+                bucket_label=label,
+                stats=observation_stats(subset),
+                baseline=baseline,
+                min_reasonable=min_reasonable,
+            )
+        )
+    return rows
+
+
+def baseline_stats(observations: list[dict[str, Any]]) -> dict[str, Any]:
+    return observation_stats(observations)
+
+
+def observation_stats(observations: list[dict[str, Any]]) -> dict[str, Any]:
+    returns = [float(item["return"]) for item in observations]
+    if not returns:
+        return {"observations": 0, "positive_rate": None, "median_return": None}
+    series = pd.Series(returns, dtype="float64")
+    return {
+        "observations": int(len(returns)),
+        "positive_rate": round(float((series > 0).mean()), 4),
+        "median_return": round(float(series.median()), 4),
+    }
+
+
+def predictive_row(
+    horizon: int,
+    bucket_key: str,
+    bucket_label: str,
+    stats: dict[str, Any],
+    baseline: dict[str, Any],
+    min_reasonable: int,
+) -> dict[str, Any]:
+    positive_rate = stats.get("positive_rate")
+    baseline_rate = baseline.get("positive_rate")
+    difference = (
+        None
+        if positive_rate is None or baseline_rate is None
+        else round(float(positive_rate) - float(baseline_rate), 4)
+    )
+    n = int(stats.get("observations") or 0)
+    return {
+        "horizon_days": horizon,
+        "bucket_key": bucket_key,
+        "bucket_label": bucket_label,
+        "positive_rate": positive_rate,
+        "median_return": stats.get("median_return"),
+        "observations": n,
+        "baseline_positive_rate": baseline_rate,
+        "difference_vs_baseline": difference,
+        "reliability": reliability_label(n, min_reasonable),
+    }
+
+
+def reliability_label(observations: int, min_reasonable: int) -> str:
+    if observations == 0:
+        return "Geen meting"
+    if observations < min_reasonable:
+        return "Trackrecord in opbouw"
+    if observations < 50:
+        return "Voorzichtig bruikbaar"
+    return "Redelijk onderbouwd"
+
+
+def best_predictive_row(rows: list[dict[str, Any]], min_reasonable: int) -> dict[str, Any] | None:
+    candidates = [
+        row
+        for row in rows
+        if row["bucket_key"] != "all"
+        and row["observations"] >= min_reasonable
+        and row["difference_vs_baseline"] is not None
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda row: abs(float(row["difference_vs_baseline"])))
+
+
+def predictive_power_status(
+    unique_signal_days: int, usable_forward_observations: int, min_reasonable: int
+) -> str:
+    if usable_forward_observations < min_reasonable:
+        return "Trackrecord in opbouw"
+    if unique_signal_days < 50:
+        return "Voorzichtig interpreteren"
+    return "Eerste structurele evaluatie mogelijk"
+
+
+def predictive_power_warnings(
+    frame: pd.DataFrame, usable_forward_observations: int, min_reasonable: int
+) -> list[str]:
+    warnings = [
+        "Historische prestaties garanderen geen toekomstige resultaten.",
+        (
+            "De analyse gebruikt alleen vastgelegde productieruns uit het append-only "
+            "signaalonderzoek."
+        ),
+    ]
+    if len(frame) < min_reasonable or usable_forward_observations < min_reasonable:
+        warnings.append(
+            "Het forward trackrecord is nog klein; percentages kunnen sterk bewegen "
+            "door enkele nieuwe runs."
+        )
+    warnings.append(
+        "Regime-afhankelijkheid blijft mogelijk: bull-, bear- en zijwaartse markten "
+        "kunnen anders reageren."
+    )
+    return warnings
 
 
 def dataframe_json_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
