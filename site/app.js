@@ -1332,6 +1332,8 @@ function predictiveToneClass(value) {
 function renderPredictiveBucketChart(section) {
   const canvas = document.getElementById("predictive-bucket-chart");
   if (!canvas || typeof Chart === "undefined") return;
+  canvas.style.height = "210px";
+  canvas.style.maxHeight = "210px";
   const rows = sectionRowsForChart(section);
   setText("predictive-chart-title", section?.title || "Huidige Sterkte");
   setText("predictive-chart-note", rows.length ? `Horizon ${rows[0].horizon_days} dagen; baseline als referentie.` : "Nog geen geldige bucketmeting.");

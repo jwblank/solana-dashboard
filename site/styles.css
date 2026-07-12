@@ -98,12 +98,15 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .predictive-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .predictive-badge { border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .predictive-badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn), transparent 90%); }
-.predictive-analysis-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 14px; align-items: start; }
-.predictive-chart-card { min-height: 320px; position: sticky; top: 78px; }
-.predictive-chart-card canvas { min-height: 220px; }
+.predictive-analysis-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); gap: 14px; align-items: start; }
+.predictive-chart-card { min-height: auto; position: static; align-self: start; }
+.predictive-chart-card canvas { display: block; width: 100% !important; height: 210px !important; max-height: 210px; margin-top: 8px; }
 .predictive-section { margin: 0 0 18px; }
 .predictive-section:last-child { margin-bottom: 0; }
 .predictive-section h3 { margin-top: 0; }
+.predictive-section .table-wrap { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+.predictive-section .table-wrap table { margin: 0; }
+.predictive-section .table-wrap thead th { position: sticky; top: 0; z-index: 1; background: var(--panel); }
 .positive-row td { background: color-mix(in srgb, var(--accent), transparent 94%); }
 .negative-row td { background: color-mix(in srgb, var(--warn), transparent 94%); }
 .neutral-row td { background: transparent; }
