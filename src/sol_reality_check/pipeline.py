@@ -2208,55 +2208,30 @@ def build_predictive_power(
     persisted: bool = True,
 ) -> dict[str, Any]:
     clean = predictive_power_frame(frame, production_only=persisted)
-    horizons = [1, 2, 3, 7, 14, 30]
+    horizons = [1, 3, 7, 14, 30]
     min_reasonable = 20
-    sections = [
-        predictive_power_section(
-            clean,
-            key="current_strength_score",
-            title="Huidige Sterkte",
-            description="De gewogen dashboardscore van 0 tot 100.",
-            horizons=horizons,
-            min_reasonable=min_reasonable,
-        ),
-        predictive_power_section(
-            clean,
-            key="support_score",
-            title="Onderbouwing",
-            description="Hoe stevig de data en historische toetsing achter het signaal zijn.",
-            horizons=horizons,
-            min_reasonable=min_reasonable,
-        ),
-    ]
-    combination = predictive_power_combination(clean, horizons, min_reasonable)
-    usable_forward_observations = sum(
-        row["observations"]
-        for row in sections[0]["rows"]
-        if row["bucket_key"] == "all"
-    ) if sections else 0
-    status = predictive_power_status(int(len(clean)), usable_forward_observations, min_reasonable)
+    ranges = predictive_power_ranges(clean, horizons, min_reasonable)
+    primary = ranges["all"]
+    maturity = primary["maturity"]
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "generated_at_utc": generated,
         "data_cutoff_utc": cutoff,
         "method_version": method_version,
         "name": "Voorspellingskracht",
-        "summary": (
-            "Hier meten we wat er historisch gebeurde na vergelijkbare dashboardscores. "
-            "Dit is geen voorspelling, maar een controle op de praktische waarde van het signaal."
-        ),
+        "headline": predictive_power_headline(maturity),
+        "summary": predictive_power_summary(maturity),
         "source": "data/curated/signaalonderzoek.parquet" if persisted else "demo-run",
-        "maturity": {
-            "status": status,
-            "raw_rows": int(len(frame)),
-            "unique_signal_days": int(len(clean)),
-            "usable_forward_observations": int(usable_forward_observations),
-            "min_reasonable_observations": min_reasonable,
-        },
-        "warnings": predictive_power_warnings(clean, usable_forward_observations, min_reasonable),
+        "maturity": maturity,
+        "badges": predictive_power_badges(maturity),
+        "warnings": predictive_power_warnings(
+            clean, maturity["usable_forward_observations"], min_reasonable
+        ),
         "horizons": horizons,
-        "sections": sections,
-        "combination": combination,
+        "ranges": ranges,
+        "sections": primary["sections"],
+        "combination": primary["combination"],
+        "highlights": primary["highlights"],
         "methodology": [
             (
                 "Per datadag telt alleen de laatste productierun mee, zodat meerdere "
@@ -2274,6 +2249,147 @@ def build_predictive_power(
             "Bij kleine aantallen is dit een trackrecord in opbouw, geen volwassen voorspelmodel.",
         ],
     }
+
+
+def predictive_power_ranges(
+    frame: pd.DataFrame, horizons: list[int], min_reasonable: int
+) -> dict[str, dict[str, Any]]:
+    latest_date = None if frame.empty else max(frame["signal_date"])
+    last_365 = (
+        frame[frame["signal_date"] >= latest_date - timedelta(days=365)].copy()
+        if latest_date is not None
+        else frame.copy()
+    )
+    return {
+        "all": predictive_power_payload_for_frame(
+            frame,
+            label="Alles",
+            description="Alle vastgelegde productieruns in het signaalonderzoek.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+        "365d": predictive_power_payload_for_frame(
+            last_365,
+            label="Laatste 365 dagen",
+            description="Alleen signalen uit het meest recente jaar, voor regimegevoelige lezing.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+    }
+
+
+def predictive_power_payload_for_frame(
+    frame: pd.DataFrame,
+    label: str,
+    description: str,
+    horizons: list[int],
+    min_reasonable: int,
+) -> dict[str, Any]:
+    sections = [
+        predictive_power_section(
+            frame,
+            key="current_strength_score",
+            title="Huidige Sterkte",
+            description="De gewogen dashboardscore van 0 tot 100.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+        predictive_power_section(
+            frame,
+            key="support_score",
+            title="Onderbouwing",
+            description="Hoe stevig de data en historische toetsing achter het signaal zijn.",
+            horizons=horizons,
+            min_reasonable=min_reasonable,
+        ),
+    ]
+    combination = predictive_power_combination(frame, horizons, min_reasonable)
+    usable_forward_observations = (
+        sum(row["observations"] for row in sections[0]["rows"] if row["bucket_key"] == "all")
+        if sections
+        else 0
+    )
+    maturity = {
+        "status": predictive_power_status(
+            int(len(frame)), usable_forward_observations, min_reasonable
+        ),
+        "raw_rows": int(len(frame)),
+        "unique_signal_days": int(len(frame)),
+        "usable_forward_observations": int(usable_forward_observations),
+        "min_reasonable_observations": min_reasonable,
+    }
+    return {
+        "label": label,
+        "description": description,
+        "maturity": maturity,
+        "sections": sections,
+        "combination": combination,
+        "highlights": predictive_power_highlights(sections, combination, min_reasonable),
+    }
+
+
+def predictive_power_headline(maturity: dict[str, Any]) -> str:
+    if maturity["usable_forward_observations"] < maturity["min_reasonable_observations"]:
+        return "Nog beperkt bewijs van voorspellingskracht"
+    if maturity["unique_signal_days"] < 50:
+        return "Eerste signalen zichtbaar, maar nog voorzichtig lezen"
+    return "Voorspellingskracht wordt structureel meetbaar"
+
+
+def predictive_power_summary(maturity: dict[str, Any]) -> str:
+    return (
+        "Deze pagina controleert wat er na eerdere dashboardsignalen gebeurde. "
+        f"Er zijn nu {maturity['unique_signal_days']} unieke signaaldagen en "
+        f"{maturity['usable_forward_observations']} bruikbare forward observaties. "
+        "Dat is waardevol als transparant trackrecord, maar nog te klein voor harde conclusies."
+    )
+
+
+def predictive_power_badges(maturity: dict[str, Any]) -> list[dict[str, str]]:
+    return [
+        {"label": "Status", "value": str(maturity["status"]), "tone": "warn"},
+        {"label": "Signaaldagen", "value": str(maturity["unique_signal_days"]), "tone": "neutral"},
+        {
+            "label": "Forward observaties",
+            "value": str(maturity["usable_forward_observations"]),
+            "tone": "neutral",
+        },
+    ]
+
+
+def predictive_power_highlights(
+    sections: list[dict[str, Any]],
+    combination: dict[str, Any],
+    min_reasonable: int,
+) -> dict[str, list[dict[str, Any]]]:
+    candidates = []
+    for section in sections:
+        for row in section["rows"]:
+            if row["bucket_key"] == "all" or row["difference_vs_baseline"] is None:
+                continue
+            if row["observations"] == 0:
+                continue
+            item = row.copy()
+            item["section_title"] = section["title"]
+            item["is_preliminary"] = row["observations"] < min_reasonable
+            candidates.append(item)
+    for row in combination.get("rows", []):
+        if row["difference_vs_baseline"] is None or row["observations"] == 0:
+            continue
+        item = row.copy()
+        item["section_title"] = combination.get("title", "Combinatiesignaal")
+        item["is_preliminary"] = row["observations"] < min_reasonable
+        candidates.append(item)
+    positive = sorted(
+        [row for row in candidates if row["difference_vs_baseline"] > 0],
+        key=lambda row: row["difference_vs_baseline"],
+        reverse=True,
+    )[:3]
+    negative = sorted(
+        [row for row in candidates if row["difference_vs_baseline"] < 0],
+        key=lambda row: row["difference_vs_baseline"],
+    )[:3]
+    return {"positive": positive, "negative": negative}
 
 
 def predictive_power_frame(frame: pd.DataFrame, production_only: bool = True) -> pd.DataFrame:

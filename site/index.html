@@ -155,8 +155,9 @@
           <section class="evidence-hero">
             <div>
               <p class="eyebrow">Forward trackrecord</p>
-              <h2>Voorspellingskracht</h2>
+              <h2 id="predictive-headline">Voorspellingskracht</h2>
               <p id="predictive-summary" class="plain"></p>
+              <div id="predictive-badges" class="predictive-badges"></div>
             </div>
             <div id="predictive-scorecard" class="evidence-scorecard"></div>
           </section>
@@ -172,8 +173,17 @@
                 <h3>Lead-lag tabel</h3>
                 <p class="plain">Wat gebeurde er historisch na lage, gemengde en hoge dashboardscores?</p>
               </div>
+              <div id="predictive-range-controls" class="range-controls" aria-label="Tijdselectie voorspellingskracht"></div>
             </div>
-            <div id="predictive-sections"></div>
+            <div class="predictive-analysis-grid">
+              <div id="predictive-sections"></div>
+              <aside class="mini-chart predictive-chart-card">
+                <span>Hit-rate per bucket</span>
+                <strong id="predictive-chart-title">Huidige Sterkte</strong>
+                <canvas id="predictive-bucket-chart" aria-label="Hit-rate per scorebucket" role="img"></canvas>
+                <small id="predictive-chart-note"></small>
+              </aside>
+            </div>
           </section>
 
           <section class="wide">

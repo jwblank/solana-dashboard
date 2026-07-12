@@ -3,6 +3,7 @@ const fmtScore = (x) => x === null || x === undefined ? "..." : Math.round(x);
 const fmtScore100 = (x) => x === null || x === undefined ? ".../100" : `${Math.round(x)}/100`;
 const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
 let scoreHistoryChart = null;
+let predictiveBucketChart = null;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
@@ -1118,19 +1119,29 @@ function renderSignalResearch(research) {
 }
 
 function renderPredictivePower(power) {
+  const ranges = power.ranges || {all: power};
+  const selectedRange = ranges.all ? "all" : Object.keys(ranges)[0];
+  renderPredictiveRangeControls(power, selectedRange);
+  renderPredictivePowerRange(power, selectedRange);
+}
+
+function renderPredictivePowerRange(power, rangeKey) {
+  const range = (power.ranges || {})[rangeKey] || power;
+  const maturity = range.maturity || power.maturity || {};
+  setText("predictive-headline", power.headline || "Voorspellingskracht");
   setText("predictive-summary", power.summary || "Nog geen voorspellingskracht beschikbaar.");
-  const maturity = power.maturity || {};
+  renderPredictiveBadges(predictiveBadgesForMaturity(maturity));
   renderStats("predictive-scorecard", [
     {label: "Status", value: maturity.status || "Trackrecord in opbouw"},
     {label: "Unieke signaaldagen", value: String(maturity.unique_signal_days || 0)},
     {label: "Forward observaties", value: String(maturity.usable_forward_observations || 0)},
     {label: "Redelijke ondergrens", value: `${maturity.min_reasonable_observations || 20} observaties`}
   ]);
-  renderPredictiveHighlights(power);
+  renderPredictiveHighlights(range);
   const target = document.getElementById("predictive-sections");
-  const sections = power.sections || [];
+  const sections = range.sections || [];
   target.replaceChildren(...sections.map(predictiveSectionElement));
-  const combination = power.combination || {};
+  const combination = range.combination || {};
   setText("predictive-combination-definition", combination.definition || "Nog geen combinatie-analyse beschikbaar.");
   document.getElementById("predictive-combination-table").replaceChildren(
     predictiveTable(combination.rows || [])
@@ -1141,20 +1152,60 @@ function renderPredictivePower(power) {
   document.getElementById("predictive-warnings").replaceChildren(
     ...(power.warnings || []).map(listItem)
   );
+  renderPredictiveBucketChart(sections[0] || null);
+}
+
+function renderPredictiveRangeControls(power, selectedRange) {
+  const target = document.getElementById("predictive-range-controls");
+  const ranges = power.ranges || {};
+  const keys = Object.keys(ranges);
+  if (!target || keys.length <= 1) return;
+  target.replaceChildren(...keys.map((key) => {
+    const button = document.createElement("button");
+    button.className = `button${key === selectedRange ? " active-range" : ""}`;
+    button.type = "button";
+    button.textContent = ranges[key].label || key;
+    button.addEventListener("click", () => {
+      target.querySelectorAll("button").forEach((item) => {
+        item.classList.toggle("active-range", item === button);
+      });
+      renderPredictivePowerRange(power, key);
+    });
+    return button;
+  }));
+}
+
+function renderPredictiveBadges(badges) {
+  const target = document.getElementById("predictive-badges");
+  if (!target) return;
+  target.replaceChildren(...badges.map((badge) => {
+    const item = document.createElement("span");
+    item.className = `predictive-badge ${badge.tone || "neutral"}`;
+    item.textContent = `${badge.label}: ${badge.value}`;
+    return item;
+  }));
+}
+
+function predictiveBadgesForMaturity(maturity) {
+  return [
+    {label: "Status", value: maturity.status || "Trackrecord in opbouw", tone: "warn"},
+    {label: "Signaaldagen", value: String(maturity.unique_signal_days || 0), tone: "neutral"},
+    {label: "Forward observaties", value: String(maturity.usable_forward_observations || 0), tone: "neutral"}
+  ];
 }
 
 function renderPredictiveHighlights(power) {
   const target = document.getElementById("predictive-highlights");
-  const sections = power.sections || [];
-  const bestRows = sections.map((section) => ({section, row: section.best})).filter((item) => item.row);
   const cards = [];
-  if (bestRows.length) {
-    bestRows.forEach(({section, row}) => {
-      cards.push(predictiveHighlightCard(
-        section.title,
-        `${row.bucket_label}, ${row.horizon_days} dagen`,
-        `${formatPctPlain(row.positive_rate)} historisch positief; ${formatPp(row.difference_vs_baseline)} vs baseline.`
-      ));
+  const highlights = power.highlights || {};
+  const strongest = (highlights.positive || []).slice(0, 2);
+  const weakest = (highlights.negative || []).slice(0, 1);
+  if (strongest.length || weakest.length) {
+    strongest.forEach((row) => {
+      cards.push(predictiveHighlightCard("Sterker dan baseline", predictiveRowTitle(row), predictiveRowText(row)));
+    });
+    weakest.forEach((row) => {
+      cards.push(predictiveHighlightCard("Zwakker dan baseline", predictiveRowTitle(row), predictiveRowText(row)));
     });
   } else {
     cards.push(predictiveHighlightCard(
@@ -1164,16 +1215,20 @@ function renderPredictiveHighlights(power) {
     ));
   }
   cards.push(predictiveHighlightCard(
-    "Bron",
-    power.source || "signaalonderzoek",
-    "Alleen vastgelegde productieruns uit het append-only signaalonderzoek tellen mee."
-  ));
-  cards.push(predictiveHighlightCard(
     "Interpretatie",
     "Baseline is leidend",
     "Een hit-rate is pas interessant als die duidelijk boven de algemene baseline in dezelfde periode ligt."
   ));
   target.replaceChildren(...cards);
+}
+
+function predictiveRowTitle(row) {
+  return `${row.section_title || "Signaal"} · ${row.bucket_label} · ${row.horizon_days}d`;
+}
+
+function predictiveRowText(row) {
+  const prefix = row.is_preliminary ? "Voorlopig: " : "";
+  return `${prefix}${formatPctPlain(row.positive_rate)} positief, ${formatPp(row.difference_vs_baseline)} vs baseline, n=${row.observations}.`;
 }
 
 function predictiveHighlightCard(label, value, text) {
@@ -1205,24 +1260,118 @@ function predictiveSectionElement(section) {
 }
 
 function predictiveTable(rows) {
-  const tableRows = (rows || []).map((row) => [
-    `${row.horizon_days}d`,
-    row.bucket_label,
-    formatPctPlain(row.positive_rate),
-    formatSignedPct(row.median_return),
-    String(row.observations || 0),
-    formatPp(row.difference_vs_baseline),
-    row.reliability || "n.v.t."
-  ]);
-  return table([
+  const t = document.createElement("table");
+  const thead = document.createElement("thead");
+  const head = document.createElement("tr");
+  [
     "Horizon",
     "Scorebucket",
     "Historisch positief",
     "Mediaan rendement",
-    "Observaties",
     "Vs baseline",
+    "Observaties",
     "Betrouwbaarheid"
-  ], tableRows);
+  ].forEach((header) => {
+    const th = document.createElement("th");
+    th.textContent = header;
+    head.append(th);
+  });
+  thead.append(head);
+  const tbody = document.createElement("tbody");
+  (rows || []).forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.className = predictiveToneClass(row.difference_vs_baseline);
+    [
+      `${row.horizon_days}d`,
+      row.bucket_label,
+      rateCell(row.positive_rate),
+      formatSignedPct(row.median_return),
+      formatPp(row.difference_vs_baseline),
+      sampleCell(row.observations || 0),
+      row.reliability || "n.v.t."
+    ].forEach((cell) => {
+      const td = document.createElement("td");
+      if (typeof Node !== "undefined" && cell instanceof Node) td.append(cell);
+      else td.textContent = cell;
+      tr.append(td);
+    });
+    tbody.append(tr);
+  });
+  t.append(thead, tbody);
+  return t;
+}
+
+function rateCell(value) {
+  const wrap = document.createElement("div");
+  wrap.className = "rate-cell";
+  const span = document.createElement("span");
+  span.textContent = formatPctPlain(value);
+  const bar = document.createElement("i");
+  const width = value === null || value === undefined || !Number.isFinite(Number(value))
+    ? 0
+    : Math.max(0, Math.min(100, Number(value) * 100));
+  bar.style.width = `${width}%`;
+  wrap.append(span, bar);
+  return wrap;
+}
+
+function sampleCell(value) {
+  const wrap = document.createElement("span");
+  wrap.className = value < 20 ? "sample-cell low" : "sample-cell";
+  wrap.textContent = value < 20 ? `${value} · laag` : String(value);
+  return wrap;
+}
+
+function predictiveToneClass(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "neutral-row";
+  if (Number(value) > 0.02) return "positive-row";
+  if (Number(value) < -0.02) return "negative-row";
+  return "neutral-row";
+}
+
+function renderPredictiveBucketChart(section) {
+  const canvas = document.getElementById("predictive-bucket-chart");
+  if (!canvas || typeof Chart === "undefined") return;
+  const rows = sectionRowsForChart(section);
+  setText("predictive-chart-title", section?.title || "Huidige Sterkte");
+  setText("predictive-chart-note", rows.length ? `Horizon ${rows[0].horizon_days} dagen; baseline als referentie.` : "Nog geen geldige bucketmeting.");
+  if (predictiveBucketChart) predictiveBucketChart.destroy();
+  predictiveBucketChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: rows.map((row) => row.bucket_label),
+      datasets: [
+        {
+          label: "Historisch positief",
+          data: rows.map((row) => row.positive_rate === null ? 0 : row.positive_rate * 100),
+          backgroundColor: "rgba(22, 122, 100, 0.55)",
+          borderColor: "#167a64",
+          borderWidth: 1
+        },
+        {
+          label: "Baseline",
+          data: rows.map((row) => row.baseline_positive_rate === null ? 0 : row.baseline_positive_rate * 100),
+          backgroundColor: "rgba(91, 102, 99, 0.18)",
+          borderColor: "rgba(91, 102, 99, 0.8)",
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {y: {min: 0, max: 100, ticks: {callback: (value) => `${value}%`}}},
+      plugins: {legend: {position: "bottom"}}
+    }
+  });
+}
+
+function sectionRowsForChart(section) {
+  const rows = (section?.rows || []).filter((row) => row.bucket_key !== "all" && row.observations > 0);
+  if (!rows.length) return [];
+  const horizons = [...new Set(rows.map((row) => row.horizon_days))].sort((a, b) => a - b);
+  const selected = horizons.includes(7) ? 7 : horizons[0];
+  return rows.filter((row) => row.horizon_days === selected);
 }
 
 function listItem(text) {

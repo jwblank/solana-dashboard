@@ -95,9 +95,22 @@ main { padding: 18px clamp(16px, 5vw, 56px) 48px; }
 .evidence-page { max-width: 1180px; }
 .predictive-page { max-width: 1280px; }
 .predictive-highlight-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.predictive-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.predictive-badge { border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.predictive-badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn), transparent 90%); }
+.predictive-analysis-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 14px; align-items: start; }
+.predictive-chart-card { min-height: 320px; position: sticky; top: 78px; }
+.predictive-chart-card canvas { min-height: 220px; }
 .predictive-section { margin: 0 0 18px; }
 .predictive-section:last-child { margin-bottom: 0; }
 .predictive-section h3 { margin-top: 0; }
+.positive-row td { background: color-mix(in srgb, var(--accent), transparent 94%); }
+.negative-row td { background: color-mix(in srgb, var(--warn), transparent 94%); }
+.neutral-row td { background: transparent; }
+.rate-cell { min-width: 110px; }
+.rate-cell span { display: block; font-weight: 700; }
+.rate-cell i { display: block; height: 5px; margin-top: 5px; border-radius: 999px; background: var(--accent); opacity: .75; }
+.sample-cell.low { color: var(--warn); font-weight: 700; }
 .warning-list { color: var(--warn); }
 .interpretation-page { max-width: 1180px; }
 .interpretation-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 18px; align-items: stretch; margin-bottom: 16px; }
@@ -188,7 +201,8 @@ details { border-bottom: 1px solid var(--line); padding: 12px 0; }
 summary { cursor: pointer; font-weight: 700; }
 @media (max-width: 800px) {
   .top, .conclusion, .indicator-hero, .evidence-hero, .evidence-two-col, .interpretation-hero, .overview-hero { grid-template-columns: 1fr; }
-  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list, .archive-select, .change-grid, .trackrecord-grid, .summary-strip, .predictive-highlight-grid { grid-template-columns: 1fr; }
+  .grid, .inputs, .score-pair, .meta, .source-grid, .component-grid, .spark-grid, .evidence-kpis, .term-grid, .evidence-block-grid, .backtest-grid, .ledger-summary, .method-steps, .glossary-grid, .archive-list, .archive-select, .change-grid, .trackrecord-grid, .summary-strip, .predictive-highlight-grid, .predictive-analysis-grid { grid-template-columns: 1fr; }
   .waterfall { max-width: none; }
+  .predictive-chart-card { position: static; }
   .section-head { display: block; }
 }
