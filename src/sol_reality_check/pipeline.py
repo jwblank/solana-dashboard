@@ -136,17 +136,24 @@ def load_or_fetch_history(mode: str) -> pd.DataFrame:
         cached = repair_history_prices(raw_cache) if cache_ok else None
         if not cache_ok:
             LOGGER.warning("Ignoring production history cache: %s", cache_reason)
+        end = last_completed_utc_day_end()
         try:
-            refreshed = fetch_history_window(cached)
+            refreshed = fetch_history_window(cached, end=end)
+            assert_production_history_fresh(refreshed, end=end)
             refreshed.to_csv(path, index=False)
             return refreshed
-        except ApiError:
+        except ApiError as exc:
             if cached is not None:
+                assert_production_history_fresh(cached, end=end)
+                LOGGER.warning(
+                    "Using production history cache after refresh failure: %s", exc
+                )
                 return cached
             raise
     end = last_completed_utc_day_end()
     start = end - pd.Timedelta(days=1400)
     merged = fetch_history_window(None, start=start, end=end)
+    assert_production_history_fresh(merged, end=end)
     CURATED.mkdir(parents=True, exist_ok=True)
     merged.to_csv(path, index=False)
     return merged
@@ -215,6 +222,38 @@ def fetch_history_window(
     assert_no_extreme_price_breaks(merged, trusted_price_dates)
     merged.attrs["price_source_status"] = price_status
     return merged
+
+
+def expected_latest_history_date(end: datetime | pd.Timestamp | None = None) -> str:
+    end = pd.Timestamp(end or last_completed_utc_day_end())
+    return (end.date() - pd.Timedelta(days=1)).isoformat()
+
+
+def latest_history_date(df: pd.DataFrame) -> str | None:
+    if df.empty or "date" not in df:
+        return None
+    latest = pd.to_datetime(df["date"], utc=True, errors="coerce").max()
+    if pd.isna(latest):
+        return None
+    return latest.date().isoformat()
+
+
+def assert_production_history_fresh(
+    df: pd.DataFrame,
+    end: datetime | pd.Timestamp | None = None,
+) -> None:
+    expected = expected_latest_history_date(end)
+    latest = latest_history_date(df)
+    if latest is None:
+        raise ApiError(
+            f"Production history freshness check failed: no dated rows; "
+            f"expected at least {expected}."
+        )
+    if latest < expected:
+        raise ApiError(
+            f"Production history is stale: latest date {latest}, expected at least "
+            f"{expected}. Refusing to publish stale dashboard data."
+        )
 
 
 def production_history_cache_is_usable(df: pd.DataFrame) -> tuple[bool, str]:

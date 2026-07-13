@@ -1,12 +1,17 @@
+from datetime import UTC, datetime
+
 import numpy as np
 import pandas as pd
+import pytest
 
 from sol_reality_check.analytics import add_features
 from sol_reality_check.demo import demo_history
 from sol_reality_check.pipeline import (
     ApiError,
     assert_price_coverage,
+    assert_production_history_fresh,
     coinbase_gap_fill_breakdown,
+    expected_latest_history_date,
     first_missing_daily_date,
     production_history_cache_is_usable,
     repair_history_prices,
@@ -201,6 +206,25 @@ def test_price_coverage_accepts_partial_history_when_method_has_enough_rows():
         0.8,
         min_required_rows=395,
     )
+
+
+def test_expected_latest_history_date_uses_previous_completed_utc_day():
+    expected = expected_latest_history_date(datetime(2026, 7, 13, tzinfo=UTC))
+
+    assert expected == "2026-07-12"
+
+
+def test_production_history_freshness_accepts_latest_completed_day():
+    history = pd.DataFrame({"date": ["2026-07-11", "2026-07-12"]})
+
+    assert_production_history_fresh(history, datetime(2026, 7, 13, tzinfo=UTC))
+
+
+def test_production_history_freshness_rejects_stale_cache():
+    history = pd.DataFrame({"date": ["2026-07-10", "2026-07-11"]})
+
+    with pytest.raises(ApiError, match="stale"):
+        assert_production_history_fresh(history, datetime(2026, 7, 13, tzinfo=UTC))
 
 
 def test_first_missing_daily_date_detects_history_gap():
