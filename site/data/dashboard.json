@@ -1,97 +1,97 @@
 {
   "analog_summary": {
-    "best": 0.409,
+    "best": 0.3245,
     "count": 40,
     "horizon_days": 7,
-    "mean_return": 0.0214,
-    "median_return": 0.0122,
-    "median_similarity": 78.54,
+    "mean_return": 0.0075,
+    "median_return": 0.0116,
+    "median_similarity": 78.36,
     "p10": -0.1471,
     "p25": -0.0773,
-    "p75": 0.0944,
-    "p90": 0.1398,
+    "p75": 0.0623,
+    "p90": 0.1998,
     "positive_count": 21,
     "positive_frequency": 0.525,
     "wilson_high": 0.6706,
     "wilson_low": 0.375,
-    "worst": -0.1699
+    "worst": -0.2656
   },
   "current": {
-    "btc_price": 62264.94,
+    "btc_price": 64988.64,
     "ecosystem_breadth": {
       "available": true,
       "category_id": "solana-ecosystem",
       "historically_validated": false,
-      "last_success_at_utc": "2026-07-14T08:28:52Z",
-      "median_return_7d": -0.0001,
+      "last_success_at_utc": "2026-07-15T08:36:20Z",
+      "median_return_7d": 0.0007,
       "notice": "Experimentele indicator — nog onvoldoende historische waarnemingen voor een betrouwbare backtest.",
-      "positive_24h_share": 0.36,
-      "positive_7d_share": 0.48,
-      "return_7d_spread": 0.0359,
+      "positive_24h_share": 0.8,
+      "positive_7d_share": 0.68,
+      "return_7d_spread": 0.0338,
       "token_count": 25,
-      "top3_market_cap_share": 0.4283
+      "top3_market_cap_share": 0.4267
     },
-    "ecosystem_breadth_score": 47.1,
-    "live_btc_price": 62576.0,
-    "live_sol_price": 75.14,
+    "ecosystem_breadth_score": 64.04,
+    "live_btc_price": 64603.0,
+    "live_sol_price": 77.33,
     "network_context": {
       "historically_validated": false,
       "recent_performance_samples": [
         {
-          "numNonVoteTransactions": 97332,
-          "numSlots": 146,
-          "numTransactions": 199629,
+          "numNonVoteTransactions": 81275,
+          "numSlots": 143,
+          "numTransactions": 181348,
           "samplePeriodSecs": 60,
-          "slot": 432818621
+          "slot": 433029441
         },
         {
-          "numNonVoteTransactions": 100441,
-          "numSlots": 149,
-          "numTransactions": 204153,
-          "samplePeriodSecs": 60,
-          "slot": 432818475
-        },
-        {
-          "numNonVoteTransactions": 97192,
+          "numNonVoteTransactions": 85681,
           "numSlots": 147,
-          "numTransactions": 200838,
+          "numTransactions": 188527,
           "samplePeriodSecs": 60,
-          "slot": 432818326
+          "slot": 433029298
+        },
+        {
+          "numNonVoteTransactions": 73162,
+          "numSlots": 150,
+          "numTransactions": 178141,
+          "samplePeriodSecs": 60,
+          "slot": 433029151
         }
       ],
-      "transaction_count": 529141504334
+      "transaction_count": 529437743902
     },
     "network_context_metrics": {
       "historically_validated": false,
-      "non_vote_tps": 1638.7,
+      "non_vote_tps": 1334.0,
       "sample_count": 3,
-      "total_tps": 3359.0,
-      "transaction_count": 529141504334
+      "total_tps": 3044.5,
+      "transaction_count": 529437743902
     },
-    "network_context_score": 66.31,
+    "network_context_score": 57.93,
     "risk": {
-      "drawdown_90d": -0.2306,
-      "price_source_difference_pct": 0.31,
-      "volatility_30d": 0.5306,
+      "drawdown_90d": -0.2008,
+      "price_source_difference_pct": 0.62,
+      "volatility_30d": 0.5342,
       "warnings": [
         "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
       ]
     },
-    "sol_price": 74.91
+    "sol_price": 77.81
   },
   "data_audit": {
     "freshness": [
       {
         "label": "Update-run",
-        "value": "2026-07-14T08:28:52Z"
+        "value": "2026-07-15T08:36:20Z"
       },
       {
         "label": "Data t/m",
-        "value": "2026-07-13T23:59:59Z"
+        "value": "2026-07-14T23:59:59Z"
       },
       {
         "label": "Historie",
-        "value": "2022-09-13 t/m 2026-07-13"
+        "value": "2022-09-14 t/m 2026-07-14"
       },
       {
         "label": "Records",
@@ -126,12 +126,12 @@
         "price_breakdown": [
           {
             "asset": "BTC",
-            "ccxt_last_close": 30163.3,
-            "ccxt_last_date": "2023-07-09",
-            "date": "2026-07-14",
+            "ccxt_last_close": 30414.2,
+            "ccxt_last_date": "2023-07-10",
+            "date": "2026-07-15",
             "exchange_prices": [
               {
-                "close": 62586.35,
+                "close": 64608.83,
                 "deviation_pct": 0.0,
                 "exchange": "coinbase",
                 "status": "succesvol gebruikt als herstelbron",
@@ -139,16 +139,16 @@
                 "used": true
               },
               {
-                "close": 62253.5,
-                "deviation_pct": 0.067,
+                "close": 64977.2,
+                "deviation_pct": 0.041,
                 "exchange": "kraken",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "BTC/USD",
                 "used": false
               },
               {
-                "close": 62336.8,
-                "deviation_pct": 0.067,
+                "close": 65030.3,
+                "deviation_pct": 0.041,
                 "exchange": "kucoin",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "BTC/USDT",
@@ -163,22 +163,22 @@
                 "used": false
               }
             ],
-            "gap_fill_start": "2023-07-10",
+            "gap_fill_start": "2023-07-11",
             "max_deviation_pct": null,
             "method": "Coinbase herstelbron",
             "outlier_count": 0,
             "provider": "CCXT consensus + Coinbase gap fill",
             "source_count": 4,
-            "used_close": 62586.35
+            "used_close": 64608.83
           },
           {
             "asset": "SOL",
-            "ccxt_last_close": 21.33,
-            "ccxt_last_date": "2023-07-09",
-            "date": "2026-07-14",
+            "ccxt_last_close": 21.3,
+            "ccxt_last_date": "2023-07-10",
+            "date": "2026-07-15",
             "exchange_prices": [
               {
-                "close": 75.23,
+                "close": 77.32,
                 "deviation_pct": 0.0,
                 "exchange": "coinbase",
                 "status": "succesvol gebruikt als herstelbron",
@@ -186,16 +186,16 @@
                 "used": true
               },
               {
-                "close": 74.9,
-                "deviation_pct": 0.067,
+                "close": 77.82,
+                "deviation_pct": 0.026,
                 "exchange": "kraken",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "SOL/USD",
                 "used": false
               },
               {
-                "close": 75.0,
-                "deviation_pct": 0.067,
+                "close": 77.86,
+                "deviation_pct": 0.026,
                 "exchange": "kucoin",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "SOL/USDT",
@@ -210,13 +210,13 @@
                 "used": false
               }
             ],
-            "gap_fill_start": "2023-07-10",
+            "gap_fill_start": "2023-07-11",
             "max_deviation_pct": null,
             "method": "Coinbase herstelbron",
             "outlier_count": 0,
             "provider": "CCXT consensus + Coinbase gap fill",
             "source_count": 4,
-            "used_close": 75.23
+            "used_close": 77.32
           }
         ],
         "role": "Multi-exchange SOL/BTC dagprijs",
@@ -246,7 +246,7 @@
       },
       {
         "coverage": "25 ecosysteemtokens",
-        "last_success_at_utc": "2026-07-14T08:28:52Z",
+        "last_success_at_utc": "2026-07-15T08:36:20Z",
         "name": "CoinGecko",
         "price_breakdown": [],
         "role": "Liveprijs en breedte in ecosysteem",
@@ -256,7 +256,7 @@
       },
       {
         "coverage": "3 performance samples",
-        "last_success_at_utc": "2026-07-14T08:28:52Z",
+        "last_success_at_utc": "2026-07-15T08:36:20Z",
         "name": "Solana RPC",
         "price_breakdown": [],
         "role": "Actuele netwerkcontext",
@@ -265,15 +265,15 @@
         "warning": ""
       }
     ],
-    "summary": "1400 historische records van 2022-09-13 t/m 2026-07-13. Laatste dagdata-cutoff: 2026-07-13T23:59:59Z. Update-run: 2026-07-14T08:28:52Z.",
+    "summary": "1400 historische records van 2022-09-14 t/m 2026-07-14. Laatste dagdata-cutoff: 2026-07-14T23:59:59Z. Update-run: 2026-07-15T08:36:20Z.",
     "title": "Datakwaliteit & bronnen",
     "warnings": [
       "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
     ]
   },
-  "data_cutoff_utc": "2026-07-13T23:59:59Z",
+  "data_cutoff_utc": "2026-07-14T23:59:59Z",
   "demo_notice": null,
-  "generated_at_utc": "2026-07-14T08:28:52Z",
+  "generated_at_utc": "2026-07-15T08:36:20Z",
   "historical_context": {
     "stats": [
       {
@@ -290,10 +290,10 @@
       },
       {
         "label": "Midden 80%",
-        "value": "-14.7% tot 14.0%"
+        "value": "-14.7% tot 20.0%"
       }
     ],
-    "summary": "Historische frequentie: 52.5% positief na 7 dagen. Mediaan 1.2%; midden 80% liep van -14.7% tot 14.0%.",
+    "summary": "Historische frequentie: 52.5% positief na 7 dagen. Mediaan 1.2%; midden 80% liep van -14.7% tot 20.0%.",
     "title": "Historische vergelijkingen"
   },
   "indicator_tabs": {
@@ -302,27 +302,27 @@
         {
           "description": "Groei of krimp van stablecoinvoorraad op Solana.",
           "label": "Stablecoins 30d",
-          "score": 45.42,
-          "value": "-0.0%",
+          "score": 42.02,
+          "value": "-3.0%",
           "weight": "55% binnen kapitaalblok"
         },
         {
           "description": "Groei of krimp van total value locked.",
           "label": "TVL 30d",
-          "score": 52.14,
-          "value": "3.1%",
+          "score": 50.38,
+          "value": "0.7%",
           "weight": "45% binnen kapitaalblok"
         },
         {
           "description": "Score is een relatieve positie op de historische schaal.",
           "label": "Schaalduiding",
-          "score": 48.45,
+          "score": 45.78,
           "value": "Relatief",
           "weight": "Uitleg"
         }
       ],
       "note": "Score is relatief ten opzichte van de eigen historie.",
-      "score": 48.45,
+      "score": 45.78,
       "sources": [
         {
           "coverage": "1400 bruikbare rijen",
@@ -341,12 +341,6 @@
       "title": "Kapitaalstromen",
       "trend": {
         "rows": [
-          {
-            "Kapitaalstromen": 50.76,
-            "Stablecoins 30d": 0.04,
-            "TVL 30d": 0.08,
-            "date": "2026-03-16"
-          },
           {
             "Kapitaalstromen": 49.99,
             "Stablecoins 30d": 0.02,
@@ -390,7 +384,7 @@
             "date": "2026-03-23"
           },
           {
-            "Kapitaalstromen": 47.26,
+            "Kapitaalstromen": 47.27,
             "Stablecoins 30d": -0.0,
             "TVL 30d": 0.04,
             "date": "2026-03-24"
@@ -402,7 +396,7 @@
             "date": "2026-03-25"
           },
           {
-            "Kapitaalstromen": 48.33,
+            "Kapitaalstromen": 48.32,
             "Stablecoins 30d": 0.01,
             "TVL 30d": 0.06,
             "date": "2026-03-26"
@@ -486,13 +480,13 @@
             "date": "2026-04-08"
           },
           {
-            "Kapitaalstromen": 40.91,
+            "Kapitaalstromen": 40.92,
             "Stablecoins 30d": -0.03,
             "TVL 30d": -0.14,
             "date": "2026-04-09"
           },
           {
-            "Kapitaalstromen": 41.46,
+            "Kapitaalstromen": 41.47,
             "Stablecoins 30d": -0.03,
             "TVL 30d": -0.13,
             "date": "2026-04-10"
@@ -504,13 +498,13 @@
             "date": "2026-04-11"
           },
           {
-            "Kapitaalstromen": 41.12,
+            "Kapitaalstromen": 41.13,
             "Stablecoins 30d": -0.02,
             "TVL 30d": -0.16,
             "date": "2026-04-12"
           },
           {
-            "Kapitaalstromen": 40.39,
+            "Kapitaalstromen": 40.4,
             "Stablecoins 30d": -0.02,
             "TVL 30d": -0.19,
             "date": "2026-04-13"
@@ -522,7 +516,7 @@
             "date": "2026-04-14"
           },
           {
-            "Kapitaalstromen": 41.31,
+            "Kapitaalstromen": 41.3,
             "Stablecoins 30d": -0.0,
             "TVL 30d": -0.19,
             "date": "2026-04-15"
@@ -570,37 +564,37 @@
             "date": "2026-04-22"
           },
           {
-            "Kapitaalstromen": 44.98,
+            "Kapitaalstromen": 44.99,
             "Stablecoins 30d": 0.05,
             "TVL 30d": -0.17,
             "date": "2026-04-23"
           },
           {
-            "Kapitaalstromen": 43.42,
+            "Kapitaalstromen": 43.44,
             "Stablecoins 30d": 0.02,
             "TVL 30d": -0.16,
             "date": "2026-04-24"
           },
           {
-            "Kapitaalstromen": 42.94,
+            "Kapitaalstromen": 42.95,
             "Stablecoins 30d": 0.01,
             "TVL 30d": -0.17,
             "date": "2026-04-25"
           },
           {
-            "Kapitaalstromen": 44.11,
+            "Kapitaalstromen": 44.12,
             "Stablecoins 30d": 0.02,
             "TVL 30d": -0.15,
             "date": "2026-04-26"
           },
           {
-            "Kapitaalstromen": 45.29,
+            "Kapitaalstromen": 45.3,
             "Stablecoins 30d": 0.03,
             "TVL 30d": -0.13,
             "date": "2026-04-27"
           },
           {
-            "Kapitaalstromen": 45.86,
+            "Kapitaalstromen": 45.87,
             "Stablecoins 30d": 0.04,
             "TVL 30d": -0.13,
             "date": "2026-04-28"
@@ -612,13 +606,13 @@
             "date": "2026-04-29"
           },
           {
-            "Kapitaalstromen": 44.69,
+            "Kapitaalstromen": 44.7,
             "Stablecoins 30d": 0.02,
             "TVL 30d": -0.12,
             "date": "2026-04-30"
           },
           {
-            "Kapitaalstromen": 44.33,
+            "Kapitaalstromen": 44.34,
             "Stablecoins 30d": 0.02,
             "TVL 30d": -0.14,
             "date": "2026-05-01"
@@ -714,7 +708,7 @@
             "date": "2026-05-16"
           },
           {
-            "Kapitaalstromen": 42.85,
+            "Kapitaalstromen": 42.84,
             "Stablecoins 30d": -0.03,
             "TVL 30d": -0.08,
             "date": "2026-05-17"
@@ -726,13 +720,13 @@
             "date": "2026-05-18"
           },
           {
-            "Kapitaalstromen": 41.74,
+            "Kapitaalstromen": 41.76,
             "Stablecoins 30d": -0.05,
             "TVL 30d": -0.07,
             "date": "2026-05-19"
           },
           {
-            "Kapitaalstromen": 42.44,
+            "Kapitaalstromen": 42.45,
             "Stablecoins 30d": -0.06,
             "TVL 30d": -0.03,
             "date": "2026-05-20"
@@ -774,7 +768,7 @@
             "date": "2026-05-26"
           },
           {
-            "Kapitaalstromen": 44.64,
+            "Kapitaalstromen": 44.63,
             "Stablecoins 30d": -0.03,
             "TVL 30d": -0.03,
             "date": "2026-05-27"
@@ -816,13 +810,13 @@
             "date": "2026-06-02"
           },
           {
-            "Kapitaalstromen": 47.16,
+            "Kapitaalstromen": 47.17,
             "Stablecoins 30d": 0.04,
             "TVL 30d": -0.09,
             "date": "2026-06-03"
           },
           {
-            "Kapitaalstromen": 44.64,
+            "Kapitaalstromen": 44.65,
             "Stablecoins 30d": -0.0,
             "TVL 30d": -0.09,
             "date": "2026-06-04"
@@ -834,25 +828,25 @@
             "date": "2026-06-05"
           },
           {
-            "Kapitaalstromen": 43.89,
+            "Kapitaalstromen": 43.91,
             "Stablecoins 30d": 0.02,
             "TVL 30d": -0.16,
             "date": "2026-06-06"
           },
           {
-            "Kapitaalstromen": 45.55,
+            "Kapitaalstromen": 45.56,
             "Stablecoins 30d": 0.05,
             "TVL 30d": -0.16,
             "date": "2026-06-07"
           },
           {
-            "Kapitaalstromen": 47.0,
+            "Kapitaalstromen": 47.01,
             "Stablecoins 30d": 0.06,
             "TVL 30d": -0.14,
             "date": "2026-06-08"
           },
           {
-            "Kapitaalstromen": 48.68,
+            "Kapitaalstromen": 48.7,
             "Stablecoins 30d": 0.1,
             "TVL 30d": -0.16,
             "date": "2026-06-09"
@@ -888,7 +882,7 @@
             "date": "2026-06-14"
           },
           {
-            "Kapitaalstromen": 43.5,
+            "Kapitaalstromen": 43.49,
             "Stablecoins 30d": -0.01,
             "TVL 30d": -0.12,
             "date": "2026-06-15"
@@ -906,7 +900,7 @@
             "date": "2026-06-17"
           },
           {
-            "Kapitaalstromen": 44.14,
+            "Kapitaalstromen": 44.13,
             "Stablecoins 30d": -0.01,
             "TVL 30d": -0.11,
             "date": "2026-06-18"
@@ -966,7 +960,7 @@
             "date": "2026-06-27"
           },
           {
-            "Kapitaalstromen": 47.04,
+            "Kapitaalstromen": 47.05,
             "Stablecoins 30d": 0.04,
             "TVL 30d": -0.09,
             "date": "2026-06-28"
@@ -1044,13 +1038,13 @@
             "date": "2026-07-10"
           },
           {
-            "Kapitaalstromen": 49.97,
+            "Kapitaalstromen": 49.98,
             "Stablecoins 30d": -0.02,
             "TVL 30d": 0.11,
             "date": "2026-07-11"
           },
           {
-            "Kapitaalstromen": 48.1,
+            "Kapitaalstromen": 48.11,
             "Stablecoins 30d": -0.02,
             "TVL 30d": 0.06,
             "date": "2026-07-12"
@@ -1060,6 +1054,12 @@
             "Stablecoins 30d": -0.0,
             "TVL 30d": 0.03,
             "date": "2026-07-13"
+          },
+          {
+            "Kapitaalstromen": 45.78,
+            "Stablecoins 30d": -0.03,
+            "TVL 30d": 0.01,
+            "date": "2026-07-14"
           }
         ],
         "series": [
@@ -1087,41 +1087,41 @@
         {
           "description": "Vergelijkt recente DEX-activiteit met het 30-daags gemiddelde.",
           "label": "DEX-volume 7d/30d",
-          "score": 42.43,
-          "value": "5.89x",
+          "score": 39.32,
+          "value": "5.53x",
           "weight": "60% binnen gebruik"
         },
         {
           "description": "Meet of betaalde fees boven of onder normaal liggen.",
           "label": "Fees 7d/30d",
-          "score": 45.91,
-          "value": "6.36x",
+          "score": 45.13,
+          "value": "6.27x",
           "weight": "40% binnen gebruik"
         },
         {
           "description": "Actuele steekproef uit Solana RPC-performance samples.",
           "label": "RPC-context",
-          "score": 66.31,
-          "value": "66/100; 1.638,7 TPS",
+          "score": 57.93,
+          "value": "58/100; 1.334,0 TPS",
           "weight": "15% correctie op gebruik"
         },
         {
           "description": "Meet of meerdere Solana-ecosysteemtokens tegelijk meedoen.",
           "label": "Breedte in ecosysteem",
-          "score": 47.1,
-          "value": "48.0% positief 7d; 25 tokens",
+          "score": 64.04,
+          "value": "68.0% positief 7d; 25 tokens",
           "weight": "10% van eindscore"
         },
         {
           "description": "Alleen DeFi/fee-data die historisch is meegetest.",
           "label": "Gevalideerde basis",
-          "score": 43.82,
-          "value": "44/100",
+          "score": 41.64,
+          "value": "42/100",
           "weight": "85% van gebruik"
         }
       ],
       "note": "Gebruik telt volledig mee binnen de historische toets; RPC-context en breedte in ecosysteem zijn actueel en transparant beperkt meegewogen.",
-      "score": 47.16,
+      "score": 49.78,
       "sources": [
         {
           "coverage": "1400 bruikbare rijen",
@@ -1135,7 +1135,7 @@
         },
         {
           "coverage": "3 performance samples",
-          "last_success_at_utc": "2026-07-14T08:28:52Z",
+          "last_success_at_utc": "2026-07-15T08:36:20Z",
           "name": "Solana RPC",
           "price_breakdown": [],
           "role": "Actuele netwerkcontext",
@@ -1145,7 +1145,7 @@
         },
         {
           "coverage": "25 ecosysteemtokens",
-          "last_success_at_utc": "2026-07-14T08:28:52Z",
+          "last_success_at_utc": "2026-07-15T08:36:20Z",
           "name": "CoinGecko",
           "price_breakdown": [],
           "role": "Liveprijs en breedte in ecosysteem",
@@ -1156,127 +1156,121 @@
       ],
       "status": "Grotendeels gevalideerd; breedte in ecosysteem is experimenteel",
       "subtitle": "Gebruik van DeFi-activiteit, fees, actuele RPC-context en breedte.",
-      "summary": "Gebruik is rond normaal tot licht positief. Breedte in ecosysteem: 48.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -0.0%.",
+      "summary": "Gebruik geeft nog weinig bevestiging. Breedte in ecosysteem: 68.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement 0.1%.",
       "title": "Gebruik & ecosysteem",
       "trend": {
         "rows": [
           {
-            "DEX 7d/30d": 7.19,
-            "Fees 7d/30d": 6.37,
-            "Gebruik": 49.9,
-            "date": "2026-03-16"
-          },
-          {
             "DEX 7d/30d": 7.23,
-            "Fees 7d/30d": 6.59,
-            "Gebruik": 50.81,
+            "Fees 7d/30d": 6.6,
+            "Gebruik": 50.83,
             "date": "2026-03-17"
           },
           {
             "DEX 7d/30d": 7.58,
-            "Fees 7d/30d": 6.33,
-            "Gebruik": 51.63,
+            "Fees 7d/30d": 6.34,
+            "Gebruik": 51.65,
             "date": "2026-03-18"
           },
           {
             "DEX 7d/30d": 7.63,
-            "Fees 7d/30d": 6.54,
-            "Gebruik": 52.61,
+            "Fees 7d/30d": 6.55,
+            "Gebruik": 52.62,
             "date": "2026-03-19"
           },
           {
             "DEX 7d/30d": 7.46,
-            "Fees 7d/30d": 6.16,
-            "Gebruik": 50.53,
+            "Fees 7d/30d": 6.17,
+            "Gebruik": 50.55,
             "date": "2026-03-20"
           },
           {
             "DEX 7d/30d": 7.48,
-            "Fees 7d/30d": 6.46,
-            "Gebruik": 51.67,
+            "Fees 7d/30d": 6.47,
+            "Gebruik": 51.69,
             "date": "2026-03-21"
           },
           {
             "DEX 7d/30d": 7.49,
             "Fees 7d/30d": 6.17,
-            "Gebruik": 50.75,
+            "Gebruik": 50.77,
             "date": "2026-03-22"
           },
           {
             "DEX 7d/30d": 7.47,
-            "Fees 7d/30d": 6.28,
-            "Gebruik": 51.06,
+            "Fees 7d/30d": 6.29,
+            "Gebruik": 51.08,
             "date": "2026-03-23"
           },
           {
             "DEX 7d/30d": 7.3,
             "Fees 7d/30d": 5.95,
-            "Gebruik": 49.1,
+            "Gebruik": 49.13,
             "date": "2026-03-24"
           },
           {
             "DEX 7d/30d": 6.72,
-            "Fees 7d/30d": 6.24,
-            "Gebruik": 47.28,
+            "Fees 7d/30d": 6.25,
+            "Gebruik": 47.29,
             "date": "2026-03-25"
           },
           {
             "DEX 7d/30d": 6.64,
-            "Fees 7d/30d": 6.0,
+            "Fees 7d/30d": 6.01,
             "Gebruik": 46.13,
             "date": "2026-03-26"
           },
           {
             "DEX 7d/30d": 6.62,
             "Fees 7d/30d": 6.36,
-            "Gebruik": 47.23,
+            "Gebruik": 47.24,
             "date": "2026-03-27"
           },
           {
             "DEX 7d/30d": 6.56,
             "Fees 7d/30d": 6.11,
-            "Gebruik": 46.08,
+            "Gebruik": 46.09,
             "date": "2026-03-28"
           },
           {
             "DEX 7d/30d": 6.38,
             "Fees 7d/30d": 6.39,
-            "Gebruik": 46.16,
+            "Gebruik": 46.17,
             "date": "2026-03-29"
           },
           {
             "DEX 7d/30d": 6.0,
             "Fees 7d/30d": 6.46,
-            "Gebruik": 44.48,
+            "Gebruik": 44.49,
             "date": "2026-03-30"
           },
           {
             "DEX 7d/30d": 5.93,
-            "Fees 7d/30d": 6.55,
-            "Gebruik": 44.45,
+            "Fees 7d/30d": 6.56,
+            "Gebruik": 44.46,
             "date": "2026-03-31"
           },
           {
             "DEX 7d/30d": 6.28,
             "Fees 7d/30d": 6.78,
-            "Gebruik": 46.94,
+            "Gebruik": 46.96,
             "date": "2026-04-01"
           },
           {
             "DEX 7d/30d": 6.17,
             "Fees 7d/30d": 6.93,
-            "Gebruik": 46.88,
+            "Gebruik": 46.9,
             "date": "2026-04-02"
           },
           {
             "DEX 7d/30d": 6.03,
-            "Fees 7d/30d": 6.9,
+            "Fees 7d/30d": 6.91,
             "Gebruik": 46.07,
             "date": "2026-04-03"
           },
           {
             "DEX 7d/30d": 6.07,
-            "Fees 7d/30d": 7.05,
+            "Fees 7d/30d": 7.06,
             "Gebruik": 46.76,
             "date": "2026-04-04"
           },
@@ -1295,7 +1289,7 @@
           {
             "DEX 7d/30d": 5.82,
             "Fees 7d/30d": 6.7,
-            "Gebruik": 44.28,
+            "Gebruik": 44.29,
             "date": "2026-04-07"
           },
           {
@@ -1313,49 +1307,49 @@
           {
             "DEX 7d/30d": 5.55,
             "Fees 7d/30d": 6.07,
-            "Gebruik": 40.8,
+            "Gebruik": 40.81,
             "date": "2026-04-10"
           },
           {
             "DEX 7d/30d": 5.59,
             "Fees 7d/30d": 6.29,
-            "Gebruik": 41.74,
+            "Gebruik": 41.75,
             "date": "2026-04-11"
           },
           {
             "DEX 7d/30d": 5.72,
             "Fees 7d/30d": 6.17,
-            "Gebruik": 41.96,
+            "Gebruik": 41.98,
             "date": "2026-04-12"
           },
           {
             "DEX 7d/30d": 5.53,
             "Fees 7d/30d": 6.41,
-            "Gebruik": 41.83,
+            "Gebruik": 41.85,
             "date": "2026-04-13"
           },
           {
             "DEX 7d/30d": 5.64,
-            "Fees 7d/30d": 6.23,
-            "Gebruik": 41.78,
+            "Fees 7d/30d": 6.24,
+            "Gebruik": 41.81,
             "date": "2026-04-14"
           },
           {
             "DEX 7d/30d": 5.41,
             "Fees 7d/30d": 6.59,
-            "Gebruik": 41.84,
+            "Gebruik": 41.85,
             "date": "2026-04-15"
           },
           {
             "DEX 7d/30d": 5.64,
-            "Fees 7d/30d": 6.51,
-            "Gebruik": 42.75,
+            "Fees 7d/30d": 6.52,
+            "Gebruik": 42.77,
             "date": "2026-04-16"
           },
           {
             "DEX 7d/30d": 6.04,
             "Fees 7d/30d": 7.0,
-            "Gebruik": 46.47,
+            "Gebruik": 46.48,
             "date": "2026-04-17"
           },
           {
@@ -1367,19 +1361,19 @@
           {
             "DEX 7d/30d": 6.59,
             "Fees 7d/30d": 7.27,
-            "Gebruik": 50.16,
+            "Gebruik": 50.15,
             "date": "2026-04-19"
           },
           {
             "DEX 7d/30d": 6.56,
             "Fees 7d/30d": 7.05,
-            "Gebruik": 49.24,
+            "Gebruik": 49.23,
             "date": "2026-04-20"
           },
           {
             "DEX 7d/30d": 6.29,
             "Fees 7d/30d": 7.25,
-            "Gebruik": 48.62,
+            "Gebruik": 48.61,
             "date": "2026-04-21"
           },
           {
@@ -1397,7 +1391,7 @@
           {
             "DEX 7d/30d": 6.16,
             "Fees 7d/30d": 6.85,
-            "Gebruik": 46.53,
+            "Gebruik": 46.54,
             "date": "2026-04-24"
           },
           {
@@ -1420,49 +1414,49 @@
           },
           {
             "DEX 7d/30d": 6.58,
-            "Fees 7d/30d": 7.02,
-            "Gebruik": 49.32,
+            "Fees 7d/30d": 7.01,
+            "Gebruik": 49.3,
             "date": "2026-04-28"
           },
           {
             "DEX 7d/30d": 6.41,
-            "Fees 7d/30d": 7.4,
-            "Gebruik": 49.78,
+            "Fees 7d/30d": 7.39,
+            "Gebruik": 49.77,
             "date": "2026-04-29"
           },
           {
             "DEX 7d/30d": 6.45,
-            "Fees 7d/30d": 7.25,
-            "Gebruik": 49.43,
+            "Fees 7d/30d": 7.24,
+            "Gebruik": 49.42,
             "date": "2026-04-30"
           },
           {
             "DEX 7d/30d": 6.6,
             "Fees 7d/30d": 7.75,
-            "Gebruik": 51.97,
+            "Gebruik": 51.96,
             "date": "2026-05-01"
           },
           {
             "DEX 7d/30d": 6.62,
             "Fees 7d/30d": 7.52,
-            "Gebruik": 51.26,
+            "Gebruik": 51.25,
             "date": "2026-05-02"
           },
           {
             "DEX 7d/30d": 6.46,
-            "Fees 7d/30d": 7.87,
-            "Gebruik": 51.73,
+            "Fees 7d/30d": 7.86,
+            "Gebruik": 51.72,
             "date": "2026-05-03"
           },
           {
             "DEX 7d/30d": 6.39,
             "Fees 7d/30d": 7.52,
-            "Gebruik": 50.11,
+            "Gebruik": 50.1,
             "date": "2026-05-04"
           },
           {
             "DEX 7d/30d": 6.04,
-            "Fees 7d/30d": 7.82,
+            "Fees 7d/30d": 7.81,
             "Gebruik": 49.44,
             "date": "2026-05-05"
           },
@@ -1481,115 +1475,115 @@
           {
             "DEX 7d/30d": 7.11,
             "Fees 7d/30d": 7.72,
-            "Gebruik": 54.47,
+            "Gebruik": 54.46,
             "date": "2026-05-08"
           },
           {
             "DEX 7d/30d": 7.46,
-            "Fees 7d/30d": 8.09,
-            "Gebruik": 57.5,
+            "Fees 7d/30d": 8.08,
+            "Gebruik": 57.48,
             "date": "2026-05-09"
           },
           {
             "DEX 7d/30d": 8.06,
-            "Fees 7d/30d": 7.94,
-            "Gebruik": 60.0,
+            "Fees 7d/30d": 7.93,
+            "Gebruik": 59.98,
             "date": "2026-05-10"
           },
           {
             "DEX 7d/30d": 8.12,
-            "Fees 7d/30d": 8.35,
-            "Gebruik": 61.63,
+            "Fees 7d/30d": 8.34,
+            "Gebruik": 61.61,
             "date": "2026-05-11"
           },
           {
             "DEX 7d/30d": 8.3,
-            "Fees 7d/30d": 7.98,
-            "Gebruik": 61.13,
+            "Fees 7d/30d": 7.97,
+            "Gebruik": 61.09,
             "date": "2026-05-12"
           },
           {
             "DEX 7d/30d": 8.29,
-            "Fees 7d/30d": 8.18,
-            "Gebruik": 61.74,
+            "Fees 7d/30d": 8.17,
+            "Gebruik": 61.69,
             "date": "2026-05-13"
           },
           {
             "DEX 7d/30d": 8.35,
-            "Fees 7d/30d": 7.86,
-            "Gebruik": 60.84,
+            "Fees 7d/30d": 7.85,
+            "Gebruik": 60.8,
             "date": "2026-05-14"
           },
           {
             "DEX 7d/30d": 8.12,
-            "Fees 7d/30d": 7.89,
-            "Gebruik": 59.78,
+            "Fees 7d/30d": 7.88,
+            "Gebruik": 59.73,
             "date": "2026-05-15"
           },
           {
             "DEX 7d/30d": 8.12,
-            "Fees 7d/30d": 7.58,
-            "Gebruik": 58.63,
+            "Fees 7d/30d": 7.57,
+            "Gebruik": 58.58,
             "date": "2026-05-16"
           },
           {
             "DEX 7d/30d": 7.74,
-            "Fees 7d/30d": 7.67,
-            "Gebruik": 57.07,
+            "Fees 7d/30d": 7.66,
+            "Gebruik": 57.03,
             "date": "2026-05-17"
           },
           {
             "DEX 7d/30d": 7.28,
-            "Fees 7d/30d": 7.09,
-            "Gebruik": 52.76,
+            "Fees 7d/30d": 7.08,
+            "Gebruik": 52.73,
             "date": "2026-05-18"
           },
           {
             "DEX 7d/30d": 6.93,
-            "Fees 7d/30d": 7.01,
-            "Gebruik": 50.73,
+            "Fees 7d/30d": 7.0,
+            "Gebruik": 50.71,
             "date": "2026-05-19"
           },
           {
             "DEX 7d/30d": 6.72,
             "Fees 7d/30d": 6.56,
-            "Gebruik": 48.13,
+            "Gebruik": 48.11,
             "date": "2026-05-20"
           },
           {
             "DEX 7d/30d": 6.49,
             "Fees 7d/30d": 6.66,
-            "Gebruik": 47.4,
+            "Gebruik": 47.39,
             "date": "2026-05-21"
           },
           {
             "DEX 7d/30d": 6.24,
             "Fees 7d/30d": 6.36,
-            "Gebruik": 45.13,
+            "Gebruik": 45.11,
             "date": "2026-05-22"
           },
           {
             "DEX 7d/30d": 6.17,
-            "Fees 7d/30d": 6.55,
-            "Gebruik": 45.49,
+            "Fees 7d/30d": 6.54,
+            "Gebruik": 45.48,
             "date": "2026-05-23"
           },
           {
             "DEX 7d/30d": 6.3,
             "Fees 7d/30d": 6.31,
-            "Gebruik": 45.32,
+            "Gebruik": 45.3,
             "date": "2026-05-24"
           },
           {
             "DEX 7d/30d": 6.16,
-            "Fees 7d/30d": 6.47,
-            "Gebruik": 45.23,
+            "Fees 7d/30d": 6.46,
+            "Gebruik": 45.21,
             "date": "2026-05-25"
           },
           {
             "DEX 7d/30d": 6.12,
             "Fees 7d/30d": 6.17,
-            "Gebruik": 44.04,
+            "Gebruik": 44.03,
             "date": "2026-05-26"
           },
           {
@@ -1601,19 +1595,19 @@
           {
             "DEX 7d/30d": 6.17,
             "Fees 7d/30d": 6.12,
-            "Gebruik": 44.24,
+            "Gebruik": 44.23,
             "date": "2026-05-28"
           },
           {
             "DEX 7d/30d": 6.26,
             "Fees 7d/30d": 6.33,
-            "Gebruik": 45.52,
+            "Gebruik": 45.51,
             "date": "2026-05-29"
           },
           {
             "DEX 7d/30d": 6.16,
             "Fees 7d/30d": 6.05,
-            "Gebruik": 44.16,
+            "Gebruik": 44.15,
             "date": "2026-05-30"
           },
           {
@@ -1625,31 +1619,31 @@
           {
             "DEX 7d/30d": 6.4,
             "Fees 7d/30d": 6.25,
-            "Gebruik": 46.13,
+            "Gebruik": 46.12,
             "date": "2026-06-01"
           },
           {
             "DEX 7d/30d": 6.59,
             "Fees 7d/30d": 6.59,
-            "Gebruik": 48.31,
+            "Gebruik": 48.3,
             "date": "2026-06-02"
           },
           {
             "DEX 7d/30d": 7.15,
             "Fees 7d/30d": 6.36,
-            "Gebruik": 50.36,
+            "Gebruik": 50.35,
             "date": "2026-06-03"
           },
           {
             "DEX 7d/30d": 7.95,
             "Fees 7d/30d": 6.67,
-            "Gebruik": 55.4,
+            "Gebruik": 55.39,
             "date": "2026-06-04"
           },
           {
             "DEX 7d/30d": 8.62,
             "Fees 7d/30d": 6.58,
-            "Gebruik": 58.41,
+            "Gebruik": 58.4,
             "date": "2026-06-05"
           },
           {
@@ -1685,13 +1679,13 @@
           {
             "DEX 7d/30d": 7.71,
             "Fees 7d/30d": 6.41,
-            "Gebruik": 53.35,
+            "Gebruik": 53.34,
             "date": "2026-06-11"
           },
           {
             "DEX 7d/30d": 6.87,
-            "Fees 7d/30d": 6.65,
-            "Gebruik": 50.05,
+            "Fees 7d/30d": 6.64,
+            "Gebruik": 50.04,
             "date": "2026-06-12"
           },
           {
@@ -1703,85 +1697,85 @@
           {
             "DEX 7d/30d": 6.62,
             "Fees 7d/30d": 7.01,
-            "Gebruik": 50.19,
+            "Gebruik": 50.18,
             "date": "2026-06-14"
           },
           {
             "DEX 7d/30d": 6.74,
             "Fees 7d/30d": 7.03,
-            "Gebruik": 50.86,
+            "Gebruik": 50.85,
             "date": "2026-06-15"
           },
           {
             "DEX 7d/30d": 6.69,
             "Fees 7d/30d": 7.4,
-            "Gebruik": 52.03,
+            "Gebruik": 52.01,
             "date": "2026-06-16"
           },
           {
             "DEX 7d/30d": 6.72,
-            "Fees 7d/30d": 7.18,
-            "Gebruik": 51.35,
+            "Fees 7d/30d": 7.17,
+            "Gebruik": 51.34,
             "date": "2026-06-17"
           },
           {
             "DEX 7d/30d": 6.64,
             "Fees 7d/30d": 7.34,
-            "Gebruik": 51.55,
+            "Gebruik": 51.54,
             "date": "2026-06-18"
           },
           {
             "DEX 7d/30d": 6.53,
             "Fees 7d/30d": 7.08,
-            "Gebruik": 50.07,
+            "Gebruik": 50.06,
             "date": "2026-06-19"
           },
           {
             "DEX 7d/30d": 6.79,
-            "Fees 7d/30d": 7.42,
-            "Gebruik": 52.62,
+            "Fees 7d/30d": 7.41,
+            "Gebruik": 52.61,
             "date": "2026-06-20"
           },
           {
             "DEX 7d/30d": 6.93,
             "Fees 7d/30d": 7.22,
-            "Gebruik": 52.64,
+            "Gebruik": 52.63,
             "date": "2026-06-21"
           },
           {
             "DEX 7d/30d": 6.89,
             "Fees 7d/30d": 7.3,
-            "Gebruik": 52.72,
+            "Gebruik": 52.71,
             "date": "2026-06-22"
           },
           {
             "DEX 7d/30d": 6.99,
             "Fees 7d/30d": 6.92,
-            "Gebruik": 51.82,
+            "Gebruik": 51.81,
             "date": "2026-06-23"
           },
           {
             "DEX 7d/30d": 7.31,
-            "Fees 7d/30d": 7.05,
-            "Gebruik": 53.88,
+            "Fees 7d/30d": 7.04,
+            "Gebruik": 53.87,
             "date": "2026-06-24"
           },
           {
             "DEX 7d/30d": 7.53,
             "Fees 7d/30d": 6.8,
-            "Gebruik": 54.09,
+            "Gebruik": 54.08,
             "date": "2026-06-25"
           },
           {
             "DEX 7d/30d": 7.81,
             "Fees 7d/30d": 7.08,
-            "Gebruik": 56.51,
+            "Gebruik": 56.5,
             "date": "2026-06-26"
           },
           {
             "DEX 7d/30d": 7.55,
-            "Fees 7d/30d": 6.83,
-            "Gebruik": 54.24,
+            "Fees 7d/30d": 6.82,
+            "Gebruik": 54.23,
             "date": "2026-06-27"
           },
           {
@@ -1793,7 +1787,7 @@
           {
             "DEX 7d/30d": 7.66,
             "Fees 7d/30d": 7.07,
-            "Gebruik": 55.6,
+            "Gebruik": 55.59,
             "date": "2026-06-29"
           },
           {
@@ -1805,24 +1799,24 @@
           {
             "DEX 7d/30d": 7.1,
             "Fees 7d/30d": 7.48,
-            "Gebruik": 54.29,
+            "Gebruik": 54.28,
             "date": "2026-07-01"
           },
           {
             "DEX 7d/30d": 6.98,
             "Fees 7d/30d": 7.87,
-            "Gebruik": 55.11,
+            "Gebruik": 55.1,
             "date": "2026-07-02"
           },
           {
             "DEX 7d/30d": 6.59,
             "Fees 7d/30d": 7.78,
-            "Gebruik": 52.81,
+            "Gebruik": 52.8,
             "date": "2026-07-03"
           },
           {
             "DEX 7d/30d": 7.23,
-            "Fees 7d/30d": 8.33,
+            "Fees 7d/30d": 8.32,
             "Gebruik": 58.03,
             "date": "2026-07-04"
           },
@@ -1835,13 +1829,13 @@
           {
             "DEX 7d/30d": 7.19,
             "Fees 7d/30d": 8.1,
-            "Gebruik": 56.94,
+            "Gebruik": 56.95,
             "date": "2026-07-06"
           },
           {
             "DEX 7d/30d": 7.19,
             "Fees 7d/30d": 7.71,
-            "Gebruik": 55.43,
+            "Gebruik": 55.44,
             "date": "2026-07-07"
           },
           {
@@ -1875,10 +1869,16 @@
             "date": "2026-07-12"
           },
           {
-            "DEX 7d/30d": 5.89,
-            "Fees 7d/30d": 6.36,
-            "Gebruik": 43.82,
+            "DEX 7d/30d": 6.01,
+            "Fees 7d/30d": 6.41,
+            "Gebruik": 44.63,
             "date": "2026-07-13"
+          },
+          {
+            "DEX 7d/30d": 5.53,
+            "Fees 7d/30d": 6.27,
+            "Gebruik": 41.64,
+            "date": "2026-07-14"
           }
         ],
         "series": [
@@ -1906,34 +1906,34 @@
         {
           "description": "Kortetermijnmomentum van SOL zelf.",
           "label": "SOL 7 dagen",
-          "score": 39.65,
-          "value": "-8.5%",
+          "score": 46.39,
+          "value": "-3.4%",
           "weight": "20% binnen prijsblok"
         },
         {
           "description": "Middellange koersbeweging van SOL.",
           "label": "SOL 30 dagen",
-          "score": 55.93,
-          "value": "8.7%",
+          "score": 56.17,
+          "value": "9.2%",
           "weight": "15% binnen prijsblok"
         },
         {
           "description": "Meet of SOL beter of slechter beweegt dan BTC.",
           "label": "Relatief vs BTC 7d",
-          "score": 39.89,
-          "value": "-5.8%",
+          "score": 39.53,
+          "value": "-6.0%",
           "weight": "30% binnen prijsblok"
         },
         {
           "description": "Laat zien of de koers boven of onder de eigen trend ligt.",
           "label": "Afstand tot 50d trend",
-          "score": 52.35,
-          "value": "1.0%",
+          "score": 55.49,
+          "value": "5.1%",
           "weight": "20% binnen prijsblok"
         }
       ],
       "note": "Score is relatief ten opzichte van de eigen historie.",
-      "score": 48.71,
+      "score": 50.31,
       "sources": [
         {
           "coverage": "2040 consensusrijen; 0 genegeerde exchange-candles",
@@ -1942,12 +1942,12 @@
           "price_breakdown": [
             {
               "asset": "BTC",
-              "ccxt_last_close": 30163.3,
-              "ccxt_last_date": "2023-07-09",
-              "date": "2026-07-14",
+              "ccxt_last_close": 30414.2,
+              "ccxt_last_date": "2023-07-10",
+              "date": "2026-07-15",
               "exchange_prices": [
                 {
-                  "close": 62586.35,
+                  "close": 64608.83,
                   "deviation_pct": 0.0,
                   "exchange": "coinbase",
                   "status": "succesvol gebruikt als herstelbron",
@@ -1955,16 +1955,16 @@
                   "used": true
                 },
                 {
-                  "close": 62253.5,
-                  "deviation_pct": 0.067,
+                  "close": 64977.2,
+                  "deviation_pct": 0.041,
                   "exchange": "kraken",
                   "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                   "symbol": "BTC/USD",
                   "used": false
                 },
                 {
-                  "close": 62336.8,
-                  "deviation_pct": 0.067,
+                  "close": 65030.3,
+                  "deviation_pct": 0.041,
                   "exchange": "kucoin",
                   "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                   "symbol": "BTC/USDT",
@@ -1979,22 +1979,22 @@
                   "used": false
                 }
               ],
-              "gap_fill_start": "2023-07-10",
+              "gap_fill_start": "2023-07-11",
               "max_deviation_pct": null,
               "method": "Coinbase herstelbron",
               "outlier_count": 0,
               "provider": "CCXT consensus + Coinbase gap fill",
               "source_count": 4,
-              "used_close": 62586.35
+              "used_close": 64608.83
             },
             {
               "asset": "SOL",
-              "ccxt_last_close": 21.33,
-              "ccxt_last_date": "2023-07-09",
-              "date": "2026-07-14",
+              "ccxt_last_close": 21.3,
+              "ccxt_last_date": "2023-07-10",
+              "date": "2026-07-15",
               "exchange_prices": [
                 {
-                  "close": 75.23,
+                  "close": 77.32,
                   "deviation_pct": 0.0,
                   "exchange": "coinbase",
                   "status": "succesvol gebruikt als herstelbron",
@@ -2002,16 +2002,16 @@
                   "used": true
                 },
                 {
-                  "close": 74.9,
-                  "deviation_pct": 0.067,
+                  "close": 77.82,
+                  "deviation_pct": 0.026,
                   "exchange": "kraken",
                   "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                   "symbol": "SOL/USD",
                   "used": false
                 },
                 {
-                  "close": 75.0,
-                  "deviation_pct": 0.067,
+                  "close": 77.86,
+                  "deviation_pct": 0.026,
                   "exchange": "kucoin",
                   "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                   "symbol": "SOL/USDT",
@@ -2026,13 +2026,13 @@
                   "used": false
                 }
               ],
-              "gap_fill_start": "2023-07-10",
+              "gap_fill_start": "2023-07-11",
               "max_deviation_pct": null,
               "method": "Coinbase herstelbron",
               "outlier_count": 0,
               "provider": "CCXT consensus + Coinbase gap fill",
               "source_count": 4,
-              "used_close": 75.23
+              "used_close": 77.32
             }
           ],
           "role": "Multi-exchange SOL/BTC dagprijs",
@@ -2052,7 +2052,7 @@
         },
         {
           "coverage": "25 ecosysteemtokens",
-          "last_success_at_utc": "2026-07-14T08:28:52Z",
+          "last_success_at_utc": "2026-07-15T08:36:20Z",
           "name": "CoinGecko",
           "price_breakdown": [],
           "role": "Liveprijs en breedte in ecosysteem",
@@ -2067,12 +2067,6 @@
       "title": "Prijs",
       "trend": {
         "rows": [
-          {
-            "Koerskracht": 58.61,
-            "Relatief vs BTC 7d": 0.04,
-            "SOL slotkoers": 96.2,
-            "date": "2026-03-16"
-          },
           {
             "Koerskracht": 58.3,
             "Relatief vs BTC 7d": 0.05,
@@ -2116,13 +2110,13 @@
             "date": "2026-03-23"
           },
           {
-            "Koerskracht": 53.01,
+            "Koerskracht": 53.02,
             "Relatief vs BTC 7d": 0.0,
             "SOL slotkoers": 90.76,
             "date": "2026-03-24"
           },
           {
-            "Koerskracht": 56.26,
+            "Koerskracht": 56.27,
             "Relatief vs BTC 7d": 0.02,
             "SOL slotkoers": 91.68,
             "date": "2026-03-25"
@@ -2146,7 +2140,7 @@
             "date": "2026-03-28"
           },
           {
-            "Koerskracht": 47.61,
+            "Koerskracht": 47.6,
             "Relatief vs BTC 7d": -0.03,
             "SOL slotkoers": 81.37,
             "date": "2026-03-29"
@@ -2176,7 +2170,7 @@
             "date": "2026-04-02"
           },
           {
-            "Koerskracht": 46.09,
+            "Koerskracht": 46.08,
             "Relatief vs BTC 7d": -0.04,
             "SOL slotkoers": 80.39,
             "date": "2026-04-03"
@@ -2188,13 +2182,13 @@
             "date": "2026-04-04"
           },
           {
-            "Koerskracht": 47.92,
+            "Koerskracht": 47.93,
             "Relatief vs BTC 7d": -0.04,
             "SOL slotkoers": 81.85,
             "date": "2026-04-05"
           },
           {
-            "Koerskracht": 45.26,
+            "Koerskracht": 45.27,
             "Relatief vs BTC 7d": -0.06,
             "SOL slotkoers": 80.03,
             "date": "2026-04-06"
@@ -2206,13 +2200,13 @@
             "date": "2026-04-07"
           },
           {
-            "Koerskracht": 48.89,
+            "Koerskracht": 48.9,
             "Relatief vs BTC 7d": -0.03,
             "SOL slotkoers": 82.57,
             "date": "2026-04-08"
           },
           {
-            "Koerskracht": 50.63,
+            "Koerskracht": 50.64,
             "Relatief vs BTC 7d": -0.02,
             "SOL slotkoers": 83.34,
             "date": "2026-04-09"
@@ -2302,7 +2296,7 @@
             "date": "2026-04-23"
           },
           {
-            "Koerskracht": 46.08,
+            "Koerskracht": 46.09,
             "Relatief vs BTC 7d": -0.03,
             "SOL slotkoers": 86.22,
             "date": "2026-04-24"
@@ -2386,31 +2380,31 @@
             "date": "2026-05-07"
           },
           {
-            "Koerskracht": 61.0,
+            "Koerskracht": 61.01,
             "Relatief vs BTC 7d": 0.07,
             "SOL slotkoers": 92.02,
             "date": "2026-05-08"
           },
           {
-            "Koerskracht": 61.86,
+            "Koerskracht": 61.87,
             "Relatief vs BTC 7d": 0.08,
             "SOL slotkoers": 93.11,
             "date": "2026-05-09"
           },
           {
-            "Koerskracht": 65.45,
+            "Koerskracht": 65.47,
             "Relatief vs BTC 7d": 0.1,
             "SOL slotkoers": 96.44,
             "date": "2026-05-10"
           },
           {
-            "Koerskracht": 68.12,
+            "Koerskracht": 68.14,
             "Relatief vs BTC 7d": 0.13,
             "SOL slotkoers": 97.36,
             "date": "2026-05-11"
           },
           {
-            "Koerskracht": 63.5,
+            "Koerskracht": 63.52,
             "Relatief vs BTC 7d": 0.1,
             "SOL slotkoers": 94.27,
             "date": "2026-05-12"
@@ -2488,7 +2482,7 @@
             "date": "2026-05-24"
           },
           {
-            "Koerskracht": 50.62,
+            "Koerskracht": 50.63,
             "Relatief vs BTC 7d": -0.01,
             "SOL slotkoers": 84.97,
             "date": "2026-05-25"
@@ -2506,7 +2500,7 @@
             "date": "2026-05-27"
           },
           {
-            "Koerskracht": 48.88,
+            "Koerskracht": 48.87,
             "Relatief vs BTC 7d": -0.01,
             "SOL slotkoers": 82.0,
             "date": "2026-05-28"
@@ -2524,7 +2518,7 @@
             "date": "2026-05-30"
           },
           {
-            "Koerskracht": 51.42,
+            "Koerskracht": 51.41,
             "Relatief vs BTC 7d": 0.01,
             "SOL slotkoers": 82.32,
             "date": "2026-05-31"
@@ -2548,13 +2542,13 @@
             "date": "2026-06-03"
           },
           {
-            "Koerskracht": 41.01,
+            "Koerskracht": 41.02,
             "Relatief vs BTC 7d": -0.03,
             "SOL slotkoers": 68.79,
             "date": "2026-06-04"
           },
           {
-            "Koerskracht": 35.32,
+            "Koerskracht": 35.33,
             "Relatief vs BTC 7d": -0.06,
             "SOL slotkoers": 63.62,
             "date": "2026-06-05"
@@ -2566,7 +2560,7 @@
             "date": "2026-06-06"
           },
           {
-            "Koerskracht": 36.57,
+            "Koerskracht": 36.56,
             "Relatief vs BTC 7d": -0.05,
             "SOL slotkoers": 66.46,
             "date": "2026-06-07"
@@ -2590,7 +2584,7 @@
             "date": "2026-06-10"
           },
           {
-            "Koerskracht": 42.72,
+            "Koerskracht": 42.73,
             "Relatief vs BTC 7d": -0.02,
             "SOL slotkoers": 66.85,
             "date": "2026-06-11"
@@ -2602,31 +2596,31 @@
             "date": "2026-06-12"
           },
           {
-            "Koerskracht": 52.42,
+            "Koerskracht": 52.41,
             "Relatief vs BTC 7d": 0.05,
             "SOL slotkoers": 68.9,
             "date": "2026-06-13"
           },
           {
-            "Koerskracht": 51.67,
+            "Koerskracht": 51.66,
             "Relatief vs BTC 7d": 0.03,
             "SOL slotkoers": 71.24,
             "date": "2026-06-14"
           },
           {
-            "Koerskracht": 55.62,
+            "Koerskracht": 55.61,
             "Relatief vs BTC 7d": 0.06,
             "SOL slotkoers": 73.93,
             "date": "2026-06-15"
           },
           {
-            "Koerskracht": 57.17,
+            "Koerskracht": 57.18,
             "Relatief vs BTC 7d": 0.07,
             "SOL slotkoers": 73.46,
             "date": "2026-06-16"
           },
           {
-            "Koerskracht": 58.28,
+            "Koerskracht": 58.29,
             "Relatief vs BTC 7d": 0.09,
             "SOL slotkoers": 71.98,
             "date": "2026-06-17"
@@ -2674,7 +2668,7 @@
             "date": "2026-06-24"
           },
           {
-            "Koerskracht": 48.89,
+            "Koerskracht": 48.88,
             "Relatief vs BTC 7d": 0.02,
             "SOL slotkoers": 67.61,
             "date": "2026-06-25"
@@ -2692,49 +2686,49 @@
             "date": "2026-06-27"
           },
           {
-            "Koerskracht": 52.86,
+            "Koerskracht": 52.85,
             "Relatief vs BTC 7d": 0.04,
             "SOL slotkoers": 71.28,
             "date": "2026-06-28"
           },
           {
-            "Koerskracht": 59.92,
+            "Koerskracht": 59.9,
             "Relatief vs BTC 7d": 0.1,
             "SOL slotkoers": 75.05,
             "date": "2026-06-29"
           },
           {
-            "Koerskracht": 61.18,
+            "Koerskracht": 61.15,
             "Relatief vs BTC 7d": 0.12,
             "SOL slotkoers": 73.55,
             "date": "2026-06-30"
           },
           {
-            "Koerskracht": 66.97,
+            "Koerskracht": 66.94,
             "Relatief vs BTC 7d": 0.15,
             "SOL slotkoers": 77.38,
             "date": "2026-07-01"
           },
           {
-            "Koerskracht": 71.79,
+            "Koerskracht": 71.76,
             "Relatief vs BTC 7d": 0.16,
             "SOL slotkoers": 80.63,
             "date": "2026-07-02"
           },
           {
-            "Koerskracht": 67.94,
+            "Koerskracht": 67.92,
             "Relatief vs BTC 7d": 0.1,
             "SOL slotkoers": 82.28,
             "date": "2026-07-03"
           },
           {
-            "Koerskracht": 69.28,
+            "Koerskracht": 69.26,
             "Relatief vs BTC 7d": 0.11,
             "SOL slotkoers": 81.72,
             "date": "2026-07-04"
           },
           {
-            "Koerskracht": 68.21,
+            "Koerskracht": 68.2,
             "Relatief vs BTC 7d": 0.07,
             "SOL slotkoers": 81.52,
             "date": "2026-07-05"
@@ -2752,31 +2746,31 @@
             "date": "2026-07-07"
           },
           {
-            "Koerskracht": 54.76,
+            "Koerskracht": 54.77,
             "Relatief vs BTC 7d": -0.03,
             "SOL slotkoers": 77.76,
             "date": "2026-07-08"
           },
           {
-            "Koerskracht": 52.45,
+            "Koerskracht": 52.46,
             "Relatief vs BTC 7d": -0.06,
             "SOL slotkoers": 77.99,
             "date": "2026-07-09"
           },
           {
-            "Koerskracht": 51.58,
+            "Koerskracht": 51.59,
             "Relatief vs BTC 7d": -0.08,
             "SOL slotkoers": 78.07,
             "date": "2026-07-10"
           },
           {
-            "Koerskracht": 49.76,
+            "Koerskracht": 49.77,
             "Relatief vs BTC 7d": -0.07,
             "SOL slotkoers": 76.74,
             "date": "2026-07-11"
           },
           {
-            "Koerskracht": 50.82,
+            "Koerskracht": 50.83,
             "Relatief vs BTC 7d": -0.06,
             "SOL slotkoers": 76.88,
             "date": "2026-07-12"
@@ -2786,6 +2780,12 @@
             "Relatief vs BTC 7d": -0.06,
             "SOL slotkoers": 74.91,
             "date": "2026-07-13"
+          },
+          {
+            "Koerskracht": 50.31,
+            "Relatief vs BTC 7d": -0.06,
+            "SOL slotkoers": 77.81,
+            "date": "2026-07-14"
           }
         ],
         "series": [
@@ -2810,7 +2810,7 @@
     }
   },
   "llm_interpretation": {
-    "llm_called_at_utc": "2026-07-14T08:30:12Z",
+    "llm_called_at_utc": "2026-07-15T08:37:36Z",
     "model": "Qwen/Qwen2.5-7B-Instruct",
     "provider": "Hugging Face Inference Providers",
     "status": "llm_success"
@@ -2822,27 +2822,27 @@
     "block_details": [
       {
         "drivers": [
-          "SOL 7d: -8.5%.",
-          "SOL 30d: 8.7%.",
-          "Relatieve sterkte vs BTC 7d: -5.8%.",
-          "Afstand tot 50-daagse trend: 1.0%."
+          "SOL 7d: -3.4%.",
+          "SOL 30d: 9.2%.",
+          "Relatieve sterkte vs BTC 7d: -6.0%.",
+          "Afstand tot 50-daagse trend: 5.1%."
         ],
         "key": "price_strength",
         "metrics": [
           {
             "label": "SOL 7d",
-            "value": "-8.5%"
+            "value": "-3.4%"
           },
           {
             "label": "SOL 30d",
-            "value": "8.7%"
+            "value": "9.2%"
           },
           {
             "label": "vs BTC 7d",
-            "value": "-5.8%"
+            "value": "-6.0%"
           }
         ],
-        "score": 48.71,
+        "score": 50.31,
         "score_label": "neutraal",
         "score_note": "Score is relatief ten opzichte van de eigen historie.",
         "status": "Historisch gevalideerd",
@@ -2852,57 +2852,57 @@
       },
       {
         "drivers": [
-          "DEX-volume 7d/30d: 5.89x.",
-          "Fees 7d/30d: 6.36x.",
-          "Gevalideerde DeFi/fee-score: 44/100.",
-          "Actuele RPC-score: 66/100.",
-          "Actuele RPC-steekproef: circa 1638.7 niet-stemtransacties per seconde. Deze context is nuttig, maar nog niet historisch gebacktest."
+          "DEX-volume 7d/30d: 5.53x.",
+          "Fees 7d/30d: 6.27x.",
+          "Gevalideerde DeFi/fee-score: 42/100.",
+          "Actuele RPC-score: 58/100.",
+          "Actuele RPC-steekproef: circa 1334.0 niet-stemtransacties per seconde. Deze context is nuttig, maar nog niet historisch gebacktest."
         ],
         "key": "network_usage",
         "metrics": [
           {
             "label": "DEX 7d/30d",
-            "value": "5.89x"
+            "value": "5.53x"
           },
           {
             "label": "Fees 7d/30d",
-            "value": "6.36x"
+            "value": "6.27x"
           },
           {
             "label": "Niet-stem TPS",
-            "value": "1.638,7"
+            "value": "1.334,0"
           }
         ],
-        "score": 47.19,
-        "score_label": "neutraal",
+        "score": 44.08,
+        "score_label": "zwak",
         "score_note": "Score is relatief ten opzichte van de eigen historie.",
         "status": "Grotendeels gevalideerd",
-        "summary": "Gebruik is rond normaal tot licht positief.",
+        "summary": "Gebruik geeft nog weinig bevestiging.",
         "title": "Gebruik",
         "weight": 0.25
       },
       {
         "drivers": [
-          "Stablecoinvoorraad 30d: -0.0%.",
-          "TVL 30d: 3.1%.",
+          "Stablecoinvoorraad 30d: -3.0%.",
+          "TVL 30d: 0.7%.",
           "Score is een relatieve positie op de historische schaal."
         ],
         "key": "capital",
         "metrics": [
           {
             "label": "Stablecoins 30d",
-            "value": "-0.0%"
+            "value": "-3.0%"
           },
           {
             "label": "TVL 30d",
-            "value": "3.1%"
+            "value": "0.7%"
           },
           {
             "label": "Schaal",
             "value": "relatief"
           }
         ],
-        "score": 48.45,
+        "score": 45.78,
         "score_label": "neutraal",
         "score_note": "Score is relatief ten opzichte van de eigen historie.",
         "status": "Historisch gevalideerd",
@@ -2913,16 +2913,16 @@
       {
         "drivers": [
           "Steekproef: 25 grootste bruikbare Solana-ecosysteemtokens.",
-          "24u positief: 36.0%.",
-          "Top-3 concentratie: 42.8% van de gemeten market cap."
+          "24u positief: 80.0%.",
+          "Top-3 concentratie: 42.7% van de gemeten market cap."
         ],
         "key": "ecosystem_breadth",
         "metrics": [],
-        "score": 47.1,
-        "score_label": "neutraal",
+        "score": 64.04,
+        "score_label": "positief",
         "score_note": "Score is relatief ten opzichte van de eigen historie.",
         "status": "Experimenteel, beperkt meegewogen",
-        "summary": "48.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -0.0%.",
+        "summary": "68.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement 0.1%.",
         "title": "Breedte in ecosysteem",
         "weight": 0.1
       }
@@ -2934,20 +2934,20 @@
       "price_strength": 0.45
     },
     "blocks": {
-      "capital": 48.45,
-      "ecosystem_breadth": 47.1,
-      "network_usage": 47.19,
-      "price_strength": 48.71
+      "capital": 45.78,
+      "ecosystem_breadth": 64.04,
+      "network_usage": 44.08,
+      "price_strength": 50.31
     },
     "evidence_components": {
-      "analog_similarity": 78.54,
+      "analog_similarity": 78.36,
       "data_quality": 92.0,
-      "out_of_sample_quality": 62.6,
+      "out_of_sample_quality": 58.24,
       "sample_adequacy": 100.0,
       "stability": 70.0
     },
-    "evidence_quality": 78.63,
-    "market_signal": 48.12,
+    "evidence_quality": 77.31,
+    "market_signal": 49.22,
     "method_note": "De eindscore is een gewogen indicatorscore van 0 tot 100. Het is geen kanspercentage en geen beleggingsadvies.",
     "missing_blocks": [],
     "quality_caps": [
@@ -2964,7 +2964,7 @@
           "available": true,
           "fallback_used": true,
           "gap_fill_rows": 1101,
-          "gap_fill_start": "2023-07-10",
+          "gap_fill_start": "2023-07-11",
           "max_deviation_pct": 5.0,
           "max_source_count": 3,
           "min_source_count": 2,
@@ -2972,12 +2972,12 @@
           "outlier_count": 0,
           "price_breakdown": {
             "asset": "BTC",
-            "ccxt_last_close": 30163.3,
-            "ccxt_last_date": "2023-07-09",
-            "date": "2026-07-14",
+            "ccxt_last_close": 30414.2,
+            "ccxt_last_date": "2023-07-10",
+            "date": "2026-07-15",
             "exchange_prices": [
               {
-                "close": 62586.35,
+                "close": 64608.83,
                 "deviation_pct": 0.0,
                 "exchange": "coinbase",
                 "status": "succesvol gebruikt als herstelbron",
@@ -2985,16 +2985,16 @@
                 "used": true
               },
               {
-                "close": 62253.5,
-                "deviation_pct": 0.067,
+                "close": 64977.2,
+                "deviation_pct": 0.041,
                 "exchange": "kraken",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "BTC/USD",
                 "used": false
               },
               {
-                "close": 62336.8,
-                "deviation_pct": 0.067,
+                "close": 65030.3,
+                "deviation_pct": 0.041,
                 "exchange": "kucoin",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "BTC/USDT",
@@ -3009,11 +3009,11 @@
                 "used": false
               }
             ],
-            "gap_fill_start": "2023-07-10",
+            "gap_fill_start": "2023-07-11",
             "method": "Coinbase herstelbron",
             "outlier_count": 0,
             "source_count": 4,
-            "used_close": 62586.35
+            "used_close": 64608.83
           },
           "provider": "CCXT consensus + Coinbase gap fill",
           "rows": 1020,
@@ -3047,14 +3047,14 @@
               "warning": ""
             }
           ],
-          "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-07-10 onward."
+          "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-07-11 onward."
         },
         "sol": {
           "asset": "SOL",
           "available": true,
           "fallback_used": true,
           "gap_fill_rows": 1101,
-          "gap_fill_start": "2023-07-10",
+          "gap_fill_start": "2023-07-11",
           "max_deviation_pct": 5.0,
           "max_source_count": 3,
           "min_source_count": 2,
@@ -3062,12 +3062,12 @@
           "outlier_count": 0,
           "price_breakdown": {
             "asset": "SOL",
-            "ccxt_last_close": 21.33,
-            "ccxt_last_date": "2023-07-09",
-            "date": "2026-07-14",
+            "ccxt_last_close": 21.3,
+            "ccxt_last_date": "2023-07-10",
+            "date": "2026-07-15",
             "exchange_prices": [
               {
-                "close": 75.23,
+                "close": 77.32,
                 "deviation_pct": 0.0,
                 "exchange": "coinbase",
                 "status": "succesvol gebruikt als herstelbron",
@@ -3075,16 +3075,16 @@
                 "used": true
               },
               {
-                "close": 74.9,
-                "deviation_pct": 0.067,
+                "close": 77.82,
+                "deviation_pct": 0.026,
                 "exchange": "kraken",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "SOL/USD",
                 "used": false
               },
               {
-                "close": 75.0,
-                "deviation_pct": 0.067,
+                "close": 77.86,
+                "deviation_pct": 0.026,
                 "exchange": "kucoin",
                 "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
                 "symbol": "SOL/USDT",
@@ -3099,11 +3099,11 @@
                 "used": false
               }
             ],
-            "gap_fill_start": "2023-07-10",
+            "gap_fill_start": "2023-07-11",
             "method": "Coinbase herstelbron",
             "outlier_count": 0,
             "source_count": 4,
-            "used_close": 75.23
+            "used_close": 77.32
           },
           "provider": "CCXT consensus + Coinbase gap fill",
           "rows": 1020,
@@ -3137,7 +3137,7 @@
               "warning": ""
             }
           ],
-          "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-07-10 onward."
+          "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-07-11 onward."
         }
       },
       "role": "multi-exchange historical price consensus",
@@ -3152,19 +3152,19 @@
       "available": true,
       "current_prices": {
         "bitcoin": {
-          "usd": 62576,
-          "usd_24h_change": -0.7204491584481644,
-          "usd_24h_vol": 24200903665.30522,
-          "usd_market_cap": 1254898359165.3782
+          "usd": 64603,
+          "usd_24h_change": 3.102037616194183,
+          "usd_24h_vol": 32311065314.896194,
+          "usd_market_cap": 1295688751984.0977
         },
         "solana": {
-          "usd": 75.14,
-          "usd_24h_change": -1.6593907422946166,
-          "usd_24h_vol": 1486001730.5217996,
-          "usd_market_cap": 43745818426.13508
+          "usd": 77.33,
+          "usd_24h_change": 2.8012786257077527,
+          "usd_24h_vol": 2247302465.2319093,
+          "usd_market_cap": 45035654387.56775
         }
       },
-      "last_success_at_utc": "2026-07-14T08:28:52Z",
+      "last_success_at_utc": "2026-07-15T08:36:20Z",
       "role": "current cross-check and ecosystem breadth",
       "validated_signal_source": false
     },
@@ -3179,30 +3179,30 @@
         "historically_validated": false,
         "recent_performance_samples": [
           {
-            "numNonVoteTransactions": 97332,
-            "numSlots": 146,
-            "numTransactions": 199629,
+            "numNonVoteTransactions": 81275,
+            "numSlots": 143,
+            "numTransactions": 181348,
             "samplePeriodSecs": 60,
-            "slot": 432818621
+            "slot": 433029441
           },
           {
-            "numNonVoteTransactions": 100441,
-            "numSlots": 149,
-            "numTransactions": 204153,
-            "samplePeriodSecs": 60,
-            "slot": 432818475
-          },
-          {
-            "numNonVoteTransactions": 97192,
+            "numNonVoteTransactions": 85681,
             "numSlots": 147,
-            "numTransactions": 200838,
+            "numTransactions": 188527,
             "samplePeriodSecs": 60,
-            "slot": 432818326
+            "slot": 433029298
+          },
+          {
+            "numNonVoteTransactions": 73162,
+            "numSlots": 150,
+            "numTransactions": 178141,
+            "samplePeriodSecs": 60,
+            "slot": 433029151
           }
         ],
-        "transaction_count": 529141504334
+        "transaction_count": 529437743902
       },
-      "last_success_at_utc": "2026-07-14T08:28:52Z",
+      "last_success_at_utc": "2026-07-15T08:36:20Z",
       "role": "current network context",
       "validated_signal_source": false
     }
@@ -3210,7 +3210,7 @@
   "summary": {
     "conclusion": "De blokken geven geen eenduidige richting. Dit vraagt om terughoudende interpretatie.",
     "evidence_label": "sterk onderbouwd",
-    "interpretation_note": "Huidige sterkte 48/100; onderbouwing 79/100.",
+    "interpretation_note": "Huidige sterkte 49/100; onderbouwing 77/100.",
     "language_label": "Historische frequentie",
     "market_signal_label": "neutraal of gemengd",
     "regime": "mixed",
@@ -3222,7 +3222,7 @@
       "SOL herwint duidelijke relatieve sterkte ten opzichte van BTC.",
       "Gebruik, DEX-volume en fees stijgen boven hun normale niveau.",
       "Stablecoinvoorraad en TVL beginnen duidelijk toe te nemen.",
-      "Meer Solana-ecosysteemtokens gaan tegelijk meedoen aan de beweging."
+      "De beweging versmalt naar minder Solana-ecosysteemtokens."
     ]
   }
 }
