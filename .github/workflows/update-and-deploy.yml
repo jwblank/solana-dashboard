@@ -2,11 +2,14 @@ name: Update Data And Deploy
 
 on:
   schedule:
-    - cron: "17 6 * * *"
+    - cron: "0 6 * * *"
+    - cron: "0 7 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: data-update
@@ -15,28 +18,83 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - id: schedule_gate
+        name: Run only at 08:00 Europe/Amsterdam
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run_update=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          local_hour="$(TZ=Europe/Amsterdam date +%H)"
+          if [ "$local_hour" = "08" ]; then
+            echo "run_update=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_update=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: local Amsterdam hour is ${local_hour}, not 08."
+          fi
       - uses: actions/setup-python@v5
+        if: steps.schedule_gate.outputs.run_update == 'true'
         with:
           python-version: "3.12"
           cache: "pip"
-      - run: python -m pip install -e ".[dev]"
-      - run: pytest -q
-      - run: APP_MODE=production python -m sol_reality_check update
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python -m pip install -e ".[dev]"
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: pytest -q
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: APP_MODE=production python -m sol_reality_check update
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      - run: python -m sol_reality_check validate
-      - run: python -m sol_reality_check freshness-check
-      - run: python -m sol_reality_check ledger-check
-      - run: python -c "import json; d=json.load(open('site/data/dashboard.json')); assert d['mode'] == 'production' and d.get('demo_notice') is None, d"
-      - run: |
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python -m sol_reality_check validate
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python -m sol_reality_check freshness-check
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python -m sol_reality_check ledger-check
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python -c "import json; d=json.load(open('site/data/dashboard.json')); assert d['mode'] == 'production' and d.get('demo_notice') is None, d"
+      - id: data_commit
+        if: steps.schedule_gate.outputs.run_update == 'true'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/curated data/ledger site/data
           git diff --cached --quiet || git commit -m "data: update SOL Reality Check"
           git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python scripts/build_site.py
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        run: python scripts/prepare_pages_artifact.py --site-dir site --out-dir .pages-artifact --git-sha "${{ steps.data_commit.outputs.sha }}" --branch "${GITHUB_REF_NAME}"
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - if: steps.schedule_gate.outputs.run_update == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .pages-artifact
+      - id: deployment
+        if: steps.schedule_gate.outputs.run_update == 'true'
+        uses: actions/deploy-pages@v4
+      - name: Verify live Pages deployment
+        if: steps.schedule_gate.outputs.run_update == 'true'
+        run: |
+          python scripts/check_pages_sync.py \
+            --site-dir site \
+            --base-url "https://jwblank.github.io/solana-dashboard/" \
+            --expected-sha "${{ steps.data_commit.outputs.sha }}" \
+            --branch "${GITHUB_REF_NAME}" \
+            --retries 10 \
+            --sleep-seconds 10
+          curl -fsSL "https://jwblank.github.io/solana-dashboard/data/dashboard.json?verify=${{ steps.data_commit.outputs.sha }}" | grep '"data_cutoff_utc"'
