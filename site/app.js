@@ -1369,10 +1369,21 @@ function renderPredictiveBucketChart(section) {
 }
 
 function sectionRowsForChart(section) {
-  const rows = (section?.rows || []).filter((row) => row.bucket_key !== "all" && row.observations > 0);
+  const rows = (section?.rows || []).filter((row) => {
+    const positive = Number(row.positive_rate);
+    const baseline = Number(row.baseline_positive_rate);
+    return row.bucket_key !== "all"
+      && row.observations > 0
+      && Number.isFinite(positive)
+      && Number.isFinite(baseline);
+  });
   if (!rows.length) return [];
   const horizons = [...new Set(rows.map((row) => row.horizon_days))].sort((a, b) => a - b);
-  const selected = horizons.includes(7) ? 7 : horizons[0];
+  const visibleHorizons = horizons.filter((horizon) => rows.some((row) => {
+    return row.horizon_days === horizon
+      && (Number(row.positive_rate) > 0 || Number(row.baseline_positive_rate) > 0);
+  }));
+  const selected = visibleHorizons.includes(7) ? 7 : (visibleHorizons[0] || horizons[0]);
   return rows.filter((row) => row.horizon_days === selected);
 }
 
