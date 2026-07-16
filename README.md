@@ -201,3 +201,12 @@ De GitHub Actions-workflows bouwen de data, voeren controles uit en publiceren d
 ## Disclaimer
 
 SOL Reality Check is bedoeld als analyse- en onderzoeksdashboard. Het is geen financieel advies, geen garantie op rendement en geen automatische handelsstrategie. Crypto-assets kunnen sterk in waarde dalen. Historische patronen kunnen verdwijnen en iedere score moet gelezen worden samen met de datakwaliteit, bronstatus en methodische beperkingen.
+
+## License
+
+This project is licensed under the PolyForm Noncommercial License 1.0.0.
+
+You may view, copy, modify, and share the source code for personal, educational, research, and other non-commercial purposes. Commercial use is not permitted without prior written permission.
+
+Copyright © 2026 Jan-Willem Blank.
+
