@@ -1,17 +1,17 @@
 {
-  "analysis_text": "Kort beeld: Solana's huidige sterkte score is 49/100, met een beperkt onderbouwde score van 55/100. De huidige SOL-prijs is $75.96, met een 7d-aanduiding van -1.6% en een 30d-aanduiding van 8.4%. Wat trekt omhoog?: De SOL-prijs heeft in de laatste 30 dagen een positieve trend van 8.4%, en de breedte in ecosysteem score is 55/100, wat positief is. De huidige SOL-prijs is 2.7% boven de 50d-trend. Wat houdt tegen?: De koerskracht score is slechts 51/100, en de network usage score is 42/100, wat aangeeft dat de netwerkgebruik nog weinig bevestiging geeft. De backtest resultaten zijn gemengd, met een 7d-directional accuracy van slechts 48.1%. Hoe stevig is dit?: De onderbouwing score is 55/100, wat beperkt is, en de kapitaalstromen score is 49/100, wat neutraal tot gemengd is. De huidige SOL-prijs is -1.6% in de laatste 7 dagen, wat een gemengd beeld geeft.",
+  "analysis_text": "Kort beeld: Solana (SOL) heeft momenteel een gemengd beeld met beperkte onderbouwing, wat de huidige sterkte van 49/100 en de onderbouwing van 55/100 beïnvloedt. De huidige SOL-prijs is $75.93, wat een relatief stabiel patroon toont na 7 dagen. Wat trekt omhoog?: De huidige SOL-prijs is gestaag gestegen in de laatste 30 dagen, met een score van 56/100. De breedte in ecosysteem is positief, met 64.0% van de gevolgde Solana-tokens 7 dagen positief. Wat houdt tegen?: De huidige SOL-prijs is in de laatste 7 dagen afgenomen, met een score van 49/100. De onderbouwing is beperkt, wat de huidige score van 55/100 beïnvloedt. Hoe stevig is dit?: De netwerkgebruikscore is 42/100, wat neutraal tot gemengd is. De huidige koerskracht score is 51/100, wat gemengd is en nog geen overtuigende koersbevestiging biedt. Voor de controleerbaarheid staan de kernwaarden expliciet in beeld: huidige sterkte 49/100, onderbouwing 55/100, koerskracht 51/100, gebruik 42/100, kapitaalstromen 49/100, breedte in ecosysteem 59/100.",
   "data_cutoff_utc": "2026-07-18T23:59:59Z",
   "date": "2026-07-18",
   "footer_note": "Deze tekst is door een LLM opgesteld op basis van de exacte dashboardwaarden. De LLM bepaalt geen scores en geeft geen beleggingsadvies.",
-  "generated_at_utc": "2026-07-19T06:44:31Z",
+  "generated_at_utc": "2026-07-19T09:55:22Z",
   "input_snapshot": {
     "analog_count": 40,
     "analog_median_return": "1.2%",
     "analog_positive_frequency": "52.5%",
     "backtest_7d": {
-      "brier_skill": "-0.058",
+      "brier_skill": "-0.056",
       "calibration_error": "0.138",
-      "directional_accuracy": "48.1%",
+      "directional_accuracy": "47.3%",
       "prediction_count": 131
     },
     "block_weights": {
@@ -46,7 +46,7 @@
     "data_freshness": [
       {
         "label": "Update-run",
-        "value": "2026-07-19T06:44:31Z"
+        "value": "2026-07-19T09:55:22Z"
       },
       {
         "label": "Data t/m",
@@ -62,11 +62,11 @@
       },
       {
         "label": "Prijsreparaties",
-        "value": "1"
+        "value": "0"
       },
       {
         "label": "Prijsconsensus",
-        "value": "SOL: CCXT consensus, 8 rijen, min 4 bronnen; BTC: CCXT consensus, 8 rijen, min 4 bronnen"
+        "value": "SOL: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen; BTC: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen"
       },
       {
         "label": "Analoge dagen",
@@ -81,11 +81,11 @@
         "value": "3"
       }
     ],
-    "data_quality_summary": "1400 historische records van 2022-09-18 t/m 2026-07-18. Laatste dagdata-cutoff: 2026-07-18T23:59:59Z. Update-run: 2026-07-19T06:44:31Z.",
+    "data_quality_summary": "1400 historische records van 2022-09-18 t/m 2026-07-18. Laatste dagdata-cutoff: 2026-07-18T23:59:59Z. Update-run: 2026-07-19T09:55:22Z.",
     "data_warnings": [
-      "1 verdachte dagprijswaarde(n) gerepareerd met vorige geldige prijs."
+      "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
     ],
-    "ecosystem_breadth": "55/100",
+    "ecosystem_breadth": "59/100",
     "evidence_label": "beperkt onderbouwd",
     "evidence_quality": "55/100",
     "historical_summary": "Historische frequentie: 52.5% positief na 7 dagen. Mediaan 1.2%; midden 80% liep van -13.6% tot 21.5%.",
@@ -100,20 +100,20 @@
       },
       {
         "label": "Fees 7d/30d",
-        "score": "45/100",
-        "value": "6.29x",
+        "score": "46/100",
+        "value": "6.31x",
         "weight": "40% binnen gebruik"
       },
       {
         "label": "RPC-context",
         "score": "47/100",
-        "value": "47/100; 942,4 TPS",
+        "value": "47/100; 925,2 TPS",
         "weight": "15% correctie op gebruik"
       },
       {
         "label": "Breedte in ecosysteem",
-        "score": "55/100",
-        "value": "52.0% positief 7d; 25 tokens",
+        "score": "59/100",
+        "value": "64.0% positief 7d; 25 tokens",
         "weight": "10% van eindscore"
       },
       {
@@ -123,13 +123,13 @@
         "weight": "85% van gebruik"
       }
     ],
-    "network_summary": "Gebruik geeft nog weinig bevestiging. Breedte in ecosysteem: 52.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement 0.0%.",
+    "network_summary": "Gebruik geeft nog weinig bevestiging. Breedte in ecosysteem: 64.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement 0.0%.",
     "network_usage": "42/100",
     "price_components": [
       {
         "label": "SOL 7 dagen",
         "score": "49/100",
-        "value": "-1.6%",
+        "value": "-1.7%",
         "weight": "20% binnen prijsblok"
       },
       {
@@ -141,7 +141,7 @@
       {
         "label": "Relatief vs BTC 7d",
         "score": "45/100",
-        "value": "-3.2%",
+        "value": "-3.3%",
         "weight": "30% binnen prijsblok"
       },
       {
@@ -154,15 +154,17 @@
     "price_strength": "51/100",
     "price_summary": "Koerskracht is gemengd: nog geen overtuigende koersbevestiging.",
     "regime_title": "Gemengd marktbeeld",
-    "sol_price": "$75.96",
-    "updated_at_utc": "2026-07-19T06:44:31Z"
+    "sol_price": "$75.93",
+    "updated_at_utc": "2026-07-19T09:55:22Z"
   },
   "intro": "De huidige sterkte staat op 49/100 (neutraal of gemengd) en de onderbouwing op 55/100 (beperkt onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-07-18T23:59:59Z.",
-  "llm_called_at_utc": "2026-07-19T06:46:10Z",
+  "llm_called_at_utc": "2026-07-19T09:57:05Z",
   "model": "Qwen/Qwen2.5-7B-Instruct",
   "provider": "Hugging Face Inference Providers",
   "schema_version": "1.0",
   "status": "llm_success",
-  "title": "Solana (SOL) - Gemengd marktbeeld met beperkte onderbouwing",
-  "warnings": []
+  "title": "Solana (SOL) dashboard analyse",
+  "warnings": [
+    "LLM-output aangevuld met verplichte dashboardwaarden: 59/100."
+  ]
 }
