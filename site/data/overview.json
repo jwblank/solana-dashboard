@@ -1,12 +1,138 @@
 {
   "changes": {
     "available": true,
-    "evidence_score_points": 4.05,
-    "market_score_points": 0.66,
-    "sol_price_absolute": 0.21,
+    "evidence_score_points": -3.76,
+    "market_score_points": -0.92,
+    "sol_price_absolute": 0.27,
     "sol_price_pct": 0.0
   },
   "current_run": {
+    "capital_flows_score": 48.93,
+    "current_strength_score": 49.15,
+    "data_cutoff_utc": "2026-08-05T23:59:59Z",
+    "ecosystem_breadth_score": 39.97,
+    "method_version": "1.0.0",
+    "network_usage_score": 54.13,
+    "price_strength_score": 48.52,
+    "regime": "mixed",
+    "regime_title": "Gemengd marktbeeld",
+    "run_at_utc": "2026-08-06T10:43:21Z",
+    "sol_price": 73.97,
+    "support_score": 78.06
+  },
+  "drivers": [
+    {
+      "change_label": "praktisch onveranderd",
+      "comparison_status": "comparable",
+      "contribution_delta": -0.01,
+      "current_contribution": 21.83,
+      "current_score": 48.52,
+      "current_weight": 0.45,
+      "key": "price_strength",
+      "label": "Koerskracht",
+      "previous_contribution": 21.84,
+      "previous_score": 48.53,
+      "previous_weight": 0.45,
+      "score_delta": -0.01
+    },
+    {
+      "change_label": "licht veranderd",
+      "comparison_status": "comparable",
+      "contribution_delta": -0.48,
+      "current_contribution": 13.53,
+      "current_score": 54.13,
+      "current_weight": 0.25,
+      "key": "network_usage",
+      "label": "Netwerkgebruik",
+      "previous_contribution": 14.01,
+      "previous_score": 56.04,
+      "previous_weight": 0.25,
+      "score_delta": -1.91
+    },
+    {
+      "change_label": "licht veranderd",
+      "comparison_status": "comparable",
+      "contribution_delta": 0.13,
+      "current_contribution": 9.79,
+      "current_score": 48.93,
+      "current_weight": 0.2,
+      "key": "capital_flows",
+      "label": "Kapitaalstromen",
+      "previous_contribution": 9.66,
+      "previous_score": 48.32,
+      "previous_weight": 0.2,
+      "score_delta": 0.61
+    },
+    {
+      "change_label": "sterk veranderd",
+      "comparison_status": "comparable",
+      "contribution_delta": -0.56,
+      "current_contribution": 4.0,
+      "current_score": 39.97,
+      "current_weight": 0.1,
+      "key": "ecosystem_breadth",
+      "label": "Ecosysteembreedte",
+      "previous_contribution": 4.56,
+      "previous_score": 45.58,
+      "previous_weight": 0.1,
+      "score_delta": -5.61
+    }
+  ],
+  "generated_at_utc": "2026-08-06T10:43:21Z",
+  "largest_changes": {
+    "all_unchanged_message": null,
+    "conclusion": "De beweging kwam vooral door ecosysteembreedte, dat omlaag trok.",
+    "negative": [
+      {
+        "change_label": "sterk veranderd",
+        "comparison_status": "comparable",
+        "contribution_delta": -0.56,
+        "current_contribution": 4.0,
+        "current_score": 39.97,
+        "current_weight": 0.1,
+        "key": "ecosystem_breadth",
+        "label": "Ecosysteembreedte",
+        "previous_contribution": 4.56,
+        "previous_score": 45.58,
+        "previous_weight": 0.1,
+        "score_delta": -5.61
+      },
+      {
+        "change_label": "licht veranderd",
+        "comparison_status": "comparable",
+        "contribution_delta": -0.48,
+        "current_contribution": 13.53,
+        "current_score": 54.13,
+        "current_weight": 0.25,
+        "key": "network_usage",
+        "label": "Netwerkgebruik",
+        "previous_contribution": 14.01,
+        "previous_score": 56.04,
+        "previous_weight": 0.25,
+        "score_delta": -1.91
+      }
+    ],
+    "negative_empty_message": null,
+    "positive": [
+      {
+        "change_label": "licht veranderd",
+        "comparison_status": "comparable",
+        "contribution_delta": 0.13,
+        "current_contribution": 9.79,
+        "current_score": 48.93,
+        "current_weight": 0.2,
+        "key": "capital_flows",
+        "label": "Kapitaalstromen",
+        "previous_contribution": 9.66,
+        "previous_score": 48.32,
+        "previous_weight": 0.2,
+        "score_delta": 0.61
+      }
+    ],
+    "positive_empty_message": null
+  },
+  "method_transitions": [],
+  "previous_run": {
     "capital_flows_score": 48.32,
     "current_strength_score": 50.07,
     "data_cutoff_utc": "2026-08-04T23:59:59Z",
@@ -20,153 +146,27 @@
     "sol_price": 73.7,
     "support_score": 81.82
   },
-  "drivers": [
-    {
-      "change_label": "praktisch onveranderd",
-      "comparison_status": "comparable",
-      "contribution_delta": 0.21,
-      "current_contribution": 21.84,
-      "current_score": 48.53,
-      "current_weight": 0.45,
-      "key": "price_strength",
-      "label": "Koerskracht",
-      "previous_contribution": 21.63,
-      "previous_score": 48.06,
-      "previous_weight": 0.45,
-      "score_delta": 0.47
-    },
-    {
-      "change_label": "duidelijk veranderd",
-      "comparison_status": "comparable",
-      "contribution_delta": 0.57,
-      "current_contribution": 14.01,
-      "current_score": 56.04,
-      "current_weight": 0.25,
-      "key": "network_usage",
-      "label": "Netwerkgebruik",
-      "previous_contribution": 13.44,
-      "previous_score": 53.77,
-      "previous_weight": 0.25,
-      "score_delta": 2.27
-    },
-    {
-      "change_label": "licht veranderd",
-      "comparison_status": "comparable",
-      "contribution_delta": 0.21,
-      "current_contribution": 9.66,
-      "current_score": 48.32,
-      "current_weight": 0.2,
-      "key": "capital_flows",
-      "label": "Kapitaalstromen",
-      "previous_contribution": 9.45,
-      "previous_score": 47.23,
-      "previous_weight": 0.2,
-      "score_delta": 1.09
-    },
-    {
-      "change_label": "duidelijk veranderd",
-      "comparison_status": "comparable",
-      "contribution_delta": -0.33,
-      "current_contribution": 4.56,
-      "current_score": 45.58,
-      "current_weight": 0.1,
-      "key": "ecosystem_breadth",
-      "label": "Ecosysteembreedte",
-      "previous_contribution": 4.89,
-      "previous_score": 48.94,
-      "previous_weight": 0.1,
-      "score_delta": -3.36
-    }
-  ],
-  "generated_at_utc": "2026-08-05T10:39:17Z",
-  "largest_changes": {
-    "all_unchanged_message": null,
-    "conclusion": "De beweging kwam vooral door ecosysteembreedte, dat omlaag trok.",
-    "negative": [
-      {
-        "change_label": "duidelijk veranderd",
-        "comparison_status": "comparable",
-        "contribution_delta": -0.33,
-        "current_contribution": 4.56,
-        "current_score": 45.58,
-        "current_weight": 0.1,
-        "key": "ecosystem_breadth",
-        "label": "Ecosysteembreedte",
-        "previous_contribution": 4.89,
-        "previous_score": 48.94,
-        "previous_weight": 0.1,
-        "score_delta": -3.36
-      }
-    ],
-    "negative_empty_message": null,
-    "positive": [
-      {
-        "change_label": "duidelijk veranderd",
-        "comparison_status": "comparable",
-        "contribution_delta": 0.57,
-        "current_contribution": 14.01,
-        "current_score": 56.04,
-        "current_weight": 0.25,
-        "key": "network_usage",
-        "label": "Netwerkgebruik",
-        "previous_contribution": 13.44,
-        "previous_score": 53.77,
-        "previous_weight": 0.25,
-        "score_delta": 2.27
-      },
-      {
-        "change_label": "licht veranderd",
-        "comparison_status": "comparable",
-        "contribution_delta": 0.21,
-        "current_contribution": 9.66,
-        "current_score": 48.32,
-        "current_weight": 0.2,
-        "key": "capital_flows",
-        "label": "Kapitaalstromen",
-        "previous_contribution": 9.45,
-        "previous_score": 47.23,
-        "previous_weight": 0.2,
-        "score_delta": 1.09
-      }
-    ],
-    "positive_empty_message": null
-  },
-  "method_transitions": [],
-  "previous_run": {
-    "capital_flows_score": 47.23,
-    "current_strength_score": 49.41,
-    "data_cutoff_utc": "2026-08-03T23:59:59Z",
-    "ecosystem_breadth_score": 48.94,
-    "method_version": "1.0.0",
-    "network_usage_score": 53.77,
-    "price_strength_score": 48.06,
-    "regime": "mixed",
-    "regime_title": "Gemengd marktbeeld",
-    "run_at_utc": "2026-08-04T10:43:31Z",
-    "sol_price": 73.49,
-    "support_score": 77.77
-  },
   "schema_version": "1.1",
   "track_record": {
     "backtest_7d": {
-      "brier_score": 0.2522,
-      "brier_skill": 0.0418,
-      "calibration_error": 0.0549,
-      "directional_accuracy": 0.5379,
+      "brier_score": 0.2602,
+      "brier_skill": 0.01,
+      "calibration_error": 0.0948,
+      "directional_accuracy": 0.5,
       "prediction_count": 132
     },
     "backtest_metrics": {
       "7d": {
-        "brier_score": 0.2522,
-        "brier_skill": 0.0418,
-        "calibration_error": 0.0549,
-        "directional_accuracy": 0.5379,
+        "brier_score": 0.2602,
+        "brier_skill": 0.01,
+        "calibration_error": 0.0948,
+        "directional_accuracy": 0.5,
         "prediction_count": 132,
         "status": "Lichte historische meerwaarde."
       }
     },
     "backtest_status": "Lichte historische meerwaarde.",
-    "calendar_span_days": 27,
+    "calendar_span_days": 28,
     "current_method_version": "1.0.0",
     "evidence_status": "sterk onderbouwd",
     "explanation": "Technische updates kunnen meerdere keren per datadag plaatsvinden. Alleen unieke, vooraf vastgelegde voorspellingen tellen mee als officieel signaal.",
@@ -174,8 +174,8 @@
     "first_run_at_utc": "2026-07-08T20:14:28Z",
     "forward_metrics": {},
     "forward_status": "Nog geen afgeronde publieke voorspellingen.",
-    "last_prediction_at_utc": "2026-08-05T10:39:17Z",
-    "latest_run_at_utc": "2026-08-05T10:39:17Z",
+    "last_prediction_at_utc": "2026-08-06T10:43:21Z",
+    "latest_run_at_utc": "2026-08-06T10:43:21Z",
     "legacy_prediction_count": 0,
     "maturity_status": "Opbouwfase",
     "method_version_count": 1,
@@ -183,70 +183,70 @@
       "1.0.0"
     ],
     "next_maturity_threshold": 100,
-    "official_signal_count": 32,
-    "open_signal_count": 32,
-    "prediction_count": 32,
-    "production_run_count": 34,
+    "official_signal_count": 33,
+    "open_signal_count": 33,
+    "prediction_count": 33,
+    "production_run_count": 35,
     "quality_caps": [
       "Breedte in ecosysteem telt beperkt mee en is nog experimenteel.",
       "RPC-netwerkcontext telt alleen actueel mee, niet in de backtest."
     ],
     "resolved_by_horizon": {},
     "resolved_outcome_count": 0,
-    "technical_run_count": 34,
-    "unique_prediction_days": 32
+    "technical_run_count": 35,
+    "unique_prediction_days": 33
   },
   "warnings": [],
   "waterfall": {
     "available": true,
-    "driver_delta_sum": 0.66,
-    "end_score": 50.07,
+    "driver_delta_sum": -0.92,
+    "end_score": 49.15,
     "reason_unavailable": null,
     "residual_delta": 0.0,
-    "start_score": 49.41,
+    "start_score": 50.07,
     "steps": [
       {
-        "delta": 0.21,
-        "direction": "positive",
-        "end": 49.62,
+        "delta": -0.01,
+        "direction": "negative",
+        "end": 50.06,
         "key": "price_strength",
         "kind": "driver",
         "label": "Koerskracht",
-        "start": 49.41
+        "start": 50.07
       },
       {
-        "delta": 0.57,
-        "direction": "positive",
-        "end": 50.19,
+        "delta": -0.48,
+        "direction": "negative",
+        "end": 49.58,
         "key": "network_usage",
         "kind": "driver",
         "label": "Netwerkgebruik",
-        "start": 49.62
+        "start": 50.06
       },
       {
-        "delta": 0.21,
+        "delta": 0.13,
         "direction": "positive",
-        "end": 50.4,
+        "end": 49.71,
         "key": "capital_flows",
         "kind": "driver",
         "label": "Kapitaalstromen",
-        "start": 50.19
+        "start": 49.58
       },
       {
-        "delta": -0.33,
+        "delta": -0.56,
         "direction": "negative",
-        "end": 50.07,
+        "end": 49.15,
         "key": "ecosystem_breadth",
         "kind": "driver",
         "label": "Ecosysteembreedte",
-        "start": 50.4
+        "start": 49.71
       }
     ],
-    "summary": "De score bewoog vooral omhoog door netwerkgebruik en omlaag door ecosysteembreedte."
+    "summary": "De score bewoog vooral omhoog door kapitaalstromen en omlaag door ecosysteembreedte."
   },
   "what_would_change": [
     "SOL herwint duidelijke relatieve sterkte ten opzichte van BTC.",
-    "Gebruik of DEX-volume zakt terug onder het normale niveau.",
+    "Gebruik, DEX-volume en fees stijgen boven hun normale niveau.",
     "Stablecoinvoorraad en TVL beginnen duidelijk toe te nemen.",
     "Meer Solana-ecosysteemtokens gaan tegelijk meedoen aan de beweging."
   ]
