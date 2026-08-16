@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-15T08:32:51Z",
+  "generated_at_utc": "2026-08-16T04:51:32Z",
   "method_version": "1.0.0",
   "outcomes": [],
   "predictions": [
@@ -11537,6 +11537,285 @@
             "transaction_count": 538349595663
           },
           "last_success_at_utc": "2026-08-15T08:32:51Z",
+          "role": "current network context",
+          "validated_signal_source": false
+        }
+      }
+    },
+    {
+      "created_at_utc": "2026-08-16T04:51:32Z",
+      "data_cutoff_utc": "2026-08-15T23:59:59Z",
+      "evidence_quality": 77.79,
+      "feature_snapshot": {
+        "sol_close": 75.32
+      },
+      "git_commit_sha": "5fb45346996c23960fd8b4a2cdb9d4c3a212c0be",
+      "horizons": {
+        "1d": {},
+        "30d": {},
+        "7d": {
+          "best": 0.2046,
+          "count": 40,
+          "horizon_days": 7,
+          "mean_return": 0.0,
+          "median_return": -0.0056,
+          "median_similarity": 83.39,
+          "p10": -0.1089,
+          "p25": -0.0533,
+          "p75": 0.0566,
+          "p90": 0.1168,
+          "positive_count": 19,
+          "positive_frequency": 0.475,
+          "wilson_high": 0.625,
+          "wilson_low": 0.3294,
+          "worst": -0.2304
+        }
+      },
+      "market_signal": 51.7,
+      "method_version": "1.0.0",
+      "payload_sha256": "4501c6baf9f4c4b384d96ed1e8201bf591302b7d4dfcf9654168c2019c68a981",
+      "prediction_id": "2026-08-15__method-v1.0.0",
+      "quality_caps": [
+        "Breedte in ecosysteem telt beperkt mee en is nog experimenteel.",
+        "RPC-netwerkcontext telt alleen actueel mee, niet in de backtest."
+      ],
+      "regime": "mixed",
+      "source_status": {
+        "ccxt_price_consensus": {
+          "available": true,
+          "context": {
+            "btc": {
+              "asset": "BTC",
+              "available": true,
+              "max_deviation_pct": 5.0,
+              "max_source_count": 4,
+              "min_source_count": 4,
+              "min_sources": 2,
+              "outlier_count": 0,
+              "price_breakdown": {
+                "asset": "BTC",
+                "date": "2026-08-15",
+                "exchange_prices": [
+                  {
+                    "close": 63018.75,
+                    "deviation_pct": 0.056,
+                    "exchange": "coinbase",
+                    "status": "succesvol gebruikt",
+                    "symbol": "BTC/USD",
+                    "used": true
+                  },
+                  {
+                    "close": 63024.3,
+                    "deviation_pct": 0.047,
+                    "exchange": "kraken",
+                    "status": "succesvol gebruikt",
+                    "symbol": "BTC/USD",
+                    "used": true
+                  },
+                  {
+                    "close": 63085.0,
+                    "deviation_pct": 0.049,
+                    "exchange": "kucoin",
+                    "status": "succesvol gebruikt",
+                    "symbol": "BTC/USDT",
+                    "used": true
+                  },
+                  {
+                    "close": 63084.2,
+                    "deviation_pct": 0.047,
+                    "exchange": "okx",
+                    "status": "succesvol gebruikt",
+                    "symbol": "BTC/USDT",
+                    "used": true
+                  }
+                ],
+                "max_deviation_pct": 0.056,
+                "method": "Multi-exchange mediaan",
+                "outlier_count": 0,
+                "source_count": 4,
+                "used_close": 63054.25
+              },
+              "provider": "CCXT consensus",
+              "rows": 8,
+              "sources": [
+                {
+                  "available": true,
+                  "exchange": "kraken",
+                  "rows": 8,
+                  "symbol": "BTC/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "coinbase",
+                  "rows": 8,
+                  "symbol": "BTC/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "okx",
+                  "rows": 8,
+                  "symbol": "BTC/USDT",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "kucoin",
+                  "rows": 8,
+                  "symbol": "BTC/USDT",
+                  "warning": ""
+                }
+              ]
+            },
+            "sol": {
+              "asset": "SOL",
+              "available": true,
+              "max_deviation_pct": 5.0,
+              "max_source_count": 4,
+              "min_source_count": 4,
+              "min_sources": 2,
+              "outlier_count": 0,
+              "price_breakdown": {
+                "asset": "SOL",
+                "date": "2026-08-15",
+                "exchange_prices": [
+                  {
+                    "close": 75.28,
+                    "deviation_pct": 0.053,
+                    "exchange": "coinbase",
+                    "status": "succesvol gebruikt",
+                    "symbol": "SOL/USD",
+                    "used": true
+                  },
+                  {
+                    "close": 75.29,
+                    "deviation_pct": 0.04,
+                    "exchange": "kraken",
+                    "status": "succesvol gebruikt",
+                    "symbol": "SOL/USD",
+                    "used": true
+                  },
+                  {
+                    "close": 75.35,
+                    "deviation_pct": 0.04,
+                    "exchange": "kucoin",
+                    "status": "succesvol gebruikt",
+                    "symbol": "SOL/USDT",
+                    "used": true
+                  },
+                  {
+                    "close": 75.35,
+                    "deviation_pct": 0.04,
+                    "exchange": "okx",
+                    "status": "succesvol gebruikt",
+                    "symbol": "SOL/USDT",
+                    "used": true
+                  }
+                ],
+                "max_deviation_pct": 0.053,
+                "method": "Multi-exchange mediaan",
+                "outlier_count": 0,
+                "source_count": 4,
+                "used_close": 75.32
+              },
+              "provider": "CCXT consensus",
+              "rows": 8,
+              "sources": [
+                {
+                  "available": true,
+                  "exchange": "kraken",
+                  "rows": 8,
+                  "symbol": "SOL/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "coinbase",
+                  "rows": 8,
+                  "symbol": "SOL/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "okx",
+                  "rows": 8,
+                  "symbol": "SOL/USDT",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "kucoin",
+                  "rows": 8,
+                  "symbol": "SOL/USDT",
+                  "warning": ""
+                }
+              ]
+            }
+          },
+          "role": "multi-exchange historical price consensus",
+          "validated_signal_source": true
+        },
+        "coinbase": {
+          "available": true,
+          "role": "fallback historical prices",
+          "validated_signal_source": true
+        },
+        "coingecko": {
+          "available": true,
+          "current_prices": {
+            "bitcoin": {
+              "usd": 63072,
+              "usd_24h_change": -0.010060442399987738,
+              "usd_24h_vol": 9512048716.485575,
+              "usd_market_cap": 1265911185481.1497
+            },
+            "solana": {
+              "usd": 75.48,
+              "usd_24h_change": -0.00859760128747467,
+              "usd_24h_vol": 600445070.8627659,
+              "usd_market_cap": 43984721210.880424
+            }
+          },
+          "last_success_at_utc": "2026-08-16T04:51:32Z",
+          "role": "current cross-check and ecosystem breadth",
+          "validated_signal_source": false
+        },
+        "defillama": {
+          "available": true,
+          "role": "historical DeFi data",
+          "validated_signal_source": true
+        },
+        "solana_rpc": {
+          "available": true,
+          "context": {
+            "historically_validated": false,
+            "recent_performance_samples": [
+              {
+                "numNonVoteTransactions": 77264,
+                "numSlots": 143,
+                "numTransactions": 175234,
+                "samplePeriodSecs": 60,
+                "slot": 439575661
+              },
+              {
+                "numNonVoteTransactions": 78633,
+                "numSlots": 144,
+                "numTransactions": 176566,
+                "samplePeriodSecs": 60,
+                "slot": 439575518
+              },
+              {
+                "numNonVoteTransactions": 66025,
+                "numSlots": 142,
+                "numTransactions": 163160,
+                "samplePeriodSecs": 60,
+                "slot": 439575374
+              }
+            ],
+            "transaction_count": 538593771905
+          },
+          "last_success_at_utc": "2026-08-16T04:51:32Z",
           "role": "current network context",
           "validated_signal_source": false
         }
