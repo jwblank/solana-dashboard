@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-21T13:35:23Z",
+  "generated_at_utc": "2026-10-22T13:37:37Z",
   "method_version": "1.0.0",
   "outcomes": [],
   "predictions": [
@@ -30926,6 +30926,297 @@
             "transaction_count": 563038868716
           },
           "last_success_at_utc": "2026-10-21T13:35:23Z",
+          "role": "current network context",
+          "validated_signal_source": false
+        }
+      }
+    },
+    {
+      "created_at_utc": "2026-10-22T13:37:37Z",
+      "data_cutoff_utc": "2026-10-21T23:59:59Z",
+      "evidence_quality": 77.07,
+      "feature_snapshot": {
+        "sol_close": 106.87
+      },
+      "git_commit_sha": "121a53bf95e0a623a2f99d660aea0dfd10cf86b5",
+      "horizons": {
+        "1d": {},
+        "30d": {},
+        "7d": {
+          "best": 0.2714,
+          "count": 40,
+          "horizon_days": 7,
+          "mean_return": 0.0026,
+          "median_return": -0.005,
+          "median_similarity": 83.63,
+          "p10": -0.1144,
+          "p25": -0.0543,
+          "p75": 0.0484,
+          "p90": 0.1033,
+          "positive_count": 19,
+          "positive_frequency": 0.475,
+          "wilson_high": 0.625,
+          "wilson_low": 0.3294,
+          "worst": -0.2304
+        }
+      },
+      "market_signal": 50.29,
+      "method_version": "1.0.0",
+      "payload_sha256": "17db7f5f61f464c05a5965c2059cfc5d1a5eb418be0342789ce7da9cff9eb508",
+      "prediction_id": "2026-10-21__method-v1.0.0",
+      "quality_caps": [
+        "Breedte in ecosysteem telt beperkt mee en is nog experimenteel.",
+        "RPC-netwerkcontext telt alleen actueel mee, niet in de backtest."
+      ],
+      "regime": "mixed",
+      "source_status": {
+        "ccxt_price_consensus": {
+          "available": false,
+          "context": {
+            "btc": {
+              "asset": "BTC",
+              "available": true,
+              "fallback_used": true,
+              "gap_fill_rows": 1101,
+              "gap_fill_start": "2023-10-18",
+              "max_deviation_pct": 5.0,
+              "max_source_count": 3,
+              "min_source_count": 2,
+              "min_sources": 2,
+              "outlier_count": 0,
+              "price_breakdown": {
+                "asset": "BTC",
+                "ccxt_last_close": 28396.2,
+                "ccxt_last_date": "2023-10-17",
+                "date": "2026-10-22",
+                "exchange_prices": [
+                  {
+                    "close": 81672.98,
+                    "deviation_pct": 0.0,
+                    "exchange": "coinbase",
+                    "status": "succesvol gebruikt als herstelbron",
+                    "symbol": "BTC-USD",
+                    "used": true
+                  },
+                  {
+                    "close": 84022.5,
+                    "deviation_pct": 0.046,
+                    "exchange": "kraken",
+                    "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
+                    "symbol": "BTC/USD",
+                    "used": false
+                  },
+                  {
+                    "close": 84099.5,
+                    "deviation_pct": 0.046,
+                    "exchange": "kucoin",
+                    "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
+                    "symbol": "BTC/USDT",
+                    "used": false
+                  },
+                  {
+                    "close": null,
+                    "deviation_pct": null,
+                    "exchange": "okx",
+                    "status": "niet beschikbaar: geen prijs op consensusdag",
+                    "symbol": "BTC/USDT",
+                    "used": false
+                  }
+                ],
+                "gap_fill_start": "2023-10-18",
+                "method": "Coinbase herstelbron",
+                "outlier_count": 0,
+                "source_count": 4,
+                "used_close": 81672.98
+              },
+              "provider": "CCXT consensus + Coinbase gap fill",
+              "rows": 1020,
+              "sources": [
+                {
+                  "available": true,
+                  "exchange": "kraken",
+                  "rows": 720,
+                  "symbol": "BTC/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "coinbase",
+                  "rows": 300,
+                  "symbol": "BTC/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "okx",
+                  "rows": 300,
+                  "symbol": "BTC/USDT",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "kucoin",
+                  "rows": 1400,
+                  "symbol": "BTC/USDT",
+                  "warning": ""
+                }
+              ],
+              "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-10-18 onward."
+            },
+            "sol": {
+              "asset": "SOL",
+              "available": true,
+              "fallback_used": true,
+              "gap_fill_rows": 1101,
+              "gap_fill_start": "2023-10-18",
+              "max_deviation_pct": 5.0,
+              "max_source_count": 3,
+              "min_source_count": 2,
+              "min_sources": 2,
+              "outlier_count": 0,
+              "price_breakdown": {
+                "asset": "SOL",
+                "ccxt_last_close": 23.937,
+                "ccxt_last_date": "2023-10-17",
+                "date": "2026-10-22",
+                "exchange_prices": [
+                  {
+                    "close": 104.81,
+                    "deviation_pct": 0.0,
+                    "exchange": "coinbase",
+                    "status": "succesvol gebruikt als herstelbron",
+                    "symbol": "SOL-USD",
+                    "used": true
+                  },
+                  {
+                    "close": 106.88,
+                    "deviation_pct": 0.033,
+                    "exchange": "kraken",
+                    "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
+                    "symbol": "SOL/USD",
+                    "used": false
+                  },
+                  {
+                    "close": 106.95,
+                    "deviation_pct": 0.033,
+                    "exchange": "kucoin",
+                    "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
+                    "symbol": "SOL/USDT",
+                    "used": false
+                  },
+                  {
+                    "close": null,
+                    "deviation_pct": null,
+                    "exchange": "okx",
+                    "status": "niet beschikbaar: geen prijs op consensusdag",
+                    "symbol": "SOL/USDT",
+                    "used": false
+                  }
+                ],
+                "gap_fill_start": "2023-10-18",
+                "method": "Coinbase herstelbron",
+                "outlier_count": 0,
+                "source_count": 4,
+                "used_close": 104.81
+              },
+              "provider": "CCXT consensus + Coinbase gap fill",
+              "rows": 1020,
+              "sources": [
+                {
+                  "available": true,
+                  "exchange": "kraken",
+                  "rows": 720,
+                  "symbol": "SOL/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "coinbase",
+                  "rows": 300,
+                  "symbol": "SOL/USD",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "okx",
+                  "rows": 300,
+                  "symbol": "SOL/USDT",
+                  "warning": ""
+                },
+                {
+                  "available": true,
+                  "exchange": "kucoin",
+                  "rows": 1400,
+                  "symbol": "SOL/USDT",
+                  "warning": ""
+                }
+              ],
+              "warning": "CCXT consensus had a daily history gap; Coinbase replaced prices from 2023-10-18 onward."
+            }
+          },
+          "role": "multi-exchange historical price consensus",
+          "validated_signal_source": true
+        },
+        "coinbase": {
+          "available": true,
+          "role": "fallback historical prices",
+          "validated_signal_source": true
+        },
+        "coingecko": {
+          "available": true,
+          "current_prices": {
+            "bitcoin": {
+              "usd": 81738,
+              "usd_24h_change": -2.056020905647775,
+              "usd_24h_vol": 37922763333.15665,
+              "usd_market_cap": 1645182584934.8132
+            },
+            "solana": {
+              "usd": 104.9,
+              "usd_24h_change": -1.591116771083495,
+              "usd_24h_vol": 2834587054.8656807,
+              "usd_market_cap": 61823140068.26162
+            }
+          },
+          "last_success_at_utc": "2026-10-22T13:37:37Z",
+          "role": "current cross-check and ecosystem breadth",
+          "validated_signal_source": false
+        },
+        "defillama": {
+          "available": true,
+          "role": "historical DeFi data",
+          "validated_signal_source": true
+        },
+        "solana_rpc": {
+          "available": true,
+          "context": {
+            "historically_validated": false,
+            "recent_performance_samples": [
+              {
+                "numNonVoteTransactions": 178965,
+                "numSlots": 279,
+                "numTransactions": 178965,
+                "samplePeriodSecs": 60,
+                "slot": 460055078
+              },
+              {
+                "numNonVoteTransactions": 158715,
+                "numSlots": 285,
+                "numTransactions": 158715,
+                "samplePeriodSecs": 60,
+                "slot": 460054799
+              },
+              {
+                "numNonVoteTransactions": 185718,
+                "numSlots": 281,
+                "numTransactions": 185718,
+                "samplePeriodSecs": 60,
+                "slot": 460054514
+              }
+            ],
+            "transaction_count": 563220255200
+          },
+          "last_success_at_utc": "2026-10-22T13:37:37Z",
           "role": "current network context",
           "validated_signal_source": false
         }
