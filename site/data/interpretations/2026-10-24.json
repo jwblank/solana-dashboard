@@ -1,0 +1,168 @@
+{
+  "analysis_text": "Kort beeld: SOL staat rond $100.76 en het dashboard geeft een huidige sterkte van 45/100. De dashboardlezing is: Gemengd marktbeeld.\n\nWat trekt omhoog?: De belangrijkste verhouding zit tussen koerskracht 47/100, gebruik 43/100, kapitaalstromen 42/100 en breedte in ecosysteem 45/100. Als koerskracht sterker is dan gebruik en kapitaalstromen, loopt de markt mogelijk vooruit op bredere bevestiging; als gebruik en kapitaalstromen meebewegen, wordt het beeld steviger.\n\nWat houdt tegen?: De dashboardblokken lopen niet altijd gelijk, waardoor het beeld genuanceerd blijft.\n\nHoe stevig is dit?: De onderbouwing is 80/100. Onderbouwing betekent hoe stevig de actuele conclusie historisch en datatechnisch onderbouwd is; bij beperkt onderbouwde data moet het signaal voorzichtig gelezen worden.\n\nConclusie: De historische vergelijking gebruikt 40 vergelijkbare dagen; daarvan was 52.5% positief, met een mediaan rendement van 1.4%. Dit is een gestructureerde dataduiding van de actuele Solana-context, geen financieel advies.",
+  "data_cutoff_utc": "2026-10-24T23:59:59Z",
+  "date": "2026-10-24",
+  "footer_note": "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de automatische analyse niet beschikbaar of niet geldig was. Dit is geen beleggingsadvies.",
+  "generated_at_utc": "2026-10-25T09:10:37Z",
+  "input_snapshot": {
+    "analog_count": 40,
+    "analog_median_return": "1.4%",
+    "analog_positive_frequency": "52.5%",
+    "backtest_7d": {
+      "brier_skill": "0.006",
+      "calibration_error": "0.077",
+      "directional_accuracy": "48.5%",
+      "prediction_count": 130
+    },
+    "block_weights": {
+      "capital": "20%",
+      "ecosystem_breadth": "10%",
+      "network_usage": "25%",
+      "price_strength": "45%"
+    },
+    "capital": "42/100",
+    "capital_components": [
+      {
+        "label": "Stablecoins 30d",
+        "score": "42/100",
+        "value": "-2.1%",
+        "weight": "55% binnen kapitaalblok"
+      },
+      {
+        "label": "TVL 30d",
+        "score": "43/100",
+        "value": "-9.3%",
+        "weight": "45% binnen kapitaalblok"
+      },
+      {
+        "label": "Schaalduiding",
+        "score": "42/100",
+        "value": "Relatief",
+        "weight": "Uitleg"
+      }
+    ],
+    "capital_summary": "Kapitaalstromen zijn zwak ten opzichte van de eigen historie.",
+    "data_cutoff_utc": "2026-10-24T23:59:59Z",
+    "data_freshness": [
+      {
+        "label": "Update-run",
+        "value": "2026-10-25T09:10:37Z"
+      },
+      {
+        "label": "Data t/m",
+        "value": "2026-10-24T23:59:59Z"
+      },
+      {
+        "label": "Historie",
+        "value": "2022-12-25 t/m 2026-10-24"
+      },
+      {
+        "label": "Records",
+        "value": "1400"
+      },
+      {
+        "label": "Prijsreparaties",
+        "value": "0"
+      },
+      {
+        "label": "Prijsconsensus",
+        "value": "SOL: CCXT consensus, 8 rijen, min 4 bronnen; BTC: CCXT consensus, 8 rijen, min 4 bronnen"
+      },
+      {
+        "label": "Analoge dagen",
+        "value": "40"
+      },
+      {
+        "label": "Ecosysteem tokens",
+        "value": "25"
+      },
+      {
+        "label": "RPC samples",
+        "value": "3"
+      }
+    ],
+    "data_quality_summary": "1400 historische records van 2022-12-25 t/m 2026-10-24. Laatste dagdata-cutoff: 2026-10-24T23:59:59Z. Update-run: 2026-10-25T09:10:37Z.",
+    "data_warnings": [],
+    "ecosystem_breadth": "45/100",
+    "evidence_label": "sterk onderbouwd",
+    "evidence_quality": "80/100",
+    "historical_summary": "Historische frequentie: 52.5% positief na 7 dagen. Mediaan 1.4%; midden 80% liep van -13.6% tot 10.8%.",
+    "market_signal": "45/100",
+    "market_signal_label": "neutraal of gemengd",
+    "network_components": [
+      {
+        "label": "DEX-volume 7d/30d",
+        "score": "45/100",
+        "value": "6.20x",
+        "weight": "60% binnen gebruik"
+      },
+      {
+        "label": "Fees 7d/30d",
+        "score": "36/100",
+        "value": "5.54x",
+        "weight": "40% binnen gebruik"
+      },
+      {
+        "label": "RPC-context",
+        "score": "52/100",
+        "value": "52/100; 1.103,7 TPS",
+        "weight": "15% correctie op gebruik"
+      },
+      {
+        "label": "Breedte in ecosysteem",
+        "score": "45/100",
+        "value": "40.0% positief 7d; 25 tokens",
+        "weight": "10% van eindscore"
+      },
+      {
+        "label": "Gevalideerde basis",
+        "score": "41/100",
+        "value": "41/100",
+        "weight": "85% van gebruik"
+      }
+    ],
+    "network_summary": "Gebruik geeft nog weinig bevestiging. Breedte in ecosysteem: 40.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -1.1%.",
+    "network_usage": "43/100",
+    "price_components": [
+      {
+        "label": "SOL 7 dagen",
+        "score": "50/100",
+        "value": "-1.1%",
+        "weight": "20% binnen prijsblok"
+      },
+      {
+        "label": "SOL 30 dagen",
+        "score": "42/100",
+        "value": "-12.6%",
+        "weight": "15% binnen prijsblok"
+      },
+      {
+        "label": "Relatief vs BTC 7d",
+        "score": "52/100",
+        "value": "-0.3%",
+        "weight": "30% binnen prijsblok"
+      },
+      {
+        "label": "Afstand tot 50d trend",
+        "score": "46/100",
+        "value": "-6.7%",
+        "weight": "20% binnen prijsblok"
+      }
+    ],
+    "price_strength": "47/100",
+    "price_summary": "Koerskracht is gemengd: nog geen overtuigende koersbevestiging.",
+    "regime_title": "Gemengd marktbeeld",
+    "sol_price": "$100.76",
+    "updated_at_utc": "2026-10-25T09:10:37Z"
+  },
+  "intro": "De huidige sterkte staat op 45/100 (neutraal of gemengd) en de onderbouwing op 80/100 (sterk onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-10-24T23:59:59Z.",
+  "llm_called_at_utc": "2026-10-25T09:12:16Z",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "provider": "Hugging Face Inference Providers",
+  "schema_version": "1.0",
+  "status": "fallback_error",
+  "title": "Gemengd marktbeeld",
+  "warnings": [
+    "400 Client Error: Bad Request for url: https://router.huggingface.co/v1/chat/completions"
+  ]
+}
