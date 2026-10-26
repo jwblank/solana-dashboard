@@ -14,6 +14,7 @@ def test_site_contains_required_tabs(monkeypatch):
         "Netwerk",
         "Kapitaal",
         "Voorspellingskracht",
+        "Voorspelmonitor",
         "Bewijs",
         "Ecosysteem",
         "Historische vergelijking",
@@ -34,6 +35,7 @@ def test_site_contains_required_tabs(monkeypatch):
     assert 'data-tab="prijs"' in html
     assert 'data-tab="netwerk"' in html
     assert 'data-tab="voorspellingskracht"' in html
+    assert 'data-tab="voorspelmonitor"' in html
     assert 'id="bewijs-data"' in html
     assert "/data/dashboard.json" not in html
 
@@ -46,6 +48,16 @@ def test_predictive_power_is_published(monkeypatch):
     assert payload["maturity"]["status"]
     assert payload["sections"]
     assert payload["warnings"]
+
+
+def test_predictive_monitor_is_published():
+    payload = json.loads(
+        Path("site/data/predictive_monitor.json").read_text(encoding="utf-8")
+    )
+    assert payload["name"] == "Voorspelmonitor"
+    assert payload["status"]["code"] == "prospective_in_progress"
+    assert payload["events"]
+    assert payload["status_ladder"]
 
 
 def test_interpretation_archive_is_published(monkeypatch):

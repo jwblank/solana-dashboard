@@ -1,0 +1,648 @@
+{
+  "data_cutoff_utc": "2026-10-24T23:59:59Z",
+  "data_quality": {
+    "definition_rows": 1,
+    "duplicate_prediction_dates_ignored": 0,
+    "event_rows": 5,
+    "first_publications_used": 113,
+    "ledger_validation": "passed",
+    "outcome_rows": 22,
+    "raw_prediction_rows": 113,
+    "research_duplicate_dates": 17,
+    "research_duplicate_policy": "Eerste gepubliceerde run per datadag.",
+    "research_runs_preserved": 127,
+    "research_unique_dates": 110,
+    "source_sha256": {
+      "definitions": "9d70e54dab02ba5dfed07e917e79368a691b713ea365a11229939feb4d867d92",
+      "events": "301eea3c45780866090d2b6213f29dbac56fc74aa6e4bdcd0682b30ecc365d93",
+      "outcomes": "1ad291eaa5ecb0d72fdaeee802b02acaf0213639774d6453942e2b138bef7760",
+      "predictions": "34ffe014f3f86179d8a5364c91b7b710144a71dda8bd590d45d398d729687005",
+      "research": "972de855a4290789efcfce3adc9a5dc3263c4478f426555e80ba6ae196d97109"
+    }
+  },
+  "definition": {
+    "candidate_name": "Dichtheid van bevestigde scorepieken",
+    "change_policy": "Een wijziging in feature, drempel, horizon, cooldown of controlegroep vereist een nieuwe definition_id en versie; bestaande records worden nooit herschreven.",
+    "control_policy": "Alle volwassen officiële dagvensters met minder dan drie bevestigde pieken in dezelfde 10-daagse feature. Overlap wordt expliciet gemeld; inferentie is geclusterd op onafhankelijke events.",
+    "cooldown_days": 10,
+    "definition_id": "peak-density-v1",
+    "discovery_note": "De kandidaat is na inspectie van historische patronen gekozen. De bestaande uitkomsten zijn daarom uitsluitend verkennend en tellen niet als bevestiging.",
+    "discovery_period": {
+      "classification": "retrospective_exploratory",
+      "from": "2026-07-04",
+      "through": "2026-10-24"
+    },
+    "economic_relevance_threshold": {
+      "note": "Apart van statistische bevestiging beoordeeld.",
+      "sol_uplift_7d_percentage_points": 2.0
+    },
+    "event_rule": "Start een event wanneer het aantal bevestigde pieken in de laatste tien officiële signalen van minder dan drie naar ten minste drie gaat.",
+    "feature": {
+      "name": "confirmed_peak_count_10d",
+      "operator": ">=",
+      "threshold": 3,
+      "window_observations": 10
+    },
+    "input_policy": "Alleen de eerste officiële prediction per data_cutoff-dag.",
+    "locked_at_utc": "2026-10-26T10:55:00Z",
+    "payload_sha256": "cee9b7192e1dc0d1618a92f26b88585a99482de7a9f838ab008e53032db1c451",
+    "peak_rule": "Op dag t wordt t-1 als piek bevestigd wanneer score[t-1] > score[t-2] en score[t-1] >= score[t].",
+    "primary_horizon_days": 7,
+    "prospective_policy": "Een event is prospectief wanneer de eerste officiële publicatie op of na 2026-10-26T10:55:00Z plaatsvindt. Historische backfill blijft altijd retrospectief.",
+    "secondary_horizons_days": [
+      1,
+      3,
+      14,
+      30
+    ],
+    "status": "locked",
+    "version": "1.0.0"
+  },
+  "downloads": [
+    {
+      "label": "Signaaldefinities (JSONL)",
+      "path": "./data/signal_definitions.jsonl"
+    },
+    {
+      "label": "Events (JSONL)",
+      "path": "./data/signal_events.jsonl"
+    },
+    {
+      "label": "Uitkomsten (JSONL)",
+      "path": "./data/signal_outcomes.jsonl"
+    },
+    {
+      "label": "Monitor (JSON)",
+      "path": "./data/predictive_monitor.json"
+    }
+  ],
+  "event_study": [
+    {
+      "btc_relative_mean_return": 0.0001831351,
+      "event_n": 5,
+      "offset_days": -5,
+      "sol_mean_return": -0.0063810926
+    },
+    {
+      "btc_relative_mean_return": -0.0007879663,
+      "event_n": 5,
+      "offset_days": -4,
+      "sol_mean_return": -0.0093618171
+    },
+    {
+      "btc_relative_mean_return": -0.003420144,
+      "event_n": 5,
+      "offset_days": -3,
+      "sol_mean_return": -0.0126041786
+    },
+    {
+      "btc_relative_mean_return": -0.0044566533,
+      "event_n": 5,
+      "offset_days": -2,
+      "sol_mean_return": -0.0062308019
+    },
+    {
+      "btc_relative_mean_return": 0.0049929303,
+      "event_n": 5,
+      "offset_days": -1,
+      "sol_mean_return": 0.0070644777
+    },
+    {
+      "btc_relative_mean_return": 0.0,
+      "event_n": 5,
+      "offset_days": 0,
+      "sol_mean_return": 0.0
+    },
+    {
+      "btc_relative_mean_return": 0.0006010786,
+      "event_n": 5,
+      "offset_days": 1,
+      "sol_mean_return": 0.0010427625
+    },
+    {
+      "btc_relative_mean_return": 0.0074996958,
+      "event_n": 5,
+      "offset_days": 2,
+      "sol_mean_return": 0.0096585406
+    },
+    {
+      "btc_relative_mean_return": -0.002318549,
+      "event_n": 5,
+      "offset_days": 3,
+      "sol_mean_return": -0.0103783309
+    },
+    {
+      "btc_relative_mean_return": 0.0025588335,
+      "event_n": 5,
+      "offset_days": 4,
+      "sol_mean_return": -0.0031414409
+    },
+    {
+      "btc_relative_mean_return": 0.014638035,
+      "event_n": 5,
+      "offset_days": 5,
+      "sol_mean_return": 0.0241436656
+    },
+    {
+      "btc_relative_mean_return": 0.0253454507,
+      "event_n": 4,
+      "offset_days": 6,
+      "sol_mean_return": 0.0640455101
+    },
+    {
+      "btc_relative_mean_return": 0.0152433065,
+      "event_n": 4,
+      "offset_days": 7,
+      "sol_mean_return": 0.0765721329
+    },
+    {
+      "btc_relative_mean_return": 0.0173533418,
+      "event_n": 4,
+      "offset_days": 8,
+      "sol_mean_return": 0.0774249112
+    },
+    {
+      "btc_relative_mean_return": 0.0226744161,
+      "event_n": 4,
+      "offset_days": 9,
+      "sol_mean_return": 0.1050364842
+    },
+    {
+      "btc_relative_mean_return": 0.0331812208,
+      "event_n": 4,
+      "offset_days": 10,
+      "sol_mean_return": 0.1128194465
+    },
+    {
+      "btc_relative_mean_return": 0.0205667302,
+      "event_n": 4,
+      "offset_days": 11,
+      "sol_mean_return": 0.0975937771
+    },
+    {
+      "btc_relative_mean_return": 0.0448598083,
+      "event_n": 4,
+      "offset_days": 12,
+      "sol_mean_return": 0.1243133232
+    },
+    {
+      "btc_relative_mean_return": 0.0773162946,
+      "event_n": 4,
+      "offset_days": 13,
+      "sol_mean_return": 0.1600392223
+    },
+    {
+      "btc_relative_mean_return": 0.0629343991,
+      "event_n": 4,
+      "offset_days": 14,
+      "sol_mean_return": 0.13257177
+    }
+  ],
+  "events": [
+    {
+      "btc_entry_price": 81837.69,
+      "btc_relative_return_7d": null,
+      "definition_version": "1.0.0",
+      "evaluation_phase": "retrospective",
+      "event_date": "2026-10-19",
+      "event_id": "peak-density-v1__2026-10-19",
+      "event_payload_sha256": "5e63fea1e78cc241e1b52d467b413b056b4ec9094c851628cdfc36b9e43ed294",
+      "feature_value": 3,
+      "first_published_at_utc": "2026-10-20T13:25:43Z",
+      "outcome_payload_sha256": null,
+      "primary_maturity_date": "2026-10-26",
+      "sol_entry_price": 104.96,
+      "sol_return_14d": null,
+      "sol_return_7d": null,
+      "status": "pending"
+    },
+    {
+      "btc_entry_price": 84378.31,
+      "btc_relative_return_7d": 0.0364418285,
+      "definition_version": "1.0.0",
+      "evaluation_phase": "retrospective",
+      "event_date": "2026-09-23",
+      "event_id": "peak-density-v1__2026-09-23",
+      "event_payload_sha256": "4c94e8e3c0df2c093af963e6bdeacfd2ca2c5d6115c4a1fc5d338252fd2d807d",
+      "feature_value": 3,
+      "first_published_at_utc": "2026-09-24T13:22:55Z",
+      "outcome_payload_sha256": "e23f90865b0b73589bcc0dd27b6c83f05bf6fef5c05cc730948743cb2af9a1c8",
+      "primary_maturity_date": "2026-09-30",
+      "sol_entry_price": 114.99,
+      "sol_return_14d": 0.0109574746,
+      "sol_return_7d": 0.0266979737,
+      "status": "matured"
+    },
+    {
+      "btc_entry_price": 77272.9,
+      "btc_relative_return_7d": 0.0398644281,
+      "definition_version": "1.0.0",
+      "evaluation_phase": "retrospective",
+      "event_date": "2026-09-12",
+      "event_id": "peak-density-v1__2026-09-12",
+      "event_payload_sha256": "cf6747ab7a39fc127cde2b3869d0892d0dd47b4f8269686d1ae77ca3e611e95c",
+      "feature_value": 3,
+      "first_published_at_utc": "2026-09-13T09:34:35Z",
+      "outcome_payload_sha256": "124ad0cf3aeb93ea816b7a0438ecec943feaa4887b91e18f85e1695efd9d5650",
+      "primary_maturity_date": "2026-09-19",
+      "sol_entry_price": 101.755,
+      "sol_return_14d": 0.1929634907,
+      "sol_return_7d": 0.0912977249,
+      "status": "matured"
+    },
+    {
+      "btc_entry_price": 62975.19,
+      "btc_relative_return_7d": 0.0003735051,
+      "definition_version": "1.0.0",
+      "evaluation_phase": "retrospective",
+      "event_date": "2026-08-14",
+      "event_id": "peak-density-v1__2026-08-14",
+      "event_payload_sha256": "03fefa0681950d6895f0c77a513bc5434513cbb6ea835b8a5f52f887f0010232",
+      "feature_value": 3,
+      "first_published_at_utc": "2026-08-15T08:32:51Z",
+      "outcome_payload_sha256": "b07cb14e458497b28e499e47a1c9314b994e1c85f9f85e16b043f64327db6db5",
+      "primary_maturity_date": "2026-08-21",
+      "sol_entry_price": 75.33,
+      "sol_return_14d": 0.3825833001,
+      "sol_return_7d": 0.2441258463,
+      "status": "matured"
+    },
+    {
+      "btc_entry_price": 66516.18,
+      "btc_relative_return_7d": -0.0157065357,
+      "definition_version": "1.0.0",
+      "evaluation_phase": "retrospective",
+      "event_date": "2026-07-21",
+      "event_id": "peak-density-v1__2026-07-21",
+      "event_payload_sha256": "36fe6c7aa359b233a963974ee4e7f1c2006ac4de079c2f03c8b9112435b03848",
+      "feature_value": 3,
+      "first_published_at_utc": "2026-07-22T10:29:16Z",
+      "outcome_payload_sha256": "fe1578b38833bf7fe47a18573213e1461bf8a3455948eacf883a85d0e370ce5b",
+      "primary_maturity_date": "2026-07-28",
+      "sol_entry_price": 78.09,
+      "sol_return_14d": -0.0562171853,
+      "sol_return_7d": -0.0558330132,
+      "status": "matured"
+    }
+  ],
+  "evidence_over_time": [
+    {
+      "ci95_high": -0.0475402503,
+      "ci95_low": -0.0612594575,
+      "control_n": 8,
+      "estimate": -0.0543998539,
+      "event_n": 1,
+      "maturity_date": "2026-07-28"
+    },
+    {
+      "ci95_high": 0.2592134492,
+      "ci95_low": -0.0892669832,
+      "control_n": 17,
+      "estimate": 0.0850950285,
+      "event_n": 2,
+      "maturity_date": "2026-08-21"
+    },
+    {
+      "ci95_high": 0.2119251088,
+      "ci95_low": -0.0734464806,
+      "control_n": 41,
+      "estimate": 0.0701118771,
+      "event_n": 3,
+      "maturity_date": "2026-09-19"
+    },
+    {
+      "ci95_high": 0.1732254816,
+      "ci95_low": -0.0556080853,
+      "control_n": 42,
+      "estimate": 0.053924339,
+      "event_n": 4,
+      "maturity_date": "2026-09-30"
+    }
+  ],
+  "generated_at_utc": "2026-10-25T13:40:33Z",
+  "horizon_profile": [
+    {
+      "ci95_high": 0.015152061,
+      "ci95_low": -0.0126160164,
+      "control_mean": -0.0009350635,
+      "control_n": 60,
+      "event_mean": 0.0010427625,
+      "event_n": 5,
+      "horizon_days": 1,
+      "is_primary": false,
+      "uplift": 0.001977826
+    },
+    {
+      "ci95_high": 0.0293984257,
+      "ci95_low": -0.0473127177,
+      "control_mean": 0.0002890584,
+      "control_n": 60,
+      "event_mean": -0.0103783309,
+      "event_n": 5,
+      "horizon_days": 3,
+      "is_primary": false,
+      "uplift": -0.0106673893
+    },
+    {
+      "ci95_high": 0.1897344837,
+      "ci95_low": -0.0322123042,
+      "control_mean": 0.0034828687,
+      "control_n": 59,
+      "event_mean": 0.0765721329,
+      "event_n": 4,
+      "horizon_days": 7,
+      "is_primary": true,
+      "uplift": 0.0730892642
+    },
+    {
+      "ci95_high": 0.2766816945,
+      "ci95_low": -0.0957253082,
+      "control_mean": 0.0478709142,
+      "control_n": 52,
+      "event_mean": 0.13257177,
+      "event_n": 4,
+      "horizon_days": 14,
+      "is_primary": false,
+      "uplift": 0.0847008559
+    },
+    {
+      "ci95_high": 0.1037719095,
+      "ci95_low": -0.240008726,
+      "control_mean": 0.1650342679,
+      "control_n": 42,
+      "event_mean": 0.0928133708,
+      "event_n": 4,
+      "horizon_days": 30,
+      "is_primary": false,
+      "uplift": -0.0722208971
+    }
+  ],
+  "limitations": [
+    "De piekregel is na historische inspectie gekozen. De huidige vier volwassen 7-daagse events zijn daarom hypothesevormend, niet bevestigend.",
+    "Controledagen overlappen in tijd. Hun gemiddelde is een beschrijvende benchmark; de onafhankelijke eventtelling bepaalt de bewijsstatus.",
+    "Met vier volwassen events zijn betrouwbaarheidsintervallen breed en regime-uitsplitsingen zeer klein.",
+    "Transactiekosten, slippage, liquiditeit en uitvoerbaarheid zijn niet verwerkt; statistische en economische relevantie worden apart getoond.",
+    "De data-cutoff-slotkoers is een reproduceerbaar statistisch anker, geen gegarandeerde uitvoeringsprijs op het latere publicatietijdstip.",
+    "Meerdere verkende specificaties vergroten de kans op een toevallig patroon. Prospectieve resultaten zijn daarom doorslaggevend."
+  ],
+  "methodology": [
+    "De scorepiek wordt pas één officiële observatie later bevestigd; de regel gebruikt dus geen toekomstinformatie op het moment van het event.",
+    "Alleen clusterstarts tellen als event. Een cooldown van tien dagen voorkomt dat opeenvolgende dagen als onafhankelijke bewijzen worden geteld.",
+    "De primaire uitkomst is het SOL-rendement na zeven kalenderdagen ten opzichte van alle volwassen officiële controledagen met minder dan drie pieken.",
+    "Het rendementsanker is de slotkoers op de data-cutoff-dag in de officiële prediction. Het eerste publicatietijdstip wordt apart in het eventregister getoond en een event gebruikt altijd de eerste publicatie van die datadag.",
+    "SOL-minus-BTC en de richting-hit-rate zijn vooraf vastgelegde nevenmetingen; 1, 3, 14 en 30 dagen zijn gevoeligheidsprofielen.",
+    "Historische backfill blijft retrospectief. Alleen na de lock gepubliceerde events tellen mee voor de bevestigingsdrempels.",
+    "Een methodewijziging krijgt een nieuw versienummer en een nieuwe definitieregel; events en uitkomsten zijn append-only en gehasht."
+  ],
+  "name": "Voorspelmonitor",
+  "primary_metrics": [
+    {
+      "benchmark": "Gemiddeld 7-daags SOL-rendement minus controledagen",
+      "ci95": [
+        -0.0362641314,
+        0.1918491495
+      ],
+      "control_mean": 0.0034828687,
+      "control_window_n": 59,
+      "early_split": {
+        "estimate": 0.0906635478,
+        "event_n": 2
+      },
+      "economic_threshold": 0.02,
+      "economically_relevant": true,
+      "estimate": 0.0730892642,
+      "event_mean": 0.0765721329,
+      "evidence_scope": "retrospective_exploratory",
+      "independent_event_n": 4,
+      "label": "SOL-rendementsuplift (7d)",
+      "late_split": {
+        "estimate": 0.0555149806,
+        "event_n": 2
+      },
+      "metric_id": "sol_uplift_7d",
+      "prospective_ci95": [
+        null,
+        null
+      ],
+      "prospective_control_n": 0,
+      "prospective_estimate": null,
+      "prospective_event_n": 0,
+      "retrospective_event_n": 4,
+      "unit": "percentage_points"
+    },
+    {
+      "benchmark": "Gemiddeld SOL-minus-BTC rendement minus controledagen",
+      "ci95": [
+        -0.0118978224,
+        0.0470847729
+      ],
+      "control_mean": -0.0033524942,
+      "control_window_n": 59,
+      "early_split": {
+        "estimate": -0.0043140211,
+        "event_n": 2
+      },
+      "economic_threshold": null,
+      "economically_relevant": null,
+      "estimate": 0.0185958007,
+      "event_mean": 0.0152433065,
+      "evidence_scope": "retrospective_exploratory",
+      "independent_event_n": 4,
+      "label": "BTC-relatieve uplift (7d)",
+      "late_split": {
+        "estimate": 0.0415056225,
+        "event_n": 2
+      },
+      "metric_id": "btc_relative_uplift_7d",
+      "prospective_ci95": [
+        null,
+        null
+      ],
+      "prospective_control_n": 0,
+      "prospective_estimate": null,
+      "prospective_event_n": 0,
+      "retrospective_event_n": 4,
+      "unit": "percentage_points"
+    },
+    {
+      "benchmark": "Aandeel positieve events minus positieve controledagen",
+      "ci95": [
+        -0.2076271186,
+        0.6949152542
+      ],
+      "control_mean": 0.4406779661,
+      "control_window_n": 59,
+      "early_split": {
+        "estimate": 0.0593220339,
+        "event_n": 2
+      },
+      "economic_threshold": null,
+      "economically_relevant": null,
+      "estimate": 0.3093220339,
+      "event_mean": 0.75,
+      "evidence_scope": "retrospective_exploratory",
+      "independent_event_n": 4,
+      "label": "Directionele uplift (7d)",
+      "late_split": {
+        "estimate": 0.5593220339,
+        "event_n": 2
+      },
+      "metric_id": "directional_uplift_7d",
+      "prospective_ci95": [
+        null,
+        null
+      ],
+      "prospective_control_n": 0,
+      "prospective_estimate": null,
+      "prospective_event_n": 0,
+      "retrospective_event_n": 4,
+      "unit": "percentage_points"
+    }
+  ],
+  "schema_version": "1.0",
+  "stability": [
+    {
+      "ci95_high": 0.2637600134,
+      "ci95_low": -0.0847613757,
+      "estimate": 0.0906635478,
+      "event_n": 2,
+      "label": "Vroege helft",
+      "slice_id": "time_early",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.1109939797,
+      "ci95_low": -0.0027897326,
+      "estimate": 0.0555149806,
+      "event_n": 2,
+      "label": "Late helft",
+      "slice_id": "time_late",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.2635106163,
+      "ci95_low": -0.0841567613,
+      "estimate": 0.0906635478,
+      "event_n": 2,
+      "label": "Lagere volatiliteit",
+      "slice_id": "volatility_low",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.1105799065,
+      "ci95_low": -0.0026765113,
+      "estimate": 0.0555149806,
+      "event_n": 2,
+      "label": "Hogere volatiliteit",
+      "slice_id": "volatility_high",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.2629675302,
+      "ci95_low": 0.0632784538,
+      "estimate": 0.1642289169,
+      "event_n": 2,
+      "label": "BTC-momentum ≤ 0",
+      "slice_id": "btc_momentum_nonpositive",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.0465868944,
+      "ci95_low": -0.0849470639,
+      "estimate": -0.0180503885,
+      "event_n": 2,
+      "label": "BTC-momentum > 0",
+      "slice_id": "btc_momentum_positive",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.1916469911,
+      "ci95_low": -0.0355800908,
+      "estimate": 0.0730892642,
+      "event_n": 4,
+      "label": "Methode 1.0.0",
+      "slice_id": "method_1.0.0",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": -0.0264836136,
+      "ci95_low": -0.0999787691,
+      "estimate": -0.0593158819,
+      "event_n": 1,
+      "label": "2026-07",
+      "slice_id": "month_2026-07",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.2739056947,
+      "ci95_low": 0.1998420416,
+      "estimate": 0.2406429776,
+      "event_n": 1,
+      "label": "2026-08",
+      "slice_id": "month_2026-08",
+      "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": 0.1104245831,
+      "ci95_low": -0.0035770997,
+      "estimate": 0.0555149806,
+      "event_n": 2,
+      "label": "2026-09",
+      "slice_id": "month_2026-09",
+      "sufficient_for_interpretation": false
+    }
+  ],
+  "status": {
+    "code": "prospective_in_progress",
+    "early_late_direction_stable": false,
+    "economic_relevance": null,
+    "explanation": "De regel staat vast, maar er zijn nog minder dan twintig volwassen prospectieve events. Historische events blijven verkennend.",
+    "historical_economic_relevance": true,
+    "label": "Prospectieve toets in opbouw",
+    "locked_at_utc": "2026-10-26T10:55:00Z",
+    "minimum_for_first_confirmation": 20,
+    "minimum_for_robust": 40,
+    "multi_regime_prospective": false,
+    "prospective_mature_event_n": 0,
+    "retrospective_mature_event_n": 4,
+    "statistical_confirmation": false
+  },
+  "status_ladder": [
+    {
+      "active": false,
+      "code": "exploratory",
+      "criterion": "Nog geen vastgelegde definitie; alleen hypothesevorming.",
+      "label": "Verkennend"
+    },
+    {
+      "active": true,
+      "code": "prospective_in_progress",
+      "criterion": "Definitie vastgelegd; minder dan 20 volwassen prospectieve events.",
+      "label": "Prospectieve toets in opbouw"
+    },
+    {
+      "active": false,
+      "code": "provisionally_confirmed",
+      "criterion": "Minimaal 20 prospectieve events, 95%-interval boven nul en stabiele richting.",
+      "label": "Voorlopig bevestigd"
+    },
+    {
+      "active": false,
+      "code": "robust",
+      "criterion": "Minimaal 40 events plus BTC-relatieve en multi-regime bevestiging.",
+      "label": "Robuust"
+    },
+    {
+      "active": false,
+      "code": "unstable",
+      "criterion": "Voldoende events, maar richting of regime-uitkomsten zijn niet stabiel.",
+      "label": "Instabiel"
+    },
+    {
+      "active": false,
+      "code": "not_confirmed",
+      "criterion": "De vooraf vastgelegde primaire toets is negatief.",
+      "label": "Niet bevestigd"
+    }
+  ]
+}

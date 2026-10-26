@@ -36,6 +36,7 @@ from sol_reality_check.config import ROOT, indicators, load_yaml, settings
 from sol_reality_check.demo import demo_history
 from sol_reality_check.ledger import append_unique, read_jsonl
 from sol_reality_check.llm_interpretation import build_interpretation
+from sol_reality_check.predictive_monitor import generate_predictive_monitor
 from sol_reality_check.utils import iso_z, utc_now, write_json
 
 CURATED = ROOT / "data" / "curated"
@@ -820,6 +821,8 @@ def build_outputs(mode: str) -> dict[str, Any]:
     }
     write_signal_research(dashboard, latest, generated, cutoff, mode)
     maybe_append_prediction(dashboard, latest)
+    if mode == "production":
+        generate_predictive_monitor()
     write_all_json(
         dashboard=dashboard,
         df=df,

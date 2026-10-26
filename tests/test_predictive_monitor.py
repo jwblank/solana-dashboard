@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import hashlib
+import shutil
+from pathlib import Path
+
+import pytest
+
+from sol_reality_check.predictive_monitor import (
+    SIGNAL_DEFINITION,
+    append_immutable,
+    generate_predictive_monitor,
+)
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def monitor_root(tmp_path: Path) -> Path:
+    root = tmp_path / "project"
+    (root / "data" / "ledger").mkdir(parents=True)
+    (root / "data" / "curated").mkdir(parents=True)
+    (root / "site" / "data").mkdir(parents=True)
+    shutil.copyfile(
+        Path("data/ledger/predictions.jsonl"),
+        root / "data" / "ledger" / "predictions.jsonl",
+    )
+    shutil.copyfile(
+        Path("data/curated/signaalonderzoek.parquet"),
+        root / "data" / "curated" / "signaalonderzoek.parquet",
+    )
+    return root
+
+
+def test_monitor_preserves_sources_and_is_idempotent(tmp_path):
+    root = monitor_root(tmp_path)
+    predictions = root / "data" / "ledger" / "predictions.jsonl"
+    research = root / "data" / "curated" / "signaalonderzoek.parquet"
+    source_hashes = {path: sha256(path) for path in [predictions, research]}
+
+    first = generate_predictive_monitor(root)
+    ledger_paths = sorted((root / "data" / "ledger").glob("signal_*.jsonl"))
+    ledger_bytes = {path.name: path.read_bytes() for path in ledger_paths}
+    second = generate_predictive_monitor(root)
+
+    assert first == second
+    assert source_hashes == {path: sha256(path) for path in [predictions, research]}
+    assert ledger_bytes == {path.name: path.read_bytes() for path in ledger_paths}
+    for source in ledger_paths:
+        assert source.read_bytes() == (root / "site" / "data" / source.name).read_bytes()
+
+
+def test_monitor_backfills_known_events_without_claiming_confirmation(tmp_path):
+    payload = generate_predictive_monitor(monitor_root(tmp_path))
+
+    assert [row["event_date"] for row in reversed(payload["events"])] == [
+        "2026-07-21",
+        "2026-08-14",
+        "2026-09-12",
+        "2026-09-23",
+        "2026-10-19",
+    ]
+    assert payload["events"][0]["status"] == "pending"
+    assert all(row["evaluation_phase"] == "retrospective" for row in payload["events"])
+    assert payload["status"]["code"] == "prospective_in_progress"
+    assert payload["status"]["retrospective_mature_event_n"] == 4
+    assert payload["status"]["prospective_mature_event_n"] == 0
+    assert payload["status"]["statistical_confirmation"] is False
+
+
+def test_primary_metric_uses_independent_events_and_ready_controls(tmp_path):
+    payload = generate_predictive_monitor(monitor_root(tmp_path))
+    metric = next(
+        row for row in payload["primary_metrics"] if row["metric_id"] == "sol_uplift_7d"
+    )
+
+    assert metric["independent_event_n"] == 4
+    assert metric["control_window_n"] == 59
+    assert metric["event_mean"] == pytest.approx(0.0765721329)
+    assert metric["control_mean"] == pytest.approx(0.0034828687)
+    assert metric["estimate"] == pytest.approx(0.0730892642)
+    assert metric["ci95"][0] < 0 < metric["ci95"][1]
+
+
+def test_immutable_ledger_rejects_changed_payload(tmp_path):
+    path = tmp_path / "definitions.jsonl"
+    append_immutable(path, SIGNAL_DEFINITION, ["definition_id"])
+    changed = dict(SIGNAL_DEFINITION)
+    changed["cooldown_days"] = 9
+
+    with pytest.raises(ValueError, match="Immutable ledger conflict"):
+        append_immutable(path, changed, ["definition_id"])

@@ -33,6 +33,7 @@ Het dashboard bevat daarnaast een onderzoeksdataset per run. Elke dagelijkse upd
 * **Prijs:** koerskracht van SOL, inclusief momentum en relatieve sterkte tegenover BTC.
 * **Netwerk & ecosysteem:** gebruik van het Solana-netwerk, DeFi-activiteit en breedte binnen het ecosysteem.
 * **Kapitaal:** kapitaalstromen, TVL en stablecoin-gerelateerde signalen.
+* **Voorspelmonitor:** prospectieve, vooraf vastgelegde toets van kandidaat-signalen met onzekerheidsintervallen, BTC-benchmark, eventregister en bewijsstatus.
 * **Bewijs:** methodiek, backtests, datakwaliteit, bronvalidatie en uitleg van de gebruikte termen.
 * **Signaalonderzoek:** een run-voor-run tabel waarmee de ontwikkeling van de signalen kan worden gevolgd.
 
@@ -89,6 +90,22 @@ Meer observaties betekenen niet automatisch betere voorspellingen. Daarom toont 
 
 Forwardstatus gebruikt uitsluitend forwardgegevens. Backteststatus gebruikt uitsluitend historische backtestgegevens.
 
+## Voorspelmonitor
+
+De Voorspelmonitor volgt kandidaat-signalen los van de bestaande algemene voorspellingskracht. De eerste vastgelegde kandidaat is `peak-density-v1`: een clusterstart wanneer in tien officiële signalen ten minste drie scorepieken zijn bevestigd. Een piek wordt pas één observatie later bevestigd, zodat het event geen toekomstige score gebruikt. Na een event geldt een cooldown van tien dagen.
+
+De monitor maakt drie scheidingen expliciet:
+
+* retrospectieve, hypothesevormende events versus events die na de lock voor het eerst zijn gepubliceerd;
+* statistische bevestiging versus economische relevantie;
+* onafhankelijke clusterstarts versus overlappende dagelijkse controledagen.
+
+De primaire horizon is zeven dagen. De primaire metingen zijn SOL-rendementsuplift, SOL-minus-BTC-uplift en directionele uplift. Ieder effect wordt getoond met een 95%-bootstrapinterval, de eventtelling, de benchmark en een vroege/late splitsing. Nevenprofielen voor 1, 3, 14 en 30 dagen zijn gevoeligheidsanalyses en vervangen de primaire toets niet.
+
+Het rendementsanker is de reproduceerbare slotkoers op de data-cutoff-dag in de officiële prediction. Het eventregister toont daarnaast het eerste publicatietijdstip. Dit anker is bedoeld voor statistische forwardmeting en is geen gegarandeerde uitvoeringsprijs; transactiekosten, slippage en liquiditeit blijven buiten de berekening.
+
+Definities, events en uitkomsten staan in afzonderlijke append-only JSONL-ledgers. Elke rij heeft een SHA-256 payloadhash. Een bestaande sleutel met afwijkende inhoud veroorzaakt een harde fout; een methodewijziging vereist een nieuwe definitieversie.
+
 ## Methodeversies
 
 Methodegewichten en methodebeschrijvingen staan centraal in:
@@ -107,6 +124,8 @@ Naast de bestaande JSON-bestanden publiceert de pipeline:
 * `site/data/overview_history.json`: compacte scorehistorie en methodewijzigingen voor de homepagegrafiek;
 * `site/data/signaalonderzoek.parquet`: volledige publieke kopie van de bron-Parquet;
 * `site/data/signaalonderzoek.json`: compacte recente selectie voor de frontendtabel.
+* `site/data/predictive_monitor.json`: afgeleide metingen, grafiekdata, statusladder en datakwaliteit voor de Voorspelmonitor;
+* `site/data/signal_definitions.jsonl`, `signal_events.jsonl` en `signal_outcomes.jsonl`: byte-identieke downloadkopieën van de bronledgers.
 
 De bron van waarheid blijft altijd:
 
@@ -115,6 +134,8 @@ data/curated/signaalonderzoek.parquet
 ```
 
 Afgeleide bestanden in `site/data/` mogen deze bron nooit overschrijven.
+
+De bronledgers voor de Voorspelmonitor staan in `data/ledger/`. De publieke kopieën worden bij iedere generatie byte-voor-byte gecontroleerd.
 
 ## Veilige Migratie Van Signaalonderzoek
 
@@ -209,4 +230,3 @@ This project is licensed under the PolyForm Noncommercial License 1.0.0.
 You may view, copy, modify, and share the source code for personal, educational, research, and other non-commercial purposes. Commercial use is not permitted without prior written permission.
 
 Copyright © 2026 Jan-Willem Blank.
-

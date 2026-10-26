@@ -35,6 +35,7 @@
         <button class="tab" data-tab="netwerk">Netwerk</button>
         <button class="tab" data-tab="kapitaal">Kapitaal</button>
         <button class="tab" data-tab="voorspellingskracht">Voorspellingskracht</button>
+        <button class="tab" data-tab="voorspelmonitor">Voorspelmonitor</button>
         <button class="tab" data-tab="bewijs">Bewijs</button>
       </nav>
 
@@ -196,6 +197,90 @@
             <h3>Methode en beperkingen</h3>
             <ul id="predictive-methodology" class="clean"></ul>
             <ul id="predictive-warnings" class="clean warning-list"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section id="voorspelmonitor" class="panel">
+        <div class="evidence-page monitor-page">
+          <section class="monitor-hero">
+            <div>
+              <p class="eyebrow">Vooraf vastgelegde hypothesetoets</p>
+              <h2>Voorspelmonitor</h2>
+              <p id="monitor-summary" class="plain"></p>
+              <div id="monitor-badges" class="predictive-badges"></div>
+            </div>
+            <div id="monitor-scorecard" class="evidence-scorecard"></div>
+          </section>
+
+          <p id="monitor-discovery-note" class="notice"></p>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Primaire uitkomsten</h3>
+                <p class="plain">Effect, 95%-interval, onafhankelijke eventtelling en vaste benchmark naast elkaar.</p>
+              </div>
+            </div>
+            <div id="monitor-metrics" class="monitor-metric-grid"></div>
+          </section>
+
+          <section class="monitor-chart-grid">
+            <article class="monitor-chart-card">
+              <h3>Bewijs door de tijd</h3>
+              <p class="plain">Cumulatieve 7-daagse SOL-uplift met 95%-interval na elk volwassen event.</p>
+              <div class="monitor-canvas"><canvas id="monitor-evidence-chart" aria-label="Cumulatieve uplift en betrouwbaarheidsinterval" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Horizonprofiel</h3>
+              <p class="plain">Gemiddelde uplift na 1, 3, 7, 14 en 30 dagen; 7 dagen is primair.</p>
+              <div class="monitor-canvas"><canvas id="monitor-horizon-chart" aria-label="Uplift per horizon" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Eventstudie</h3>
+              <p class="plain">Gemiddeld pad van SOL en SOL minus BTC rond de clusterstart.</p>
+              <div class="monitor-canvas"><canvas id="monitor-event-chart" aria-label="Eventstudie rond de clusterstart" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Stabiliteit</h3>
+              <p class="plain">Uplift per periode, volatiliteit, BTC-momentum, methode en maand.</p>
+              <div id="monitor-stability" class="forest-list"></div>
+            </article>
+          </section>
+
+          <section class="wide">
+            <h3>Bewijsstatus</h3>
+            <div id="monitor-ladder" class="status-ladder"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Append-only eventregister</h3>
+                <p class="plain">Ook negatieve en nog open events blijven zichtbaar. Elke bron- en uitkomstregel heeft een controlehash.</p>
+              </div>
+              <div id="monitor-downloads" class="download-row"></div>
+            </div>
+            <div id="monitor-events" class="table-wrap compact-table"></div>
+          </section>
+
+          <section class="monitor-method-grid">
+            <article class="wide">
+              <h3>Vastgelegde definitie</h3>
+              <dl id="monitor-definition" class="definition-list"></dl>
+            </article>
+            <article class="wide">
+              <h3>Methode</h3>
+              <ul id="monitor-methodology" class="clean"></ul>
+              <h3>Beperkingen</h3>
+              <ul id="monitor-limitations" class="clean warning-list"></ul>
+            </article>
+          </section>
+
+          <section class="wide quiet-section">
+            <h3>Datakwaliteit en bewaarbeleid</h3>
+            <div id="monitor-data-quality" class="stat-row"></div>
+            <p class="plain">De bestaande prediction-ledger en onderzoeks-Parquet worden alleen gelezen. Deze monitor schrijft uitsluitend nieuwe, versieerbare regels naar afzonderlijke ledgers; bestaande sleutels mogen nooit veranderen.</p>
           </section>
         </div>
       </section>

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Predictive monitor public payload",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "name",
+    "generated_at_utc",
+    "data_cutoff_utc",
+    "definition",
+    "status",
+    "primary_metrics",
+    "evidence_over_time",
+    "horizon_profile",
+    "event_study",
+    "stability",
+    "events",
+    "status_ladder",
+    "data_quality",
+    "downloads",
+    "methodology",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "name": {"const": "Voorspelmonitor"},
+    "generated_at_utc": {"type": "string", "format": "date-time"},
+    "data_cutoff_utc": {"type": "string", "format": "date-time"},
+    "definition": {"type": "object"},
+    "status": {
+      "type": "object",
+      "required": [
+        "code",
+        "label",
+        "prospective_mature_event_n",
+        "retrospective_mature_event_n",
+        "statistical_confirmation"
+      ]
+    },
+    "primary_metrics": {"type": "array", "minItems": 3},
+    "evidence_over_time": {"type": "array"},
+    "horizon_profile": {"type": "array", "minItems": 5, "maxItems": 5},
+    "event_study": {"type": "array", "minItems": 20, "maxItems": 20},
+    "stability": {"type": "array"},
+    "events": {"type": "array"},
+    "status_ladder": {"type": "array", "minItems": 6, "maxItems": 6},
+    "data_quality": {"type": "object"},
+    "downloads": {"type": "array", "minItems": 4},
+    "methodology": {"type": "array"},
+    "limitations": {"type": "array"}
+  },
+  "additionalProperties": true
+}

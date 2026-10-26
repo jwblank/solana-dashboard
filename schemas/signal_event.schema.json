@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Predictive signal event ledger row",
+  "type": "object",
+  "required": [
+    "event_id",
+    "definition_id",
+    "definition_version",
+    "event_date",
+    "first_published_at_utc",
+    "evaluation_phase",
+    "source_prediction_id",
+    "feature_value",
+    "sol_entry_price",
+    "maturity_dates",
+    "payload_sha256"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "definition_id": {"type": "string", "minLength": 1},
+    "definition_version": {"type": "string", "minLength": 1},
+    "event_date": {"type": "string", "format": "date"},
+    "first_published_at_utc": {"type": "string", "format": "date-time"},
+    "evaluation_phase": {"enum": ["retrospective", "prospective"]},
+    "feature_value": {"type": "integer", "minimum": 0},
+    "sol_entry_price": {"type": "number", "exclusiveMinimum": 0},
+    "btc_entry_price": {"type": ["number", "null"], "exclusiveMinimum": 0},
+    "maturity_dates": {"type": "object"},
+    "payload_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": true
+}

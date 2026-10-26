@@ -12,6 +12,7 @@ from sol_reality_check.pipeline import (
     expected_latest_history_date,
     prepare_dataset,
 )
+from sol_reality_check.predictive_monitor import validate_signal_ledgers
 from sol_reality_check.validation import validate_outputs
 
 
@@ -51,6 +52,11 @@ def main() -> int:
             for error in errors:
                 print(error)
             return 1
+        validate_signal_ledgers(
+            read_signal_ledger("signal_definitions.jsonl"),
+            read_signal_ledger("signal_events.jsonl"),
+            read_signal_ledger("signal_outcomes.jsonl"),
+        )
         print("Ledger integrity OK")
         return 0
     if args.command == "freshness-check":
@@ -66,3 +72,10 @@ def main() -> int:
         print(f"Dashboard freshness OK: {dashboard.get('data_cutoff_utc')}")
         return 0
     return 1
+
+
+def read_signal_ledger(filename: str) -> list[dict]:
+    path = ROOT / "data" / "ledger" / filename
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]

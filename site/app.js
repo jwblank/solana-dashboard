@@ -4,6 +4,9 @@ const fmtScore100 = (x) => x === null || x === undefined ? ".../100" : `${Math.r
 const fmtWeight = (x) => `${Math.round(x * 100)}% van score`;
 let scoreHistoryChart = null;
 let predictiveBucketChart = null;
+let monitorEvidenceChart = null;
+let monitorHorizonChart = null;
+let monitorEventChart = null;
 
 async function loadJson(path) {
   const separator = path.includes("?") ? "&" : "?";
@@ -25,6 +28,7 @@ const routes = {
   "#netwerk": {tab: "netwerk"},
   "#kapitaal": {tab: "kapitaal"},
   "#voorspellingskracht": {tab: "voorspellingskracht"},
+  "#voorspelmonitor": {tab: "voorspelmonitor"},
   "#bewijs": {tab: "bewijs"},
   "#bewijs-kwaliteit": {tab: "bewijs", anchor: "bewijs-kwaliteit"},
   "#bewijs-backtest": {tab: "bewijs", anchor: "bewijs-backtest"},
@@ -1387,6 +1391,335 @@ function sectionRowsForChart(section) {
   return rows.filter((row) => row.horizon_days === selected);
 }
 
+function renderPredictiveMonitor(monitor) {
+  const status = monitor.status || {};
+  const definition = monitor.definition || {};
+  setText(
+    "monitor-summary",
+    `${status.label || "Status onbekend"}. ${status.explanation || ""}`
+  );
+  setText("monitor-discovery-note", definition.discovery_note || "");
+  renderPredictiveBadgesTo("monitor-badges", [
+    {label: "Definitie", value: definition.definition_id || "n.v.t.", tone: "neutral"},
+    {label: "Versie", value: definition.version || "n.v.t.", tone: "neutral"},
+    {label: "Primair", value: `${definition.primary_horizon_days || 7} dagen`, tone: "neutral"},
+    {label: "Status", value: status.label || "n.v.t.", tone: "warn"}
+  ]);
+  renderStats("monitor-scorecard", [
+    {label: "Prospectief volwassen", value: `${status.prospective_mature_event_n || 0} / ${status.minimum_for_first_confirmation || 20}`},
+    {label: "Retrospectief volwassen", value: String(status.retrospective_mature_event_n || 0)},
+    {label: "Statistisch bevestigd", value: status.statistical_confirmation ? "Ja" : "Nee"},
+    {
+      label: "Economisch relevant",
+      value: status.economic_relevance === null || status.economic_relevance === undefined
+        ? "Nog niet prospectief"
+        : (status.economic_relevance ? "Prospectief: ja" : "Prospectief: nee")
+    }
+  ]);
+  const metricTarget = document.getElementById("monitor-metrics");
+  metricTarget.replaceChildren(...(monitor.primary_metrics || []).map(monitorMetricCard));
+  renderMonitorEvidenceChart(monitor.evidence_over_time || []);
+  renderMonitorHorizonChart(monitor.horizon_profile || []);
+  renderMonitorEventChart(monitor.event_study || []);
+  renderMonitorStability(monitor.stability || []);
+  renderMonitorLadder(monitor.status_ladder || []);
+  renderMonitorEvents(monitor.events || []);
+  renderMonitorDownloads(monitor.downloads || []);
+  renderMonitorDefinition(definition);
+  document.getElementById("monitor-methodology").replaceChildren(
+    ...(monitor.methodology || []).map(listItem)
+  );
+  document.getElementById("monitor-limitations").replaceChildren(
+    ...(monitor.limitations || []).map(listItem)
+  );
+  const quality = monitor.data_quality || {};
+  renderStats("monitor-data-quality", [
+    {label: "Officiële predictions", value: String(quality.first_publications_used || 0)},
+    {label: "Onderzoeksruns bewaard", value: String(quality.research_runs_preserved || 0)},
+    {label: "Dubbele datadagen", value: `${quality.research_duplicate_dates || 0} · eerste run gebruikt`},
+    {label: "Events", value: String(quality.event_rows || 0)},
+    {label: "Uitkomsten", value: String(quality.outcome_rows || 0)},
+    {label: "Ledgercontrole", value: quality.ledger_validation === "passed" ? "Geslaagd" : "Controle nodig"}
+  ]);
+}
+
+function renderPredictiveBadgesTo(targetId, badges) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.replaceChildren(...badges.map((badge) => {
+    const item = document.createElement("span");
+    item.className = `predictive-badge ${badge.tone || "neutral"}`;
+    item.textContent = `${badge.label}: ${badge.value}`;
+    return item;
+  }));
+}
+
+function monitorMetricCard(metric) {
+  const article = document.createElement("article");
+  article.className = "monitor-metric";
+  const label = document.createElement("span");
+  label.textContent = metric.label;
+  const value = document.createElement("strong");
+  value.textContent = formatPp(metric.estimate);
+  const interval = document.createElement("p");
+  interval.textContent = `95%-interval ${formatCi(metric.ci95)} · n=${metric.independent_event_n || 0} onafhankelijke events`;
+  const benchmark = document.createElement("small");
+  benchmark.textContent = `${metric.benchmark}. Controle n=${metric.control_window_n || 0}.`;
+  const split = document.createElement("small");
+  split.textContent = `Vroeg ${formatPp(metric.early_split?.estimate)} · laat ${formatPp(metric.late_split?.estimate)}.`;
+  const prospective = document.createElement("small");
+  prospective.textContent = metric.prospective_event_n
+    ? `Prospectief ${formatPp(metric.prospective_estimate)} · 95%-interval ${formatCi(metric.prospective_ci95)} · events n=${metric.prospective_event_n} · controle n=${metric.prospective_control_n || 0}`
+    : "Prospectief: nog geen volwassen event.";
+  const scope = document.createElement("em");
+  scope.textContent = "Retrospectief/verkennend";
+  article.append(label, value, interval, benchmark, split, prospective, scope);
+  return article;
+}
+
+function formatCi(values) {
+  if (!Array.isArray(values) || values.length < 2) return "n.v.t.";
+  return `${formatPp(values[0])} tot ${formatPp(values[1])}`;
+}
+
+function renderMonitorEvidenceChart(rows) {
+  const canvas = document.getElementById("monitor-evidence-chart");
+  if (!canvas || typeof Chart === "undefined") return;
+  if (monitorEvidenceChart) monitorEvidenceChart.destroy();
+  monitorEvidenceChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: rows.map((row) => row.maturity_date),
+      datasets: [
+        {
+          label: "Ondergrens 95%",
+          data: rows.map((row) => percentValue(row.ci95_low)),
+          borderColor: "rgba(46, 95, 184, 0.25)",
+          pointRadius: 0,
+          tension: 0.2
+        },
+        {
+          label: "95%-interval",
+          data: rows.map((row) => percentValue(row.ci95_high)),
+          borderColor: "rgba(46, 95, 184, 0.25)",
+          backgroundColor: "rgba(46, 95, 184, 0.12)",
+          fill: "-1",
+          pointRadius: 0,
+          tension: 0.2
+        },
+        {
+          label: "Cumulatieve uplift",
+          data: rows.map((row) => percentValue(row.estimate)),
+          borderColor: "#167a64",
+          backgroundColor: "#167a64",
+          borderWidth: 3,
+          pointRadius: 4,
+          tension: 0.2
+        }
+      ]
+    },
+    options: monitorChartOptions("Uplift", true)
+  });
+}
+
+function renderMonitorHorizonChart(rows) {
+  const canvas = document.getElementById("monitor-horizon-chart");
+  if (!canvas || typeof Chart === "undefined") return;
+  if (monitorHorizonChart) monitorHorizonChart.destroy();
+  monitorHorizonChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: rows.map((row) => `${row.horizon_days}d${row.is_primary ? " · primair" : ""}`),
+      datasets: [{
+        label: "SOL-uplift",
+        data: rows.map((row) => percentValue(row.uplift)),
+        backgroundColor: rows.map((row) => row.is_primary ? "rgba(22, 122, 100, 0.7)" : "rgba(46, 95, 184, 0.45)"),
+        borderColor: rows.map((row) => row.is_primary ? "#167a64" : "#2e5fb8"),
+        borderWidth: rows.map((row) => row.is_primary ? 2 : 1)
+      }]
+    },
+    options: monitorChartOptions("Uplift", false)
+  });
+}
+
+function renderMonitorEventChart(rows) {
+  const canvas = document.getElementById("monitor-event-chart");
+  if (!canvas || typeof Chart === "undefined") return;
+  if (monitorEventChart) monitorEventChart.destroy();
+  monitorEventChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: rows.map((row) => row.offset_days === 0 ? "Event" : `${row.offset_days > 0 ? "+" : ""}${row.offset_days}`),
+      datasets: [
+        {
+          label: "SOL",
+          data: rows.map((row) => percentValue(row.sol_mean_return)),
+          borderColor: "#167a64",
+          backgroundColor: "#167a64",
+          borderWidth: 3,
+          pointRadius: 2,
+          tension: 0.2
+        },
+        {
+          label: "SOL minus BTC",
+          data: rows.map((row) => percentValue(row.btc_relative_mean_return)),
+          borderColor: "#2e5fb8",
+          backgroundColor: "#2e5fb8",
+          borderWidth: 2,
+          pointRadius: 2,
+          tension: 0.2
+        }
+      ]
+    },
+    options: monitorChartOptions("Cumulatief rendement", true)
+  });
+}
+
+function monitorChartOptions(yLabel, showLegend) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {mode: "index", intersect: false},
+    scales: {
+      y: {
+        title: {display: true, text: `${yLabel} (%)`},
+        ticks: {callback: (value) => `${value}%`},
+        grid: {color: (context) => context.tick.value === 0 ? "rgba(91, 102, 99, 0.75)" : "rgba(91, 102, 99, 0.12)"}
+      }
+    },
+    plugins: {legend: {display: showLegend, position: "bottom"}}
+  };
+}
+
+function percentValue(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return null;
+  return Number(value) * 100;
+}
+
+function renderMonitorStability(rows) {
+  const target = document.getElementById("monitor-stability");
+  if (!target) return;
+  const values = rows.flatMap((row) => [row.ci95_low, row.ci95_high, row.estimate])
+    .filter((value) => value !== null && value !== undefined && Number.isFinite(Number(value)))
+    .map((value) => Math.abs(Number(value)));
+  const bound = Math.max(0.1, ...values) * 1.08;
+  target.replaceChildren(...rows.map((row) => {
+    const item = document.createElement("div");
+    item.className = "forest-row";
+    const head = document.createElement("div");
+    const label = document.createElement("strong");
+    label.textContent = row.label;
+    const value = document.createElement("span");
+    value.textContent = `${formatPp(row.estimate)} · n=${row.event_n || 0}`;
+    head.append(label, value);
+    const track = document.createElement("div");
+    track.className = "forest-track";
+    const zero = document.createElement("i");
+    zero.className = "forest-zero";
+    track.append(zero);
+    if (row.estimate !== null && row.ci95_low !== null && row.ci95_high !== null) {
+      const interval = document.createElement("i");
+      interval.className = "forest-interval";
+      interval.style.left = `${forestPosition(row.ci95_low, bound)}%`;
+      interval.style.width = `${forestPosition(row.ci95_high, bound) - forestPosition(row.ci95_low, bound)}%`;
+      const dot = document.createElement("i");
+      dot.className = "forest-dot";
+      dot.style.left = `${forestPosition(row.estimate, bound)}%`;
+      track.append(interval, dot);
+    }
+    const note = document.createElement("small");
+    note.textContent = row.sufficient_for_interpretation ? "Voorlopig interpreteerbaar" : "Te weinig events voor een stabiele deelconclusie";
+    item.append(head, track, note);
+    return item;
+  }));
+}
+
+function forestPosition(value, bound) {
+  return Math.max(0, Math.min(100, ((Number(value) + bound) / (2 * bound)) * 100));
+}
+
+function renderMonitorLadder(rows) {
+  const target = document.getElementById("monitor-ladder");
+  target.replaceChildren(...rows.map((row) => {
+    const article = document.createElement("article");
+    article.className = `ladder-step${row.active ? " active" : ""}`;
+    const label = document.createElement("strong");
+    label.textContent = row.label;
+    const criterion = document.createElement("p");
+    criterion.textContent = row.criterion;
+    article.append(label, criterion);
+    return article;
+  }));
+}
+
+function renderMonitorEvents(rows) {
+  const tableRows = rows.map((row) => [
+    row.event_date,
+    row.evaluation_phase === "prospective" ? "Prospectief" : "Retrospectief",
+    String(row.feature_value ?? "n.v.t."),
+    formatMoney(row.sol_entry_price),
+    row.primary_maturity_date || "n.v.t.",
+    row.status === "matured" ? "Volwassen" : "Open",
+    formatSignedPct(row.sol_return_7d),
+    formatSignedPct(row.btc_relative_return_7d),
+    formatSignedPct(row.sol_return_14d),
+    shortHash(row.event_payload_sha256),
+    shortHash(row.outcome_payload_sha256)
+  ]);
+  document.getElementById("monitor-events").replaceChildren(table([
+    "Event",
+    "Fase",
+    "Pieken / 10",
+    "SOL referentie",
+    "7d volwassen op",
+    "Status",
+    "SOL 7d",
+    "SOL−BTC 7d",
+    "SOL 14d",
+    "Eventhash",
+    "Uitkomsthash"
+  ], tableRows));
+}
+
+function shortHash(value) {
+  return value ? `${String(value).slice(0, 10)}…` : "—";
+}
+
+function renderMonitorDownloads(rows) {
+  const target = document.getElementById("monitor-downloads");
+  target.replaceChildren(...rows.map((row) => {
+    const link = document.createElement("a");
+    link.className = "button compact-button";
+    link.href = row.path;
+    link.download = "";
+    link.textContent = row.label;
+    return link;
+  }));
+}
+
+function renderMonitorDefinition(definition) {
+  const target = document.getElementById("monitor-definition");
+  const rows = [
+    ["ID en versie", `${definition.definition_id || "n.v.t."} · ${definition.version || "n.v.t."}`],
+    ["Vastgelegd", formatDateTime(definition.locked_at_utc)],
+    ["Input", definition.input_policy],
+    ["Piekregel", definition.peak_rule],
+    ["Eventregel", definition.event_rule],
+    ["Cooldown", `${definition.cooldown_days || 0} dagen`],
+    ["Primaire horizon", `${definition.primary_horizon_days || 0} dagen`],
+    ["Controle", definition.control_policy],
+    ["Wijzigingsbeleid", definition.change_policy],
+    ["Definitiehash", definition.payload_sha256]
+  ];
+  target.replaceChildren(...rows.flatMap(([label, value]) => {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = value || "n.v.t.";
+    return [dt, dd];
+  }));
+}
+
 function listItem(text) {
   const li = document.createElement("li");
   li.textContent = text;
@@ -1777,7 +2110,7 @@ function table(headers, rows) {
 
 async function main() {
   activateNavigation();
-  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, predictivePower, overview, overviewHistory] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, predictivePower, predictiveMonitor, overview, overviewHistory] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
@@ -1786,6 +2119,7 @@ async function main() {
     loadJson("./data/interpretations/index.json").catch(() => ({entries: []})),
     loadJson("./data/signaalonderzoek.json").catch(() => ({rows: [], row_count_total: 0, row_count_visible: 0})),
     loadJson("./data/predictive_power.json").catch(() => ({sections: [], warnings: [], methodology: []})),
+    loadJson("./data/predictive_monitor.json").catch(() => ({events: [], primary_metrics: [], status_ladder: []})),
     loadJson("./data/overview.json").catch(() => ({current_run: null, previous_run: null, warnings: []})),
     loadJson("./data/overview_history.json").catch(() => ({rows: []}))
   ]);
@@ -1812,6 +2146,7 @@ async function main() {
   window.renderGlossary(glossary);
   renderSignalResearch(signalResearch);
   renderPredictivePower(predictivePower);
+  renderPredictiveMonitor(predictiveMonitor);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
   renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 5});
