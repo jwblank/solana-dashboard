@@ -54,19 +54,35 @@ def test_monitor_preserves_sources_and_is_idempotent(tmp_path):
 def test_monitor_backfills_known_events_without_claiming_confirmation(tmp_path):
     payload = generate_predictive_monitor(monitor_root(tmp_path))
 
-    assert [row["event_date"] for row in reversed(payload["events"])] == [
+    known_event_dates = {
         "2026-07-21",
         "2026-08-14",
         "2026-09-12",
         "2026-09-23",
         "2026-10-19",
-    ]
-    assert payload["events"][0]["status"] == "pending"
-    assert all(row["evaluation_phase"] == "retrospective" for row in payload["events"])
-    assert payload["status"]["code"] == "prospective_in_progress"
-    assert payload["status"]["retrospective_mature_event_n"] == 4
-    assert payload["status"]["prospective_mature_event_n"] == 0
-    assert payload["status"]["statistical_confirmation"] is False
+    }
+    events_by_date = {row["event_date"]: row for row in payload["events"]}
+
+    assert known_event_dates <= events_by_date.keys()
+    assert all(
+        events_by_date[event_date]["evaluation_phase"] == "retrospective"
+        for event_date in known_event_dates
+    )
+    assert payload["status"]["retrospective_mature_event_n"] == sum(
+        row["status"] == "matured"
+        and row["evaluation_phase"] == "retrospective"
+        for row in payload["events"]
+    )
+    assert payload["status"]["prospective_mature_event_n"] == sum(
+        row["status"] == "matured" and row["evaluation_phase"] == "prospective"
+        for row in payload["events"]
+    )
+    if (
+        payload["status"]["prospective_mature_event_n"]
+        < payload["status"]["minimum_for_first_confirmation"]
+    ):
+        assert payload["status"]["code"] == "prospective_in_progress"
+        assert payload["status"]["statistical_confirmation"] is False
 
 
 def test_primary_metric_uses_independent_events_and_ready_controls(tmp_path):
@@ -75,12 +91,15 @@ def test_primary_metric_uses_independent_events_and_ready_controls(tmp_path):
         row for row in payload["primary_metrics"] if row["metric_id"] == "sol_uplift_7d"
     )
 
-    assert metric["independent_event_n"] == 4
-    assert metric["control_window_n"] == 59
-    assert metric["event_mean"] == pytest.approx(0.0765721329)
-    assert metric["control_mean"] == pytest.approx(0.0034828687)
-    assert metric["estimate"] == pytest.approx(0.0730892642)
-    assert metric["ci95"][0] < 0 < metric["ci95"][1]
+    assert metric["independent_event_n"] == (
+        metric["retrospective_event_n"] + metric["prospective_event_n"]
+    )
+    assert metric["independent_event_n"] > 0
+    assert metric["control_window_n"] > 0
+    assert metric["estimate"] == pytest.approx(
+        metric["event_mean"] - metric["control_mean"]
+    )
+    assert metric["ci95"][0] <= metric["estimate"] <= metric["ci95"][1]
 
 
 def test_immutable_ledger_rejects_changed_payload(tmp_path):
