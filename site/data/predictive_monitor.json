@@ -1,23 +1,23 @@
 {
-  "data_cutoff_utc": "2026-10-25T23:59:59Z",
+  "data_cutoff_utc": "2026-10-26T23:59:59Z",
   "data_quality": {
     "definition_rows": 1,
     "duplicate_prediction_dates_ignored": 0,
     "event_rows": 5,
-    "first_publications_used": 114,
+    "first_publications_used": 115,
     "ledger_validation": "passed",
-    "outcome_rows": 22,
-    "raw_prediction_rows": 114,
+    "outcome_rows": 23,
+    "raw_prediction_rows": 115,
     "research_duplicate_dates": 17,
     "research_duplicate_policy": "Eerste gepubliceerde run per datadag.",
-    "research_runs_preserved": 128,
-    "research_unique_dates": 111,
+    "research_runs_preserved": 129,
+    "research_unique_dates": 112,
     "source_sha256": {
       "definitions": "9d70e54dab02ba5dfed07e917e79368a691b713ea365a11229939feb4d867d92",
       "events": "301eea3c45780866090d2b6213f29dbac56fc74aa6e4bdcd0682b30ecc365d93",
-      "outcomes": "1ad291eaa5ecb0d72fdaeee802b02acaf0213639774d6453942e2b138bef7760",
-      "predictions": "1695e7e982f651f8deb503c451e177eeaf28298f6113bdb8528c97015feb1add",
-      "research": "fb914235f2b227fff1cd848a09e41ac2cf8c4179a56075ea9156ec57f975fad9"
+      "outcomes": "a43928e79f377b65feed11f7bdbe7ca4b0fc9e4d95c134a0d0cc507a116a6a0a",
+      "predictions": "8d831e802fb340f5e2c1514aced55c765cbdaebd42f0d287249d0011d4cd03e9",
+      "research": "72be32c69b0daae9aaca054eb0b0bd16eada8774b04f4995f9867f7385037b05"
     }
   },
   "definition": {
@@ -150,10 +150,10 @@
       "sol_mean_return": 0.0441289386
     },
     {
-      "btc_relative_mean_return": 0.0152433065,
-      "event_n": 4,
+      "btc_relative_mean_return": 0.0086611752,
+      "event_n": 5,
       "offset_days": 7,
-      "sol_mean_return": 0.0765721329
+      "sol_mean_return": 0.0532546576
     },
     {
       "btc_relative_mean_return": 0.0173533418,
@@ -201,7 +201,7 @@
   "events": [
     {
       "btc_entry_price": 81837.69,
-      "btc_relative_return_7d": null,
+      "btc_relative_return_7d": -0.0176673502,
       "definition_version": "1.0.0",
       "evaluation_phase": "retrospective",
       "event_date": "2026-10-19",
@@ -209,12 +209,12 @@
       "event_payload_sha256": "5e63fea1e78cc241e1b52d467b413b056b4ec9094c851628cdfc36b9e43ed294",
       "feature_value": 3,
       "first_published_at_utc": "2026-10-20T13:25:43Z",
-      "outcome_payload_sha256": null,
+      "outcome_payload_sha256": "30f3d5a3120e18583ac7466ea23248d39a79aa10a08d26a695917380cf83efd1",
       "primary_maturity_date": "2026-10-26",
       "sol_entry_price": 104.96,
       "sol_return_14d": null,
-      "sol_return_7d": null,
-      "status": "pending"
+      "sol_return_7d": -0.0400152439,
+      "status": "matured"
     },
     {
       "btc_entry_price": 84378.31,
@@ -317,9 +317,17 @@
       "estimate": 0.053924339,
       "event_n": 4,
       "maturity_date": "2026-09-30"
+    },
+    {
+      "ci95_high": 0.1580202089,
+      "ci95_low": -0.0438924027,
+      "control_n": 60,
+      "estimate": 0.0502721869,
+      "event_n": 5,
+      "maturity_date": "2026-10-26"
     }
   ],
-  "generated_at_utc": "2026-10-26T16:03:02Z",
+  "generated_at_utc": "2026-10-27T14:11:54Z",
   "horizon_profile": [
     {
       "ci95_high": 0.015152061,
@@ -344,26 +352,26 @@
       "uplift": -0.0106673893
     },
     {
-      "ci95_high": 0.1909580987,
-      "ci95_low": -0.0312534651,
+      "ci95_high": 0.1585084601,
+      "ci95_low": -0.0416725206,
       "control_mean": 0.0029824707,
       "control_n": 60,
-      "event_mean": 0.0765721329,
-      "event_n": 4,
+      "event_mean": 0.0532546576,
+      "event_n": 5,
       "horizon_days": 7,
       "is_primary": true,
-      "uplift": 0.0735896623
+      "uplift": 0.0502721869
     },
     {
-      "ci95_high": 0.2792455573,
-      "ci95_low": -0.0924630064,
-      "control_mean": 0.0452744793,
-      "control_n": 53,
+      "ci95_high": 0.2808533484,
+      "ci95_low": -0.0895362473,
+      "control_mean": 0.0435822792,
+      "control_n": 54,
       "event_mean": 0.13257177,
       "event_n": 4,
       "horizon_days": 14,
       "is_primary": false,
-      "uplift": 0.0872972907
+      "uplift": 0.0889894908
     },
     {
       "ci95_high": 0.1037719095,
@@ -399,24 +407,24 @@
     {
       "benchmark": "Gemiddeld 7-daags SOL-rendement minus controledagen",
       "ci95": [
-        -0.0355287739,
-        0.1920361552
+        -0.0423381019,
+        0.1583413859
       ],
       "control_mean": 0.0029824707,
       "control_window_n": 60,
       "early_split": {
-        "estimate": 0.0911639459,
-        "event_n": 2
+        "estimate": 0.090214382,
+        "event_n": 3
       },
       "economic_threshold": 0.02,
       "economically_relevant": true,
-      "estimate": 0.0735896623,
-      "event_mean": 0.0765721329,
+      "estimate": 0.0502721869,
+      "event_mean": 0.0532546576,
       "evidence_scope": "retrospective_exploratory",
-      "independent_event_n": 4,
+      "independent_event_n": 5,
       "label": "SOL-rendementsuplift (7d)",
       "late_split": {
-        "estimate": 0.0560153786,
+        "estimate": -0.0096411058,
         "event_n": 2
       },
       "metric_id": "sol_uplift_7d",
@@ -427,30 +435,30 @@
       "prospective_control_n": 0,
       "prospective_estimate": null,
       "prospective_event_n": 0,
-      "retrospective_event_n": 4,
+      "retrospective_event_n": 5,
       "unit": "percentage_points"
     },
     {
       "benchmark": "Gemiddeld SOL-minus-BTC rendement minus controledagen",
       "ci95": [
-        -0.0115251415,
-        0.0470066097
+        -0.0162222289,
+        0.0410176792
       ],
       "control_mean": -0.0033419112,
       "control_window_n": 60,
       "early_split": {
-        "estimate": -0.0043246041,
-        "event_n": 2
+        "estimate": 0.0115190437,
+        "event_n": 3
       },
       "economic_threshold": null,
       "economically_relevant": null,
-      "estimate": 0.0185852177,
-      "event_mean": 0.0152433065,
+      "estimate": 0.0120030863,
+      "event_mean": 0.0086611752,
       "evidence_scope": "retrospective_exploratory",
-      "independent_event_n": 4,
+      "independent_event_n": 5,
       "label": "BTC-relatieve uplift (7d)",
       "late_split": {
-        "estimate": 0.0414950395,
+        "estimate": 0.0127291503,
         "event_n": 2
       },
       "metric_id": "btc_relative_uplift_7d",
@@ -461,30 +469,30 @@
       "prospective_control_n": 0,
       "prospective_estimate": null,
       "prospective_event_n": 0,
-      "retrospective_event_n": 4,
+      "retrospective_event_n": 5,
       "unit": "percentage_points"
     },
     {
       "benchmark": "Aandeel positieve events minus positieve controledagen",
       "ci95": [
-        -0.2,
-        0.7
+        -0.3166666667,
+        0.6166666667
       ],
       "control_mean": 0.4333333333,
       "control_window_n": 60,
       "early_split": {
-        "estimate": 0.0666666667,
-        "event_n": 2
+        "estimate": 0.2333333333,
+        "event_n": 3
       },
       "economic_threshold": null,
       "economically_relevant": null,
-      "estimate": 0.3166666667,
-      "event_mean": 0.75,
+      "estimate": 0.1666666667,
+      "event_mean": 0.6,
       "evidence_scope": "retrospective_exploratory",
-      "independent_event_n": 4,
+      "independent_event_n": 5,
       "label": "Directionele uplift (7d)",
       "late_split": {
-        "estimate": 0.5666666667,
+        "estimate": 0.0666666667,
         "event_n": 2
       },
       "metric_id": "directional_uplift_7d",
@@ -495,35 +503,35 @@
       "prospective_control_n": 0,
       "prospective_estimate": null,
       "prospective_event_n": 0,
-      "retrospective_event_n": 4,
+      "retrospective_event_n": 5,
       "unit": "percentage_points"
     }
   ],
   "schema_version": "1.0",
   "stability": [
     {
-      "ci95_high": 0.2640103795,
-      "ci95_low": -0.0831020457,
-      "estimate": 0.0911639459,
-      "event_n": 2,
+      "ci95_high": 0.2374738744,
+      "ci95_low": -0.0526350152,
+      "estimate": 0.090214382,
+      "event_n": 3,
       "label": "Vroege helft",
       "slice_id": "time_early",
       "sufficient_for_interpretation": false
     },
     {
-      "ci95_high": 0.1111855129,
-      "ci95_low": -0.0016976916,
-      "estimate": 0.0560153786,
+      "ci95_high": 0.0465857617,
+      "ci95_low": -0.0684007343,
+      "estimate": -0.0096411058,
       "event_n": 2,
       "label": "Late helft",
       "slice_id": "time_late",
       "sufficient_for_interpretation": false
     },
     {
-      "ci95_high": 0.2639595675,
-      "ci95_low": -0.0836958752,
-      "estimate": 0.0911639459,
-      "event_n": 2,
+      "ci95_high": 0.23679318,
+      "ci95_low": -0.0793195661,
+      "estimate": 0.0464433924,
+      "event_n": 3,
       "label": "Lagere volatiliteit",
       "slice_id": "volatility_low",
       "sufficient_for_interpretation": false
@@ -538,10 +546,10 @@
       "sufficient_for_interpretation": false
     },
     {
-      "ci95_high": 0.2637158335,
-      "ci95_low": 0.0639631446,
-      "estimate": 0.1647293149,
-      "event_n": 2,
+      "ci95_high": 0.2359100596,
+      "ci95_low": -0.0388196941,
+      "estimate": 0.0954869718,
+      "event_n": 3,
       "label": "BTC-momentum ≤ 0",
       "slice_id": "btc_momentum_nonpositive",
       "sufficient_for_interpretation": false
@@ -556,13 +564,13 @@
       "sufficient_for_interpretation": false
     },
     {
-      "ci95_high": 0.1918489848,
-      "ci95_low": -0.03500318,
-      "estimate": 0.0735896623,
-      "event_n": 4,
+      "ci95_high": 0.1570534034,
+      "ci95_low": -0.0442721922,
+      "estimate": 0.0502721869,
+      "event_n": 5,
       "label": "Methode 1.0.0",
       "slice_id": "method_1.0.0",
-      "sufficient_for_interpretation": false
+      "sufficient_for_interpretation": true
     },
     {
       "ci95_high": -0.026491724,
@@ -590,6 +598,15 @@
       "label": "2026-09",
       "slice_id": "month_2026-09",
       "sufficient_for_interpretation": false
+    },
+    {
+      "ci95_high": -0.0107188625,
+      "ci95_low": -0.0841691245,
+      "estimate": -0.0429977146,
+      "event_n": 1,
+      "label": "2026-10",
+      "slice_id": "month_2026-10",
+      "sufficient_for_interpretation": false
     }
   ],
   "status": {
@@ -604,7 +621,7 @@
     "minimum_for_robust": 40,
     "multi_regime_prospective": false,
     "prospective_mature_event_n": 0,
-    "retrospective_mature_event_n": 4,
+    "retrospective_mature_event_n": 5,
     "statistical_confirmation": false
   },
   "status_ladder": [
