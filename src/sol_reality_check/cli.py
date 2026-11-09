@@ -13,6 +13,8 @@ from sol_reality_check.pipeline import (
     prepare_dataset,
 )
 from sol_reality_check.predictive_monitor import validate_signal_ledgers
+from sol_reality_check.research_archive import verify_collected_history, verify_run_archives
+from sol_reality_check.research_monitor import generate_research_monitor, validate_research_ledgers
 from sol_reality_check.validation import validate_outputs
 
 
@@ -28,12 +30,17 @@ def main() -> int:
             "validate",
             "ledger-check",
             "freshness-check",
+            "research",
         ],
     )
     args = parser.parse_args()
     mode = os.getenv("APP_MODE", "demo")
     settings()
     indicators()
+    if args.command == "research":
+        payload = generate_research_monitor()
+        print(f"Research monitor updated: {payload['data_cutoff']}")
+        return 0
     if args.command in {"bootstrap", "update", "publish"}:
         build_outputs(mode)
         return 0
@@ -57,6 +64,10 @@ def main() -> int:
             read_signal_ledger("signal_events.jsonl"),
             read_signal_ledger("signal_outcomes.jsonl"),
         )
+        if (ROOT / "data/research/definitions.jsonl").exists():
+            validate_research_ledgers(ROOT)
+            verify_collected_history(ROOT)
+            verify_run_archives(ROOT)
         print("Ledger integrity OK")
         return 0
     if args.command == "freshness-check":

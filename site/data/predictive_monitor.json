@@ -1,23 +1,23 @@
 {
-  "data_cutoff_utc": "2026-11-07T23:59:59Z",
+  "data_cutoff_utc": "2026-11-08T23:59:59Z",
   "data_quality": {
     "definition_rows": 1,
     "duplicate_prediction_dates_ignored": 0,
     "event_rows": 5,
-    "first_publications_used": 127,
+    "first_publications_used": 128,
     "ledger_validation": "passed",
     "outcome_rows": 24,
-    "raw_prediction_rows": 127,
-    "research_duplicate_dates": 19,
+    "raw_prediction_rows": 128,
+    "research_duplicate_dates": 20,
     "research_duplicate_policy": "Eerste gepubliceerde run per datadag.",
-    "research_runs_preserved": 143,
-    "research_unique_dates": 124,
+    "research_runs_preserved": 145,
+    "research_unique_dates": 125,
     "source_sha256": {
       "definitions": "9d70e54dab02ba5dfed07e917e79368a691b713ea365a11229939feb4d867d92",
       "events": "301eea3c45780866090d2b6213f29dbac56fc74aa6e4bdcd0682b30ecc365d93",
       "outcomes": "26435a1e41126a5781da3091a440d6aebde0a6bb6d03adbb65c24ac10325f652",
-      "predictions": "4edb54f3d1286c4f1a67dcf4d3b2edda8c980de1f07eaa5d9825e9f677ee12d4",
-      "research": "455197348280ff70c05adff461f4cd2c23e52d4a7ba218ba6ca3d76fa524f58b"
+      "predictions": "edcc23d80726e4554c28c7135e8e69c7951603008dfe88a1e7ef927826429e48",
+      "research": "9db65dbed9b66ce76ac193c4947aad881d6241df8a9d7a3b0bd4992287bb5719"
     }
   },
   "definition": {
@@ -327,7 +327,7 @@
       "maturity_date": "2026-10-26"
     }
   ],
-  "generated_at_utc": "2026-11-08T14:52:03Z",
+  "generated_at_utc": "2026-11-09T15:42:25Z",
   "horizon_profile": [
     {
       "ci95_high": 0.015152061,
@@ -374,21 +374,21 @@
       "uplift": 0.0486911059
     },
     {
-      "ci95_high": 0.1830989399,
-      "ci95_low": -0.1963011222,
-      "control_mean": 0.104009836,
-      "control_n": 50,
+      "ci95_high": 0.1896605516,
+      "ci95_low": -0.1907977268,
+      "control_mean": 0.0979082376,
+      "control_n": 51,
       "event_mean": 0.0928133708,
       "event_n": 4,
       "horizon_days": 30,
       "is_primary": false,
-      "uplift": -0.0111964652
+      "uplift": -0.0050948668
     }
   ],
   "limitations": [
-    "De piekregel is na historische inspectie gekozen. De huidige vier volwassen 7-daagse events zijn daarom hypothesevormend, niet bevestigend.",
+    "De piekregel is na historische inspectie gekozen. Retrospectieve 7-daagse events zijn daarom hypothesevormend, niet bevestigend.",
     "Controledagen overlappen in tijd. Hun gemiddelde is een beschrijvende benchmark; de onafhankelijke eventtelling bepaalt de bewijsstatus.",
-    "Met vier volwassen events zijn betrouwbaarheidsintervallen breed en regime-uitsplitsingen zeer klein.",
+    "Bij weinig volwassen events zijn betrouwbaarheidsintervallen breed en regime-uitsplitsingen klein.",
     "Transactiekosten, slippage, liquiditeit en uitvoerbaarheid zijn niet verwerkt; statistische en economische relevantie worden apart getoond.",
     "De data-cutoff-slotkoers is een reproduceerbaar statistisch anker, geen gegarandeerde uitvoeringsprijs op het latere publicatietijdstip.",
     "Meerdere verkende specificaties vergroten de kans op een toevallig patroon. Prospectieve resultaten zijn daarom doorslaggevend."

@@ -14,6 +14,7 @@ VERSIONED_ASSETS = [
     "./accessibility.js",
     "./build-version.js",
     "./app.js",
+    "./research.js",
 ]
 
 
@@ -79,6 +80,7 @@ def validate_required(out_dir: Path) -> None:
     required = [
         "index.html",
         "app.js",
+        "research.js",
         "styles.css",
         "build-version.js",
         "data/dashboard.json",
@@ -89,6 +91,8 @@ def validate_required(out_dir: Path) -> None:
         "data/signaalonderzoek.json",
         "data/predictive_power.json",
         "data/predictive_monitor.json",
+        "data/research_monitor.json",
+        "data/research_baseline_manifest.json",
         "data/signal_definitions.jsonl",
         "data/signal_events.jsonl",
         "data/signal_outcomes.jsonl",
