@@ -34,6 +34,7 @@ CHECK_FILES = [
     "data/research_definitions.jsonl",
     "data/research_forecasts.jsonl",
     "data/research_outcomes.jsonl",
+    "data/research_parallel_predictions.jsonl",
     "data/research_shadow_definitions.jsonl",
     "data/research_shadow_quality.jsonl",
     "data/research_baseline_manifest.json",

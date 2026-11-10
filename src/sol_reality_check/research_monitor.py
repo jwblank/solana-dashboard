@@ -43,6 +43,13 @@ def load_protocol(root: Path) -> dict[str, Any]:
     return json.loads((root / "config/research_protocol.json").read_text())
 
 
+def prediction_sources(root: Path) -> list[dict[str, Any]]:
+    """Retain an earlier research publication when a parallel live run shares its ID."""
+    return read_jsonl(root / "data/ledger/predictions.jsonl") + read_jsonl(
+        root / "data/research/parallel_predictions.jsonl"
+    )
+
+
 def research_rows(root: Path) -> list[dict[str, Any]]:
     path = root / "data/curated/signaalonderzoek.parquet"
     if not path.exists():
@@ -58,7 +65,7 @@ def build_inputs(
     predictions = first_publications(
         [
             row
-            for row in read_jsonl(root / "data/ledger/predictions.jsonl")
+            for row in prediction_sources(root)
             if timestamp(row["created_at_utc"]) <= timestamp(now)
         ]
     )
@@ -422,6 +429,10 @@ def validate_research_ledgers(root: Path) -> None:
     outcomes = read_jsonl(root / "data/research/outcomes.jsonl")
     protocols = {r["protocol_id"]: r for r in definitions}
     forecast_map = {r["forecast_id"]: r for r in forecasts}
+    sources = prediction_sources(root)
+    if any(row.get("payload_sha256") != payload_hash(row) for row in sources):
+        raise ValueError("Research prediction source hash mismatch")
+    known_sources = {(r["prediction_id"], r["payload_sha256"]) for r in sources}
     for rows, key in [
         (definitions, "protocol_id"),
         (forecasts, "forecast_id"),
@@ -432,6 +443,8 @@ def validate_research_ledgers(root: Path) -> None:
         if any(r.get("payload_sha256") != payload_hash(r) for r in rows):
             raise ValueError("Research ledger hash mismatch")
     for row in forecasts:
+        if (row["source_prediction_id"], row["source_prediction_sha256"]) not in known_sources:
+            raise ValueError("Research forecast lost its original prediction source")
         protocol = protocols.get(row["protocol_id"])
         if not protocol or row["protocol_sha256"] != payload_hash(protocol):
             raise ValueError("Research forecast references changed or missing protocol")
@@ -529,6 +542,7 @@ def generate_research_monitor(root: Path = ROOT, now: datetime | None = None) ->
         "definitions.jsonl",
         "forecasts.jsonl",
         "outcomes.jsonl",
+        "parallel_predictions.jsonl",
         "shadow_definitions.jsonl",
         "shadow_quality.jsonl",
     ]:
@@ -564,7 +578,11 @@ def generate_research_monitor(root: Path = ROOT, now: datetime | None = None) ->
             "verified": True,
         },
         "downloads": downloads,
-        "source_policy": "Eerste officiële publicatie per datadag; geen prijsinterpolatie.",
+        "source_policy": (
+            "Eerste vastgelegde prediction per datadag, inclusief bewaarde parallelle "
+            "publicaties. Bron-ID én bronhash identificeren de oorspronkelijke versie. "
+            "De live prediction-ledger blijft ongewijzigd; geen prijsinterpolatie."
+        ),
         "limitations": [
             "Experimentele modelkansen zijn nog niet prospectief gevalideerd.",
             "Dagelijkse weekuitkomsten overlappen. Het aantal losse vensters staat apart.",

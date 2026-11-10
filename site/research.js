@@ -179,6 +179,7 @@
     replace("research-limitations", ...payload.limitations.map((r) => el("li", r)));
     replace("research-protocol", ...[
       ["Protocol", `${protocol.protocol_id} · versie ${protocol.version}`],
+      ["Oorspronkelijke bronnen", payload.source_policy],
       ["Instap en uitstap", protocol.entry_policy],
       ["Vooraf vastgelegd", protocol.prospective_policy],
       ["Training", protocol.training_policy],

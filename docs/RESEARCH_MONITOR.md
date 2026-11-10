@@ -77,6 +77,7 @@ Iedere controle valideert de bytes in het archief, de oorspronkelijke ledgerpref
 | `data/research/definitions.jsonl` | Vastgelegde onderzoeksprotocollen. |
 | `data/research/forecasts.jsonl` | Onveranderlijke voorspellingen met trainings- en modelbewijs. |
 | `data/research/outcomes.jsonl` | Eenmalig vastgelegde uitkomsten met gebruikte eindpuntkoersen. |
+| `data/research/parallel_predictions.jsonl` | Oorspronkelijke bronversies uit parallelle research/live-runs met dezelfde prediction-ID. Bronhash en publicatietijd onderscheiden ze. |
 | `data/research/inputs/*.json.gz` | Exacte verwerkte invoer en implementatie per nieuwe productierun, geadresseerd op inhoud. |
 | `data/research/runs.jsonl` | Runregister met verwijzing naar het invoerarchief. |
 | `data/research/shadow_definitions.jsonl` | Definitie van de alternatieve onderbouwing. |
@@ -85,6 +86,8 @@ Iedere controle valideert de bytes in het archief, de oorspronkelijke ledgerpref
 | `site/data/research_*.jsonl` | Byte-identieke downloadkopieën van onderzoeksledgers. |
 
 Oude protocollen en registraties blijven behouden wanneer een volgende versie wordt toegevoegd. Er is geen automatische verwijder- of uitdunregel. Gecomprimeerde invoerarchieven groeien met nieuwe runs; opslagomvang moet periodiek worden beoordeeld zonder de originele data te verwijderen.
+
+Bij het combineren van parallelle dagelijkse updates blijft de live prediction-ledger byte-identiek behouden en worden de Parquet-runs verenigd op hun unieke runtijd. Een eerdere research-publicatie met dezelfde prediction-ID wordt afzonderlijk ongewijzigd bewaard. De researchmonitor blijft zijn eerste vastgelegde bron gebruiken; iedere voorspelling verwijst naar zowel bron-ID als bronhash. Zo veranderen eerder geregistreerde modelinputs niet door een latere live-publicatie. Beide oorspronkelijke datasets zijn ook als gecontroleerde snapshots bewaard: de live-versie in `source_snapshots/` en de research-versie in `parallel_snapshot/`.
 
 In invoerarchiefschema 1.1 staat de verwerkte historie als base64-gecodeerde Parquet onder `history.bytes_base64`, met eigen hash. Dit behoudt de volledige getalprecisie, ontbrekende waarden en datatypes. `research_parquet_base64` bewaart ook de volledige oorspronkelijke onderzoeks-Parquet van die run. Het eerste installatiecontrolearchief met schema 1.0 blijft behouden; dat bevat de historie als JSON-weergave.
 

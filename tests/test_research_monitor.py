@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 
 from sol_reality_check.ledger import read_jsonl, with_hash
+from sol_reality_check.predictive_monitor import append_immutable
 from sol_reality_check.research_archive import (
     archive_run,
     ensure_baseline,
@@ -249,3 +250,41 @@ def test_changed_protocol_cannot_overwrite_registered_definition(tmp_path):
     (root / "config/research_protocol.json").write_text(json.dumps(protocol))
     with pytest.raises(ValueError, match="Immutable ledger conflict"):
         generate_research_monitor(root, now)
+
+
+def test_parallel_live_update_preserves_registered_prediction_source(tmp_path):
+    root = make_root(tmp_path, 20)
+    ensure_baseline(root)
+    original_prefix = (root / "data/ledger/predictions.jsonl").read_bytes()
+    extra = make_root(tmp_path / "extra", 21)
+    early = read_jsonl(extra / "data/ledger/predictions.jsonl")[-1]
+    path = root / "data/ledger/predictions.jsonl"
+    path.write_bytes(original_prefix + (json.dumps(early) + "\n").encode())
+    research_path = root / "data/curated/signaalonderzoek.parquet"
+    frame = pd.read_parquet(extra / "data/curated/signaalonderzoek.parquet")
+    frame.to_parquet(research_path)
+    now = pd.Timestamp("2026-11-10T07:00:00Z").to_pydatetime()
+    first = generate_research_monitor(root, now)
+    forecasts = (root / "data/research/forecasts.jsonl").read_bytes()
+
+    late = {k: v for k, v in early.items() if k != "payload_sha256"}
+    late["created_at_utc"] = (
+        pd.Timestamp(early["created_at_utc"]) + pd.Timedelta(hours=1)
+    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    late["market_signal"] += 1
+    late = with_hash(late)
+    append_immutable(
+        root / "data/research/parallel_predictions.jsonl",
+        {k: v for k, v in early.items() if k != "payload_sha256"},
+        ["prediction_id", "created_at_utc"],
+    )
+    path.write_bytes(original_prefix + (json.dumps(late) + "\n").encode())
+    second = generate_research_monitor(root, now)
+
+    assert forecasts == (root / "data/research/forecasts.jsonl").read_bytes()
+    assert first["candidates"] == second["candidates"]
+    assert read_jsonl(path)[-1] == late
+    assert read_jsonl(root / "data/research/parallel_predictions.jsonl")[-1] == early
+    (root / "data/research/parallel_predictions.jsonl").write_text("")
+    with pytest.raises(ValueError, match="lost its original prediction source"):
+        validate_research_ledgers(root)

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-11-09T15:42:25Z",
+  "generated_at_utc": "2026-11-09T18:30:24Z",
   "method_version": "1.0.0",
   "outcomes": [],
   "predictions": [
@@ -36073,13 +36073,13 @@
       }
     },
     {
-      "created_at_utc": "2026-11-09T15:19:42Z",
+      "created_at_utc": "2026-11-09T18:30:24Z",
       "data_cutoff_utc": "2026-11-08T23:59:59Z",
       "evidence_quality": 77.16,
       "feature_snapshot": {
         "sol_close": 86.45
       },
-      "git_commit_sha": "local",
+      "git_commit_sha": "e0322461f9f439eae7b9619df7eab29cd7affbf9",
       "horizons": {
         "1d": {},
         "30d": {},
@@ -36101,15 +36101,15 @@
           "worst": -0.1698
         }
       },
-      "market_signal": 44.39,
+      "market_signal": 43.86,
       "method_version": "1.0.0",
-      "payload_sha256": "1bf2c9c3d01bcdab2135f147b343830cbbefe7929b551a7137af456a54bffd53",
+      "payload_sha256": "7eaff6ec9d4976e36360b49312cb8bd3bee311fbeef9e9be3f70bf6d73a63df3",
       "prediction_id": "2026-11-08__method-v1.0.0",
       "quality_caps": [
         "Breedte in ecosysteem telt beperkt mee en is nog experimenteel.",
         "RPC-netwerkcontext telt alleen actueel mee, niet in de backtest."
       ],
-      "regime": "mixed",
+      "regime": "risk_regime",
       "source_status": {
         "ccxt_price_consensus": {
           "available": false,
@@ -36132,7 +36132,7 @@
                 "date": "2026-11-09",
                 "exchange_prices": [
                   {
-                    "close": 75118.84,
+                    "close": 74536.91,
                     "deviation_pct": 0.0,
                     "exchange": "coinbase",
                     "status": "succesvol gebruikt als herstelbron",
@@ -36168,7 +36168,7 @@
                 "method": "Coinbase herstelbron",
                 "outlier_count": 0,
                 "source_count": 4,
-                "used_close": 75118.84
+                "used_close": 74536.91
               },
               "provider": "CCXT consensus + Coinbase gap fill",
               "rows": 1020,
@@ -36222,7 +36222,7 @@
                 "date": "2026-11-09",
                 "exchange_prices": [
                   {
-                    "close": 87.69,
+                    "close": 86.38,
                     "deviation_pct": 0.0,
                     "exchange": "coinbase",
                     "status": "succesvol gebruikt als herstelbron",
@@ -36258,7 +36258,7 @@
                 "method": "Coinbase herstelbron",
                 "outlier_count": 0,
                 "source_count": 4,
-                "used_close": 87.69
+                "used_close": 86.38
               },
               "provider": "CCXT consensus + Coinbase gap fill",
               "rows": 1020,
@@ -36307,19 +36307,19 @@
           "available": true,
           "current_prices": {
             "bitcoin": {
-              "usd": 74956,
-              "usd_24h_change": -1.3126794925294734,
-              "usd_24h_vol": 31879037508.338722,
-              "usd_market_cap": 1507039833630.0505
+              "usd": 74473,
+              "usd_24h_change": -1.8196924947636768,
+              "usd_24h_vol": 34519296424.2519,
+              "usd_market_cap": 1497642458335.6301
             },
             "solana": {
-              "usd": 87.42,
-              "usd_24h_change": -2.3333876936055424,
-              "usd_24h_vol": 3016694263.491187,
-              "usd_market_cap": 51663773036.10663
+              "usd": 86.35,
+              "usd_24h_change": -3.5752098569739417,
+              "usd_24h_vol": 3153888105.8717995,
+              "usd_market_cap": 51007349500.3192
             }
           },
-          "last_success_at_utc": "2026-11-09T15:19:42Z",
+          "last_success_at_utc": "2026-11-09T18:30:24Z",
           "role": "current cross-check and ecosystem breadth",
           "validated_signal_source": false
         },
@@ -36334,30 +36334,30 @@
             "historically_validated": false,
             "recent_performance_samples": [
               {
-                "numNonVoteTransactions": 153720,
-                "numSlots": 279,
-                "numTransactions": 153720,
+                "numNonVoteTransactions": 119339,
+                "numSlots": 281,
+                "numTransactions": 119339,
                 "samplePeriodSecs": 60,
-                "slot": 467365485
+                "slot": 467418838
               },
               {
-                "numNonVoteTransactions": 177836,
-                "numSlots": 277,
-                "numTransactions": 177836,
+                "numNonVoteTransactions": 127656,
+                "numSlots": 284,
+                "numTransactions": 127656,
                 "samplePeriodSecs": 60,
-                "slot": 467365206
+                "slot": 467418557
               },
               {
-                "numNonVoteTransactions": 184897,
-                "numSlots": 277,
-                "numTransactions": 184897,
+                "numNonVoteTransactions": 105394,
+                "numSlots": 273,
+                "numTransactions": 105394,
                 "samplePeriodSecs": 60,
-                "slot": 467364929
+                "slot": 467418273
               }
             ],
-            "transaction_count": 565912151643
+            "transaction_count": 565936522352
           },
-          "last_success_at_utc": "2026-11-09T15:19:42Z",
+          "last_success_at_utc": "2026-11-09T18:30:24Z",
           "role": "current network context",
           "validated_signal_source": false
         }

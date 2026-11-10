@@ -44,6 +44,7 @@ def validate_outputs() -> None:
         "definitions.jsonl",
         "forecasts.jsonl",
         "outcomes.jsonl",
+        "parallel_predictions.jsonl",
         "shadow_definitions.jsonl",
         "shadow_quality.jsonl",
     ]:

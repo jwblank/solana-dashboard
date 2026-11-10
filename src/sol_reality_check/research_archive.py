@@ -77,8 +77,10 @@ def ensure_baseline(root: Path) -> dict[str, Any]:
     return manifest
 
 
-def verify_baseline(root: Path, manifest: dict[str, Any] | None = None) -> None:
-    directory = root / "data/research/baseline"
+def verify_baseline(
+    root: Path, manifest: dict[str, Any] | None = None, directory: Path | None = None
+) -> None:
+    directory = directory or root / "data/research/baseline"
     if manifest is None:
         manifest = json.loads((directory / "manifest.json").read_text())
     content = (directory / "collected-data.tar.gz").read_bytes()
@@ -161,8 +163,18 @@ def verify_run_archives(root: Path) -> None:
 
 def verify_collected_history(root: Path) -> None:
     """Compare original ledger bytes and every original Parquet cell with the baseline."""
-    verify_baseline(root)
-    directory = root / "data/research/baseline"
+    directories = [root / "data/research/baseline"] + sorted(
+        (root / "data/research/source_snapshots").glob("*/")
+    )
+    for directory in directories:
+        _verify_history_snapshot(root, directory)
+    parallel_snapshot = root / "data/research/parallel_snapshot"
+    if parallel_snapshot.exists():
+        verify_baseline(root, directory=parallel_snapshot)
+
+
+def _verify_history_snapshot(root: Path, directory: Path) -> None:
+    verify_baseline(root, directory=directory)
     with tarfile.open(directory / "collected-data.tar.gz", mode="r:gz") as tar:
         for member in tar.getmembers():
             if not member.name.startswith("data/ledger/"):
