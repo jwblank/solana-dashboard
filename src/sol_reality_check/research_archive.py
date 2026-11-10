@@ -170,14 +170,16 @@ def verify_collected_history(root: Path) -> None:
         _verify_history_snapshot(root, directory)
     parallel_snapshot = root / "data/research/parallel_snapshot"
     if parallel_snapshot.exists():
-        verify_baseline(root, directory=parallel_snapshot)
+        _verify_history_snapshot(root, parallel_snapshot, check_ledger_prefix=False)
 
 
-def _verify_history_snapshot(root: Path, directory: Path) -> None:
+def _verify_history_snapshot(
+    root: Path, directory: Path, check_ledger_prefix: bool = True
+) -> None:
     verify_baseline(root, directory=directory)
     with tarfile.open(directory / "collected-data.tar.gz", mode="r:gz") as tar:
         for member in tar.getmembers():
-            if not member.name.startswith("data/ledger/"):
+            if not check_ledger_prefix or not member.name.startswith("data/ledger/"):
                 continue
             handle = tar.extractfile(member)
             path = root / member.name

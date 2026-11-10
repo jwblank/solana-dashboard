@@ -288,3 +288,18 @@ def test_parallel_live_update_preserves_registered_prediction_source(tmp_path):
     (root / "data/research/parallel_predictions.jsonl").write_text("")
     with pytest.raises(ValueError, match="lost its original prediction source"):
         validate_research_ledgers(root)
+
+
+def test_parallel_snapshot_guards_its_additional_research_runs(tmp_path):
+    root = make_root(tmp_path, 20)
+    ensure_baseline(root)
+    extra = make_root(tmp_path / "extra", 21)
+    ensure_baseline(extra)
+    shutil.copytree(extra / "data/research/baseline", root / "data/research/parallel_snapshot")
+    research = root / "data/curated/signaalonderzoek.parquet"
+    original = research.read_bytes()
+    research.write_bytes((extra / "data/curated/signaalonderzoek.parquet").read_bytes())
+    verify_collected_history(root)
+    research.write_bytes(original)
+    with pytest.raises(ValueError, match="removed or duplicated"):
+        verify_collected_history(root)
