@@ -2110,7 +2110,7 @@ function table(headers, rows) {
 
 async function main() {
   activateNavigation();
-  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, predictivePower, predictiveMonitor, overview, overviewHistory] = await Promise.all([
+  const [dashboard, backtest, ledger, glossary, interpretation, interpretationArchive, signalResearch, predictivePower, predictiveMonitor, overview, overviewHistory, researchMonitor] = await Promise.all([
     loadJson("./data/dashboard.json"),
     loadJson("./data/backtest_summary.json"),
     loadJson("./data/ledger.json"),
@@ -2121,7 +2121,8 @@ async function main() {
     loadJson("./data/predictive_power.json").catch(() => ({sections: [], warnings: [], methodology: []})),
     loadJson("./data/predictive_monitor.json").catch(() => ({events: [], primary_metrics: [], status_ladder: []})),
     loadJson("./data/overview.json").catch(() => ({current_run: null, previous_run: null, warnings: []})),
-    loadJson("./data/overview_history.json").catch(() => ({rows: []}))
+    loadJson("./data/overview_history.json").catch(() => ({rows: []})),
+    loadJson("./data/research_monitor.json").catch(() => null)
   ]);
   if (dashboard.demo_notice) {
     const notice = document.getElementById("demo-notice");
@@ -2147,6 +2148,7 @@ async function main() {
   renderSignalResearch(signalResearch);
   renderPredictivePower(predictivePower);
   renderPredictiveMonitor(predictiveMonitor);
+  window.renderResearchMonitor(researchMonitor);
   renderEvidencePage(dashboard, backtest, ledger);
   renderInterpretationPage(interpretation, interpretationArchive);
   renderAnalysisText("actueel-duiding", interpretation, {withDefaultHeadings: true, limit: 5});

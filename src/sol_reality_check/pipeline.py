@@ -37,6 +37,9 @@ from sol_reality_check.demo import demo_history
 from sol_reality_check.ledger import append_unique, read_jsonl
 from sol_reality_check.llm_interpretation import build_interpretation
 from sol_reality_check.predictive_monitor import generate_predictive_monitor
+from sol_reality_check.research_archive import archive_run, ensure_baseline
+from sol_reality_check.research_monitor import generate_research_monitor
+from sol_reality_check.shadow_quality import record_shadow_quality
 from sol_reality_check.utils import iso_z, utc_now, write_json
 
 CURATED = ROOT / "data" / "curated"
@@ -653,6 +656,8 @@ def prepare_dataset(mode: str) -> pd.DataFrame:
 
 
 def build_outputs(mode: str) -> dict[str, Any]:
+    if mode == "production":
+        ensure_baseline(ROOT)
     cfg = settings()
     ind = indicators()
     now = utc_now()
@@ -833,6 +838,10 @@ def build_outputs(mode: str) -> dict[str, Any]:
         generated=generated,
         cutoff=cutoff,
     )
+    if mode == "production":
+        archive_run(ROOT, dashboard, df, source_status, cfg, ind)
+        record_shadow_quality(ROOT, df, ind["analog_features"], dashboard, source_status)
+        generate_research_monitor(ROOT)
     return dashboard
 
 

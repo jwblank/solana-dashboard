@@ -1,0 +1,57 @@
+{
+  "protocol_id": "sol-direction-research-v1",
+  "version": "1.0.0",
+  "locked_at_utc": "2026-11-09T15:03:04Z",
+  "discovery_through": "2026-11-07",
+  "primary_horizon_days": 7,
+  "horizons_days": [1, 3, 7, 14],
+  "high_quality_threshold": 65,
+  "occupancy_window_days": 14,
+  "episode_window_days": 10,
+  "episode_comparison_lag_days": 7,
+  "network_threshold": 50,
+  "model": {
+    "algorithm": "standardized-logistic-l2-v1",
+    "C": 0.1,
+    "training_rows": 45,
+    "minimum_training_rows": 45,
+    "baseline_features": ["sol_momentum_7", "btc_momentum_7", "time_days", "weekday_1", "weekday_2", "weekday_3", "weekday_4", "weekday_5", "weekday_6"],
+    "direction_threshold": 0.5,
+    "target": "SOL-rendement strikt groter dan nul; ongewijzigde koers telt niet als stijging."
+  },
+  "candidates": [
+    {
+      "candidate_id": "blue-duration-v1",
+      "name": "Duur van hoge blauwe scores",
+      "feature": "blue_occupancy_14",
+      "unit": "fraction",
+      "hypothesis": "Het aandeel hoge blauwe scores voegt informatie toe over stijging én daling.",
+      "definition": "Aandeel van de laatste 14 kalenderdagen met oorspronkelijke onderbouwingsscore boven 65."
+    },
+    {
+      "candidate_id": "blue-blocks-falling-v1",
+      "name": "Minder nieuwe blauwe blokken",
+      "feature": "blue_blocks_falling",
+      "unit": "boolean",
+      "hypothesis": "Afnemende blokfrequentie hangt samen met een volgende daling.",
+      "definition": "Minder starts boven 65 in de laatste 10 dagen dan in het venster dat 7 dagen eerder eindigde.",
+      "signal_direction": "down"
+    },
+    {
+      "candidate_id": "network-weakness-v1",
+      "name": "Zwak netwerkgebruik",
+      "feature": "network_below_50",
+      "unit": "boolean",
+      "hypothesis": "Een netwerkscore onder 50 hangt samen met toekomstige SOL-zwakte.",
+      "definition": "De netwerkscore uit een componentsnapshot die bij de eerste officiële publicatie al beschikbaar was, is lager dan 50.",
+      "signal_direction": "down"
+    }
+  ],
+  "entry_policy": "UTC-dagslot op publicatiedag, strikt na publicatie; geen eerdere instap en geen interpolatie.",
+  "prospective_policy": "Alleen vastlegging na de protocolstart en vóór het instapslot, met een publicatie na de protocolstart. Latere reconstructies blijven apart.",
+  "training_policy": "Laatste 45 complete rijen van dezelfde methode. Alle instap- en uitstapkoersen moeten vóór de testpublicatie gepubliceerd zijn. Basis en uitbreiding gebruiken dezelfde trainingsrijen.",
+  "comparison_policy": "Vaste SOL/BTC-momentumbasis met tijdtrend en weekdagen; daarnaast altijd stijging, altijd daling en 50/50. SOL minus BTC is een afzonderlijke uitkomst.",
+  "uncertainty_policy": "Gepaarde moving-block bootstrap van Brier-verbetering, bloklengte max(7,horizon), 2000 trekkingen, seed 20261109. Pas een interval bij minstens 20 uitkomsten en 3 niet-overlappende vensters; geen selectiecorrectie voor historische reconstructies.",
+  "cost_policy": "Indicatieve dagslotrendementen zonder handelskosten, slippage, shortfinanciering of uitvoeringsgarantie. Geen gemeten handelsstrategie.",
+  "change_policy": "Verandering van kenmerken, model, horizon, drempel of evaluatie vereist een nieuw protocol_id. Oude definities, voorspellingen en uitkomsten blijven bewaard."
+}

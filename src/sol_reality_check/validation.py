@@ -7,12 +7,15 @@ from jsonschema import validate
 from sol_reality_check.config import ROOT
 from sol_reality_check.ledger import read_jsonl
 from sol_reality_check.predictive_monitor import validate_signal_ledgers
+from sol_reality_check.research_archive import verify_collected_history, verify_run_archives
+from sol_reality_check.research_monitor import validate_research_ledgers
 
 SCHEMA_MAP = {
     "dashboard.json": "dashboard.schema.json",
     "backtest_summary.json": "backtest.schema.json",
     "source_status.json": "source_status.schema.json",
     "predictive_monitor.json": "predictive_monitor.schema.json",
+    "research_monitor.json": "research_monitor.schema.json",
 }
 
 
@@ -33,6 +36,22 @@ def validate_outputs() -> None:
             raise ValueError(f"Invalid numeric token in {path}")
     validate_signal_research(data_dir, loaded.get("dashboard.json", {}))
     validate_predictive_monitor_ledgers()
+    validate_research_ledgers(ROOT)
+    verify_run_archives(ROOT)
+    if loaded.get("dashboard.json", {}).get("mode") == "production":
+        verify_collected_history(ROOT)
+    for name in [
+        "definitions.jsonl",
+        "forecasts.jsonl",
+        "outcomes.jsonl",
+        "parallel_predictions.jsonl",
+        "shadow_definitions.jsonl",
+        "shadow_quality.jsonl",
+    ]:
+        source = ROOT / "data/research" / name
+        public = data_dir / f"research_{name}"
+        if not public.exists() or not source.exists() or source.read_bytes() != public.read_bytes():
+            raise ValueError(f"Public research ledger differs: {name}")
 
 
 def validate_predictive_monitor_ledgers() -> None:
@@ -51,9 +70,7 @@ def validate_predictive_monitor_ledgers() -> None:
         "event": events,
         "outcome": outcomes,
     }.items():
-        schema = json.loads(
-            (ROOT / "schemas" / schema_names[label]).read_text(encoding="utf-8")
-        )
+        schema = json.loads((ROOT / "schemas" / schema_names[label]).read_text(encoding="utf-8"))
         for row in rows:
             validate(row, schema)
     for filename in [

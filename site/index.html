@@ -10,6 +10,7 @@
     <script defer src="./glossary.js"></script>
     <script defer src="./accessibility.js"></script>
     <script defer src="./build-version.js"></script>
+    <script defer src="./research.js"></script>
     <script defer src="./app.js"></script>
   </head>
   <body>
@@ -203,10 +204,80 @@
 
       <section id="voorspelmonitor" class="panel">
         <div class="evidence-page monitor-page">
+          <section class="research-intro">
+            <h2>Voorspelmonitor</h2>
+            <p class="plain">Voegt dashboarddata informatie toe over een toekomstige stijging of daling van SOL?</p>
+            <p id="research-state" role="status">Onderzoeksgegevens laden…</p>
+          </section>
+          <div id="research-content">
+            <div id="research-progress" class="research-grid"></div>
+            <section class="wide">
+              <h3>Wat meten we vandaag?</h3>
+              <p class="plain">Drie vaste kandidaten. Actief betekent dat een onderzoeksvoorwaarde geldt; de voorspelkracht wordt hieronder getoetst.</p>
+              <div id="research-candidates" class="research-grid"></div>
+            </section>
+            <section class="wide research-results">
+              <div class="section-head">
+                <h3>Levert dit extra voorspelkracht op?</h3>
+                <div class="research-controls">
+                  <label>Bewijsperiode<select id="research-phase"><option value="prospective">Nieuwe toets · vooraf vastgelegd</option><option value="reconstructed">Historisch · verkennend</option></select></label>
+                  <label>Termijn<select id="research-horizon"><option value="1">1 dag</option><option value="3">3 dagen</option><option value="7" selected>7 dagen · primaire toets</option><option value="14">14 dagen</option></select></label>
+                </div>
+              </div>
+              <p id="research-scope" class="plain"></p>
+              <p id="research-result-status" class="research-result-status" aria-live="polite"></p>
+              <p class="plain">Modeluitkomsten tellen alleen dagen met voldoende bekende trainingsdata. De dalingsregels gebruiken alle meetdagen met een complete uitkomst.</p>
+              <p class="plain">Een lagere kansfout is beter. Een positieve verbetering betekent dat de kandidaat beter scoorde dan dezelfde basis zonder dit dashboardkenmerk. Valt nul binnen het 95%-interval, dan is extra voorspelkracht nog onzeker.</p>
+              <div id="research-model-table" class="table-wrap research-table"></div>
+              <p id="research-simple-baselines" class="plain"></p>
+              <div id="research-chart-wrap" hidden>
+                <div class="research-chart"><canvas id="research-brier-chart" role="img" aria-label="Kansfout van de basis en de uitbreiding per kandidaat"></canvas></div>
+              </div>
+              <h4>Wat volgde op de twee dalingsregels?</h4>
+              <p class="plain">Alleen actieve dagen tellen als dalingssignaal. Overige dagen vormen de vergelijkingsgroep. De percentages zijn waarnemingen, geen betrouwbare toekomstige kansen.</p>
+              <div id="research-rule-table" class="table-wrap research-table"></div>
+              <details class="research-detail">
+                <summary>Kloppen de voorspelde kansen met de werkelijkheid?</summary>
+                <p class="plain">Per kansgroep: de gemiddelde voorspelde kans naast het werkelijke aandeel stijgingen. Kleine groepen geven weinig zekerheid.</p>
+                <p id="research-calibration-empty" class="plain"></p>
+                <div id="research-calibration" class="table-wrap research-table"></div>
+              </details>
+              <details class="research-detail">
+                <summary>Bekijk de voorspellingen en uitkomsten in deze selectie</summary>
+                <p class="plain">De percentages hieronder zijn experimentele modeluitvoer. Ze zijn nog geen betrouwbaar vastgestelde kansen op een koersstijging.</p>
+                <p id="research-log-count" class="plain"></p>
+                <p id="research-log-empty" class="plain"></p>
+                <div id="research-log" class="table-wrap research-table"></div>
+              </details>
+            </section>
+            <section class="wide">
+              <h3>Controle van het blauwe weekritme</h3>
+              <p class="plain">De oorspronkelijke blauwe score meet onderbouwing. Die kan door de historische backtest op 55 worden begrensd. We laten daarnaast een alternatief meelopen waarin elke weekdag even zwaar weegt.</p>
+              <p id="research-shadow-status" class="research-result-status"></p>
+              <p id="research-shadow-period" class="plain"></p>
+              <details class="research-detail">
+                <summary>Weekdagen en oorspronkelijke score 55 bekijken</summary>
+                <div id="research-weekdays" class="table-wrap research-table"></div>
+              </details>
+            </section>
+            <details class="wide research-detail">
+              <summary>Vaste methode, beperkingen en veilig bewaarde data</summary>
+              <dl id="research-protocol" class="definition-list"></dl>
+              <ul id="research-limitations" class="clean warning-list"></ul>
+              <h4>Controleerbaar archief</h4>
+              <p id="research-archive-status" class="plain"></p>
+              <p id="research-archive-hash" class="research-hash"></p>
+              <p class="plain">Elke nieuwe productierun bewaart ook zijn verwerkte invoer, scores, bronstatus en instellingen in een apart archief. Voorspellingen en uitkomsten worden uitsluitend toegevoegd; wijzigingen vereisen een nieuwe versie.</p>
+              <div id="research-downloads" class="download-row"></div>
+            </details>
+          </div>
+          <details class="research-legacy wide">
+            <summary>Bestaande toets: groene piekclusters · historie behouden</summary>
+            <p class="plain">Deze eerdere hypothese heeft een eigen definitie en toetsperiode. De resultaten hieronder horen uitsluitend bij groene piekclusters.</p>
           <section class="monitor-hero">
             <div>
               <p class="eyebrow">Vooraf vastgelegde hypothesetoets</p>
-              <h2>Voorspelmonitor</h2>
+              <h3>Groene piekclusters</h3>
               <p id="monitor-summary" class="plain"></p>
               <div id="monitor-badges" class="predictive-badges"></div>
             </div>
@@ -282,6 +353,7 @@
             <div id="monitor-data-quality" class="stat-row"></div>
             <p class="plain">De bestaande prediction-ledger en onderzoeks-Parquet worden alleen gelezen. Deze monitor schrijft uitsluitend nieuwe, versieerbare regels naar afzonderlijke ledgers; bestaande sleutels mogen nooit veranderen.</p>
           </section>
+          </details>
         </div>
       </section>
 

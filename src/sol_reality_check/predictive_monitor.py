@@ -466,7 +466,7 @@ def build_monitor_payload(
         ],
         "limitations": [
             (
-                "De piekregel is na historische inspectie gekozen. De huidige vier volwassen "
+                "De piekregel is na historische inspectie gekozen. Retrospectieve "
                 "7-daagse events zijn daarom hypothesevormend, niet bevestigend."
             ),
             (
@@ -474,8 +474,8 @@ def build_monitor_payload(
                 "benchmark; de onafhankelijke eventtelling bepaalt de bewijsstatus."
             ),
             (
-                "Met vier volwassen events zijn betrouwbaarheidsintervallen breed en "
-                "regime-uitsplitsingen zeer klein."
+                "Bij weinig volwassen events zijn betrouwbaarheidsintervallen breed en "
+                "regime-uitsplitsingen klein."
             ),
             (
                 "Transactiekosten, slippage, liquiditeit en uitvoerbaarheid zijn niet "

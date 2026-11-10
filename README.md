@@ -92,6 +92,10 @@ Forwardstatus gebruikt uitsluitend forwardgegevens. Backteststatus gebruikt uits
 
 ## Voorspelmonitor
 
+De startweergave bevat sinds 9 november 2026 gericht onderzoek naar drie vooraf vastgelegde kandidaten: blauwe duur, afnemende blauwe blokfrequentie en netwerkzwakte. Nieuwe voorspellingen tellen alleen als prospectief wanneer ze vóór het instapslot zijn geregistreerd. Historische reconstructies staan in een afzonderlijke selectie en dienen uitsluitend voor verkenning. Zie [het volledige onderzoeksprotocol en bewaarbeleid](docs/RESEARCH_MONITOR.md).
+
+De eerdere groene-clustertoets staat onder **Bestaande toets: groene piekclusters** en behoudt zijn eigen historie en definitie:
+
 De Voorspelmonitor volgt kandidaat-signalen los van de bestaande algemene voorspellingskracht. De eerste vastgelegde kandidaat is `peak-density-v1`: een clusterstart wanneer in tien officiële signalen ten minste drie scorepieken zijn bevestigd. Een piek wordt pas één observatie later bevestigd, zodat het event geen toekomstige score gebruikt. Na een event geldt een cooldown van tien dagen.
 
 De monitor maakt drie scheidingen expliciet:

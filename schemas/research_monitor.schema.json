@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "generated_at_utc", "protocol", "candidates", "records", "baseline_archive", "limitations"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "generated_at_utc": {"type": "string"},
+    "protocol": {
+      "type": "object",
+      "required": ["protocol_id", "version", "locked_at_utc", "horizons_days", "candidates", "model"],
+      "properties": {
+        "protocol_id": {"type": "string"},
+        "locked_at_utc": {"type": "string"},
+        "horizons_days": {"const": [1, 3, 7, 14]},
+        "candidates": {"type": "array", "minItems": 3, "maxItems": 3}
+      }
+    },
+    "candidates": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": {
+        "type": "object", "required": ["candidate_id", "definition", "evaluations"],
+        "properties": {
+          "evaluations": {
+            "type": "array", "minItems": 8, "maxItems": 8,
+            "items": {
+              "type": "object",
+              "required": ["phase", "horizon_days", "registered_n", "matured_n", "scored_n", "brier", "baseline_brier", "brier_improvement_ci95"],
+              "properties": {
+                "phase": {"enum": ["prospective", "reconstructed"]},
+                "horizon_days": {"enum": [1, 3, 7, 14]},
+                "registered_n": {"type": "integer", "minimum": 0},
+                "matured_n": {"type": "integer", "minimum": 0},
+                "scored_n": {"type": "integer", "minimum": 0},
+                "brier": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+                "baseline_brier": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+                "brier_improvement_ci95": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": ["number", "null"]}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["forecast_id", "candidate_id", "phase", "horizon_days", "recorded_at_utc", "probability_up", "baseline_probability_up"],
+        "properties": {
+          "phase": {"enum": ["prospective", "reconstructed"]},
+          "horizon_days": {"enum": [1, 3, 7, 14]},
+          "probability_up": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "baseline_probability_up": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "baseline_archive": {
+      "type": "object", "required": ["file_count", "sha256", "verified"],
+      "properties": {"verified": {"const": true}, "file_count": {"type": "integer", "minimum": 1}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+    },
+    "limitations": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  }
+}
