@@ -46,7 +46,7 @@ export function Timeline({history,candidate,marks,selected,onSelect}) {
     const t=start+Math.max(0,Math.min(1,(event.clientX-bounds.left-left)/plotWidth))*(end-start);
     setActive({t,quote:nearest(t,"close_time"),kpi:nearest(t,"published_time")});
   }
-  return <div ref={ref} className="lab-timeline" data-chart-interaction-root>
+  return <div ref={ref} className="lab-timeline" data-chart-interaction-root data-reviewed-rows>
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} role="img"
       aria-label={`SOL-dagslot en ${candidate.name}, op dezelfde tijdas met eigen schalen`}
       onPointerMove={hover} onPointerLeave={()=>setActive(null)}>

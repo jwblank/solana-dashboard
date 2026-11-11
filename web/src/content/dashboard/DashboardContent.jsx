@@ -90,7 +90,7 @@ export function DashboardContent() {
             {key:"baseline_probability_up",label:"Koersbasis",renderCell:v=>percent(v)},
             {key:"sol_return",label:"SOL daarna",renderCell:v=>v==null?"Open":percent(v)},
             {key:"relative_return",label:"SOL minus BTC",renderCell:v=>percent(v)},
-          ]} label="Voorspellingen en uitkomsten" rowKey="forecast_id" onRowSelect={r=>{setShowAll(true);setSelectedId(r.forecast_id);}} rowActionLabel={()=>"Toon meetvenster in de koersgrafiek"}/>
+          ]} label="Voorspellingen en uitkomsten" rowKey="forecast_id" onRowSelect={r=>{setRange("all");setShowAll(true);setSelectedId(r.forecast_id);}} rowActionLabel={()=>"Toon meetvenster in de koersgrafiek"}/>
         </DataComponent>
       </details>
     </>}
@@ -102,7 +102,7 @@ export function DashboardContent() {
 function ForecastDetail({row,phase}) {
   if(!row) return <div className="lab-selected"><b>Geen modelmarkering in dit bereik</b><span>KPI- en koershistorie blijven zichtbaar. Een modelverwachting vereist voldoende toen bekende trainingsdata.</span></div>;
   const baseline=row.baseline_probability_up>=.5?"stijging":"daling";
-  return <div className="lab-selected" aria-live="polite">
+  return <div className="lab-selected" aria-live="polite" data-reviewed-rows>
     <div><span>{phase==='reconstructed'?"Reconstructie bij bronmoment":"Vooraf vastgelegd"} · {date(row.mark_at,true)}</span><b>Verwachting: {direction(row.predicted_direction)} <small>· koersbasis: {baseline}</small></b></div>
     <div><span>Meetvenster: {date(row.entry_date)} → {date(row.exit_date)}</span><b>{row.sol_return==null?`Open · vanaf ${date(row.outcome_after_utc)}`:`SOL ${percent(row.sol_return)} · ${row.correct?'richting juist':'richting onjuist'}`}</b></div>
   </div>;
@@ -113,7 +113,7 @@ function EvidencePanel({evaluations,meta,phase}) {
   const body=<>
     {!scored && <div className="lab-evidence-empty"><span className="lab-status-dot"/><b>Meetvensters lopen</b><p>De eerste nieuwe uitkomsten zijn nog niet beschikbaar.</p><dl><dt>Verwachte eerste 7-daagse uitkomst</dt><dd>{date(meta.first_maturity)}</dd></dl></div>}
     {scored && <p className="lab-fine">Van de werkelijke stijgings- en dalingsweken correct herkend:</p>}
-    <div className="lab-direction-list">{evaluations.map(row=><div key={row.candidate_id}>
+    <div className="lab-direction-list" data-reviewed-rows>{evaluations.map(row=><div key={row.candidate_id}>
       <b>{row.name}</b><span>Stijging: {formatCount(row.up_correct_n,row.actual_up_n)}</span><span>Daling: {formatCount(row.down_correct_n,row.actual_down_n)}</span>
       <small>{row.scored_n} modeluitkomsten · {row.nonoverlap_n} niet-overlappende vensters</small>
     </div>)}</div>
