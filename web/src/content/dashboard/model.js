@@ -1,0 +1,29 @@
+export const percent = value => value == null ? "—" : `${(100 * value).toLocaleString("nl-NL", {maximumFractionDigits:1})}%`;
+export const number = (value, digits=3) => value == null ? "—" : Number(value).toLocaleString("nl-NL", {maximumFractionDigits:digits});
+export const money = value => value == null ? "—" : Number(value).toLocaleString("nl-NL", {style:"currency",currency:"USD",maximumFractionDigits:2});
+export const date = (value, withTime=false) => value ? new Intl.DateTimeFormat("nl-NL", {day:"numeric",month:"short",...(withTime ? {hour:"2-digit",minute:"2-digit",timeZone:"Europe/Amsterdam"} : {timeZone:"UTC"})}).format(new Date(value.length===10 ? `${value}T12:00:00Z` : value)) : "—";
+export const direction = value => ({up:"stijging",down:"daling",flat:"ongewijzigd"}[value] || "geen modeluitvoer");
+export function featureValue(candidate) {
+  const value=candidate.current_value;
+  return value == null ? "—" : `${number(value,1)}${candidate.unit === "%" ? "%" : candidate.unit === "/100" ? " / 100" : ""}`;
+}
+export function sampleMarks(rows, showAll=false) {
+  const available=rows.filter(row=>row.model_available && row.predicted_direction).toSorted((a,b)=>a.mark_time-b.mark_time);
+  if(showAll || available.length<=12) return available;
+  let end="";
+  return available.filter(row=> {
+    if(row.entry_date<end) return false;
+    end=row.exit_date; return true;
+  });
+}
+export function scopeHistory(history, days) {
+  if(days==="all" || !history.length) return history;
+  const start=history.at(-1).close_time-Number(days)*86400000;
+  return history.filter(row=>row.close_time>=start);
+}
+export function evaluationRows(evaluations,phase) {
+  return evaluations.filter(row=>row.phase===phase && row.horizon_days===7).map(row=>({
+    ...row, "Brier-verschil":row.brier_improvement,
+    low:row.brier_improvement_ci95[0],high:row.brier_improvement_ci95[1],
+  }));
+}

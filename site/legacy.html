@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self';">
+    <title>SOL Reality Check</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script defer src="./glossary.js"></script>
+    <script defer src="./accessibility.js"></script>
+    <script defer src="./build-version.js"></script>
+    <script defer src="./research.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <p class="eyebrow">SOL Reality Check</p>
+        <h1>SOL Reality Check</h1>
+        <p class="subtitle">Data, duiding en onderbouwing voor het actuele Solana-beeld.</p>
+      </div>
+      <dl class="meta" aria-label="Actuele metadata">
+        <div><dt>SOL live</dt><dd id="sol-price">...</dd></div>
+        <div><dt>Update</dt><dd id="updated-at">...</dd></div>
+        <div><dt>Data t/m</dt><dd id="data-cutoff">...</dd></div>
+        <div><dt>Methode</dt><dd id="method-version">...</dd></div>
+      </dl>
+    </header>
+
+    <main>
+      <p id="demo-notice" class="notice" hidden></p>
+      <nav class="tabs primary-tabs" aria-label="Hoofdnavigatie">
+        <button class="tab active" data-tab="actueel">Actueel</button>
+        <button class="tab" data-tab="prijs">Prijs</button>
+        <button class="tab" data-tab="netwerk">Netwerk</button>
+        <button class="tab" data-tab="kapitaal">Kapitaal</button>
+        <button class="tab" data-tab="voorspellingskracht">Voorspellingskracht</button>
+        <button class="tab" data-tab="voorspelmonitor">Voorspelmonitor</button>
+        <button class="tab" data-tab="bewijs">Bewijs</button>
+      </nav>
+
+      <section id="actueel" class="panel active">
+        <div class="overview-page">
+          <section class="overview-hero actueel-hero">
+            <div>
+              <p class="eyebrow">Actueel marktbeeld</p>
+              <h2 id="overview-title">...</h2>
+              <p id="overview-subtitle" class="plain"></p>
+              <div id="actueel-duiding" class="interpretation-analysis compact-analysis"></div>
+              <div id="overview-meta" class="stat-row"></div>
+            </div>
+            <div id="overview-scorebox" class="score-pair"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Grootste veranderingen</h3>
+                <p id="overview-change-conclusion" class="plain"></p>
+              </div>
+            </div>
+            <div id="overview-changes" class="change-grid"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Waarom veranderde het?</h3>
+                <p class="plain">Korte domeinsamenvatting. De volledige indicatoranalyse staat op de pagina's Prijs, Netwerk en Kapitaal.</p>
+              </div>
+            </div>
+            <div id="actueel-domain-cards" class="change-grid"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Hierop letten</h3>
+                <p class="plain">Watchlist en omslagpunten samengevoegd tot een compacte aandachtlijst.</p>
+              </div>
+            </div>
+            <div class="compact-list-wrap">
+              <ul id="overview-watchlist" class="clean"></ul>
+            </div>
+          </section>
+
+          <section class="summary-strip">
+            <article class="summary-card">
+              <span>Datakwaliteit</span>
+              <strong id="actueel-quality-title">...</strong>
+              <p id="actueel-quality-text"></p>
+              <button class="button link-button" data-jump="#bewijs-kwaliteit">Bekijk datakwaliteit</button>
+            </article>
+            <article class="summary-card">
+              <span>Publiek trackrecord</span>
+              <strong id="actueel-track-title">...</strong>
+              <p id="actueel-track-text"></p>
+              <button class="button link-button" data-jump="#bewijs-trackrecord">Bekijk trackrecord</button>
+            </article>
+          </section>
+
+          <section class="wide quiet-section">
+            <div class="section-head">
+              <div>
+                <h3>Ontwikkeling</h3>
+                <p class="plain">Korte trend van huidige sterkte en onderbouwing. De historische vergelijking staat onder Bewijs.</p>
+              </div>
+              <div id="history-range" class="range-controls" aria-label="Tijdselectie scoreverloop"></div>
+            </div>
+            <div class="chart-box">
+              <canvas id="score-history-chart" aria-label="Scoreverloop van huidige sterkte en onderbouwing" role="img"></canvas>
+            </div>
+            <p id="method-version-note" class="plain"></p>
+            <div id="method-transition-list" class="plain"></div>
+          </section>
+
+          <section class="wide quiet-section">
+            <h3>Scorebrug</h3>
+            <p id="waterfall-note" class="plain"></p>
+            <div id="waterfall-chart" class="waterfall" aria-label="Scorebrug van vorige score naar huidige score"></div>
+            <p id="waterfall-summary" class="plain"></p>
+          </section>
+        </div>
+      </section>
+
+      <section id="prijs" class="panel">
+        <div class="overview-page">
+          <div id="price-tab"></div>
+        </div>
+      </section>
+
+      <section id="netwerk" class="panel">
+        <div class="overview-page">
+          <div id="network-tab"></div>
+          <section class="wide section-divider">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Ecosysteem</p>
+                <h2>Breedte van het Solana-ecosysteem</h2>
+                <p class="plain">Deze context hoort bij netwerkgebruik: beweegt alleen SOL, of beweegt het ecosysteem breder mee?</p>
+              </div>
+            </div>
+          </section>
+          <div id="ecosystem-tab"></div>
+        </div>
+      </section>
+
+      <section id="kapitaal" class="panel">
+        <div class="overview-page">
+          <div id="capital-tab"></div>
+        </div>
+      </section>
+
+      <section id="voorspellingskracht" class="panel">
+        <div class="evidence-page predictive-page">
+          <section class="evidence-hero">
+            <div>
+              <p class="eyebrow">Forward trackrecord</p>
+              <h2 id="predictive-headline">Voorspellingskracht</h2>
+              <p id="predictive-summary" class="plain"></p>
+              <div id="predictive-badges" class="predictive-badges"></div>
+            </div>
+            <div id="predictive-scorecard" class="evidence-scorecard"></div>
+          </section>
+
+          <section class="wide">
+            <h3>Kernbeeld</h3>
+            <div id="predictive-highlights" class="predictive-highlight-grid"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Lead-lag tabel</h3>
+                <p class="plain">Wat gebeurde er historisch na lage, gemengde en hoge dashboardscores?</p>
+              </div>
+              <div id="predictive-range-controls" class="range-controls" aria-label="Tijdselectie voorspellingskracht"></div>
+            </div>
+            <div class="predictive-analysis-grid">
+              <div id="predictive-sections"></div>
+              <aside class="mini-chart predictive-chart-card">
+                <span>Hit-rate per bucket</span>
+                <strong id="predictive-chart-title">Huidige Sterkte</strong>
+                <canvas id="predictive-bucket-chart" aria-label="Hit-rate per scorebucket" role="img"></canvas>
+                <small id="predictive-chart-note"></small>
+              </aside>
+            </div>
+          </section>
+
+          <section class="wide">
+            <h3>Sterkte hoog + onderbouwing stevig</h3>
+            <p id="predictive-combination-definition" class="plain"></p>
+            <div id="predictive-combination-table" class="table-wrap compact-table"></div>
+          </section>
+
+          <section class="wide">
+            <h3>Methode en beperkingen</h3>
+            <ul id="predictive-methodology" class="clean"></ul>
+            <ul id="predictive-warnings" class="clean warning-list"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section id="voorspelmonitor" class="panel">
+        <div class="evidence-page monitor-page">
+          <section class="research-intro">
+            <h2>Voorspelmonitor</h2>
+            <p class="plain">Voegt dashboarddata informatie toe over een toekomstige stijging of daling van SOL?</p>
+            <p id="research-state" role="status">Onderzoeksgegevens laden…</p>
+          </section>
+          <div id="research-content">
+            <div id="research-progress" class="research-grid"></div>
+            <section class="wide">
+              <h3>Wat meten we vandaag?</h3>
+              <p class="plain">Drie vaste kandidaten. Actief betekent dat een onderzoeksvoorwaarde geldt; de voorspelkracht wordt hieronder getoetst.</p>
+              <div id="research-candidates" class="research-grid"></div>
+            </section>
+            <section class="wide research-results">
+              <div class="section-head">
+                <h3>Levert dit extra voorspelkracht op?</h3>
+                <div class="research-controls">
+                  <label>Bewijsperiode<select id="research-phase"><option value="prospective">Nieuwe toets · vooraf vastgelegd</option><option value="reconstructed">Historisch · verkennend</option></select></label>
+                  <label>Termijn<select id="research-horizon"><option value="1">1 dag</option><option value="3">3 dagen</option><option value="7" selected>7 dagen · primaire toets</option><option value="14">14 dagen</option></select></label>
+                </div>
+              </div>
+              <p id="research-scope" class="plain"></p>
+              <p id="research-result-status" class="research-result-status" aria-live="polite"></p>
+              <p class="plain">Modeluitkomsten tellen alleen dagen met voldoende bekende trainingsdata. De dalingsregels gebruiken alle meetdagen met een complete uitkomst.</p>
+              <p class="plain">Een lagere kansfout is beter. Een positieve verbetering betekent dat de kandidaat beter scoorde dan dezelfde basis zonder dit dashboardkenmerk. Valt nul binnen het 95%-interval, dan is extra voorspelkracht nog onzeker.</p>
+              <div id="research-model-table" class="table-wrap research-table"></div>
+              <p id="research-simple-baselines" class="plain"></p>
+              <div id="research-chart-wrap" hidden>
+                <div class="research-chart"><canvas id="research-brier-chart" role="img" aria-label="Kansfout van de basis en de uitbreiding per kandidaat"></canvas></div>
+              </div>
+              <h4>Wat volgde op de twee dalingsregels?</h4>
+              <p class="plain">Alleen actieve dagen tellen als dalingssignaal. Overige dagen vormen de vergelijkingsgroep. De percentages zijn waarnemingen, geen betrouwbare toekomstige kansen.</p>
+              <div id="research-rule-table" class="table-wrap research-table"></div>
+              <details class="research-detail">
+                <summary>Kloppen de voorspelde kansen met de werkelijkheid?</summary>
+                <p class="plain">Per kansgroep: de gemiddelde voorspelde kans naast het werkelijke aandeel stijgingen. Kleine groepen geven weinig zekerheid.</p>
+                <p id="research-calibration-empty" class="plain"></p>
+                <div id="research-calibration" class="table-wrap research-table"></div>
+              </details>
+              <details class="research-detail">
+                <summary>Bekijk de voorspellingen en uitkomsten in deze selectie</summary>
+                <p class="plain">De percentages hieronder zijn experimentele modeluitvoer. Ze zijn nog geen betrouwbaar vastgestelde kansen op een koersstijging.</p>
+                <p id="research-log-count" class="plain"></p>
+                <p id="research-log-empty" class="plain"></p>
+                <div id="research-log" class="table-wrap research-table"></div>
+              </details>
+            </section>
+            <section class="wide">
+              <h3>Controle van het blauwe weekritme</h3>
+              <p class="plain">De oorspronkelijke blauwe score meet onderbouwing. Die kan door de historische backtest op 55 worden begrensd. We laten daarnaast een alternatief meelopen waarin elke weekdag even zwaar weegt.</p>
+              <p id="research-shadow-status" class="research-result-status"></p>
+              <p id="research-shadow-period" class="plain"></p>
+              <details class="research-detail">
+                <summary>Weekdagen en oorspronkelijke score 55 bekijken</summary>
+                <div id="research-weekdays" class="table-wrap research-table"></div>
+              </details>
+            </section>
+            <details class="wide research-detail">
+              <summary>Vaste methode, beperkingen en veilig bewaarde data</summary>
+              <dl id="research-protocol" class="definition-list"></dl>
+              <ul id="research-limitations" class="clean warning-list"></ul>
+              <h4>Controleerbaar archief</h4>
+              <p id="research-archive-status" class="plain"></p>
+              <p id="research-archive-hash" class="research-hash"></p>
+              <p class="plain">Elke nieuwe productierun bewaart ook zijn verwerkte invoer, scores, bronstatus en instellingen in een apart archief. Voorspellingen en uitkomsten worden uitsluitend toegevoegd; wijzigingen vereisen een nieuwe versie.</p>
+              <div id="research-downloads" class="download-row"></div>
+            </details>
+          </div>
+          <details class="research-legacy wide">
+            <summary>Bestaande toets: groene piekclusters · historie behouden</summary>
+            <p class="plain">Deze eerdere hypothese heeft een eigen definitie en toetsperiode. De resultaten hieronder horen uitsluitend bij groene piekclusters.</p>
+          <section class="monitor-hero">
+            <div>
+              <p class="eyebrow">Vooraf vastgelegde hypothesetoets</p>
+              <h3>Groene piekclusters</h3>
+              <p id="monitor-summary" class="plain"></p>
+              <div id="monitor-badges" class="predictive-badges"></div>
+            </div>
+            <div id="monitor-scorecard" class="evidence-scorecard"></div>
+          </section>
+
+          <p id="monitor-discovery-note" class="notice"></p>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Primaire uitkomsten</h3>
+                <p class="plain">Effect, 95%-interval, onafhankelijke eventtelling en vaste benchmark naast elkaar.</p>
+              </div>
+            </div>
+            <div id="monitor-metrics" class="monitor-metric-grid"></div>
+          </section>
+
+          <section class="monitor-chart-grid">
+            <article class="monitor-chart-card">
+              <h3>Bewijs door de tijd</h3>
+              <p class="plain">Cumulatieve 7-daagse SOL-uplift met 95%-interval na elk volwassen event.</p>
+              <div class="monitor-canvas"><canvas id="monitor-evidence-chart" aria-label="Cumulatieve uplift en betrouwbaarheidsinterval" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Horizonprofiel</h3>
+              <p class="plain">Gemiddelde uplift na 1, 3, 7, 14 en 30 dagen; 7 dagen is primair.</p>
+              <div class="monitor-canvas"><canvas id="monitor-horizon-chart" aria-label="Uplift per horizon" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Eventstudie</h3>
+              <p class="plain">Gemiddeld pad van SOL en SOL minus BTC rond de clusterstart.</p>
+              <div class="monitor-canvas"><canvas id="monitor-event-chart" aria-label="Eventstudie rond de clusterstart" role="img"></canvas></div>
+            </article>
+            <article class="monitor-chart-card">
+              <h3>Stabiliteit</h3>
+              <p class="plain">Uplift per periode, volatiliteit, BTC-momentum, methode en maand.</p>
+              <div id="monitor-stability" class="forest-list"></div>
+            </article>
+          </section>
+
+          <section class="wide">
+            <h3>Bewijsstatus</h3>
+            <div id="monitor-ladder" class="status-ladder"></div>
+          </section>
+
+          <section class="wide">
+            <div class="section-head">
+              <div>
+                <h3>Append-only eventregister</h3>
+                <p class="plain">Ook negatieve en nog open events blijven zichtbaar. Elke bron- en uitkomstregel heeft een controlehash.</p>
+              </div>
+              <div id="monitor-downloads" class="download-row"></div>
+            </div>
+            <div id="monitor-events" class="table-wrap compact-table"></div>
+          </section>
+
+          <section class="monitor-method-grid">
+            <article class="wide">
+              <h3>Vastgelegde definitie</h3>
+              <dl id="monitor-definition" class="definition-list"></dl>
+            </article>
+            <article class="wide">
+              <h3>Methode</h3>
+              <ul id="monitor-methodology" class="clean"></ul>
+              <h3>Beperkingen</h3>
+              <ul id="monitor-limitations" class="clean warning-list"></ul>
+            </article>
+          </section>
+
+          <section class="wide quiet-section">
+            <h3>Datakwaliteit en bewaarbeleid</h3>
+            <div id="monitor-data-quality" class="stat-row"></div>
+            <p class="plain">De bestaande prediction-ledger en onderzoeks-Parquet worden alleen gelezen. Deze monitor schrijft uitsluitend nieuwe, versieerbare regels naar afzonderlijke ledgers; bestaande sleutels mogen nooit veranderen.</p>
+          </section>
+          </details>
+        </div>
+      </section>
+
+      <section id="bewijs" class="panel">
+        <div class="evidence-page">
+          <nav class="section-links" aria-label="Onderdelen van bewijs">
+            <a href="#bewijs-kwaliteit">Datakwaliteit</a>
+            <a href="#bewijs-backtest">Backtest</a>
+            <a href="#bewijs-trackrecord">Trackrecord</a>
+            <a href="#bewijs-historie">Historie</a>
+            <a href="#bewijs-methode">Methode</a>
+            <a href="#bewijs-data">Data & logboek</a>
+          </nav>
+
+          <section id="bewijs-kwaliteit" class="evidence-section">
+            <section class="evidence-hero nested-hero">
+              <div>
+                <p class="eyebrow">Bewijs</p>
+                <h2>Datakwaliteit en bronnen</h2>
+                <p id="evidence-summary" class="plain"></p>
+              </div>
+              <div id="evidence-scorecard" class="evidence-scorecard"></div>
+            </section>
+
+            <h3>Datakwaliteit in het kort</h3>
+            <div id="evidence-kpis" class="evidence-kpis"></div>
+
+            <h3>Bronnen en bronstatus</h3>
+            <p id="audit-summary"></p>
+            <div id="audit-stats" class="stat-row"></div>
+            <div id="source-cards" class="source-grid"></div>
+            <p id="audit-warnings" class="plain"></p>
+          </section>
+
+          <section id="bewijs-backtest" class="evidence-section">
+            <div class="section-head">
+              <div>
+                <h2>Backtest</h2>
+                <p id="edge-warning" class="plain"></p>
+              </div>
+            </div>
+            <div id="backtest-cards" class="backtest-grid"></div>
+            <div id="backtest-table" class="table-wrap compact-table"></div>
+          </section>
+
+          <section id="bewijs-trackrecord" class="evidence-section">
+            <h2>Publiek trackrecord</h2>
+            <p class="plain">Forward trackrecord van vooraf vastgelegde officiële signalen. Dit staat los van de historische backtest.</p>
+            <div id="trackrecord-cards" class="trackrecord-grid"></div>
+            <p class="notice">Een historische backtest en een publiek forward trackrecord zijn verschillende vormen van bewijs. Een langer trackrecord kan het inzicht verbeteren, maar garandeert geen voorspellende waarde of rendement.</p>
+            <h3>Open logboek</h3>
+            <div id="ledger-summary" class="ledger-summary"></div>
+          </section>
+
+          <section id="bewijs-historie" class="evidence-section">
+            <h2>Historische vergelijking</h2>
+            <p id="analog-summary"></p>
+            <div id="analog-stats" class="stat-row"></div>
+          </section>
+
+          <section id="bewijs-methode" class="evidence-section">
+            <div>
+              <p class="eyebrow">Methode</p>
+              <h2>Zo werkt het</h2>
+              <p class="plain">Berekening, indicatorbijdragen, begrippen en rol van duiding.</p>
+            </div>
+            <h3>Indicatorbijdrage</h3>
+            <div id="evidence-blocks" class="evidence-block-grid"></div>
+            <h3>Berekeningsstappen</h3>
+            <div id="method-steps" class="method-steps"></div>
+
+            <section class="method-subsection">
+              <div class="section-head">
+                <div>
+                  <h3>Begrippen</h3>
+                  <p class="plain">Korte uitleg bij statistische termen en dashboardbegrippen.</p>
+                </div>
+                <a id="download-analogs" class="button" href="./data/current_analogs.json" download>Download analoge dagen</a>
+              </div>
+              <div id="term-explainer" class="term-grid"></div>
+              <div id="glossary" class="glossary-grid"></div>
+            </section>
+          </section>
+
+          <section id="bewijs-data" class="evidence-section">
+            <section class="interpretation-hero">
+              <div>
+                <p class="eyebrow">Archief</p>
+                <p id="llm-date" class="plain"></p>
+                <h2 id="llm-title">...</h2>
+                <div id="llm-analysis" class="interpretation-analysis"></div>
+              </div>
+              <div id="llm-audit" class="interpretation-audit"></div>
+            </section>
+            <section class="wide">
+              <h3>Gebruikte dashboardwaarden</h3>
+              <div id="llm-inputs" class="stat-row"></div>
+              <p id="llm-note" class="plain"></p>
+            </section>
+            <section class="wide">
+              <div class="section-head">
+                <div>
+                  <h3>Duidingsarchief</h3>
+                  <p class="plain">Dagelijkse LLM-duidingen, geordend op de datadag waarop de analyse betrekking heeft.</p>
+                </div>
+              </div>
+              <div id="llm-archive-controls" class="archive-controls"></div>
+              <div id="llm-archive" class="archive-list"></div>
+            </section>
+            <section class="wide signal-research-page">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Onderzoeksdataset</p>
+                  <h2>Signaalonderzoek</h2>
+                  <p id="signal-research-summary" class="plain"></p>
+                </div>
+                <a class="button" href="./data/signaalonderzoek.parquet" download>Download Parquet</a>
+              </div>
+              <div id="signal-research-stats" class="stat-row"></div>
+              <div id="signal-research-table" class="table-wrap compact-table"></div>
+            </section>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
