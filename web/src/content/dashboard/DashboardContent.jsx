@@ -55,10 +55,10 @@ export function DashboardContent() {
           title="Signalen en koersverloop" kind="custom" variant="card"
           sourceRowsByQuery={{history:visibleHistory,forecasts:visibleForecasts,candidates:[candidate]}}
           displayRows={visibleHistory} className="lab-main-chart"
-          description="Echte tijdposities, eigen schalen. De koers staat op het UTC-dagslot; KPI's op publicatie. Nieuwe verwachtingen staan op registratie, historische reconstructies blijven verkennend."
-          headerControls={<><Dropdown label="KPI" showLabel value={candidate.candidate_id}
+          description="Echte tijdposities, eigen schalen. De koers staat op het UTC-dagslot; KPI's op publicatie. Nieuwe verwachtingen staan op registratie, historische reconstructies blijven verkennend.">
+          <div className="lab-plot-controls"><Dropdown label="KPI" showLabel value={candidate.candidate_id}
             choices={candidates.map(c=>c.candidate_id)} choiceLabels={Object.fromEntries(candidates.map(c=>[c.candidate_id,c.name]))} onChange={setCandidateId}/>
-            <SegmentedControl label="Grafiekperiode" options={rangeOptions} value={range} onChange={setRange} size="compact"/></>}>
+            <SegmentedControl label="Grafiekperiode" options={rangeOptions} value={range} onChange={setRange} size="compact"/></div>
           <Timeline history={visibleHistory} candidate={candidate} marks={marks} selected={selected} onSelect={r=>setSelectedId(r.forecast_id)}/>
           <div className="lab-chart-footer"><span>Alle lijnen zijn waarnemingen. Blauwe band: geselecteerd meetvenster.</span>
             <Switch label="Alle markeringen" checked={showAll} onChange={setShowAll} size="compact"/></div>
