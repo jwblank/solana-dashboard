@@ -134,12 +134,18 @@ function EventStudy({candidate,phase,rows}) {
   if(candidate.candidate_id==='blue-duration-v1') return <p>Blauwe duur is een continue KPI zonder vaste aan/uit-grens. Hiervoor toetsen we het model tegenover dezelfde koersbasis; er wordt geen dalingssignaal achteraf geconstrueerd.</p>;
   const selected=rows.filter(r=>r.candidate_id===candidate.candidate_id&&r.phase===phase);
   if(!selected.length) return <p>Voor deze periode zijn nog geen volledige meetvensters beschikbaar.</p>;
-  const display=selected.map(r=>({...r,"Koerspad (%)":r.mean_pct,"Ondergrens (%)":r.lo_pct,"Bovengrens (%)":r.hi_pct}));
-  return <EvidenceChart id="sol-event-path" queryId="event_paths" title="Gemiddeld SOL-verloop na instap" rows={display} sourceRows={selected} height={240} variant="plain"
-    spec={{type:"line",x:"day",y:"Koerspad (%)",series:"group",stackable:false,valueDecimals:1,
-      uncertainty:{lower:"Ondergrens (%)",upper:"Bovengrens (%)",style:"band",label:"95% block-bootstrapband"}}}>
-    <p className="lab-fine">{[...new Map(selected.map(r=>[r.group,r.n])).entries()].map(([g,n])=>`${g}: n=${n}`).join(" · ")}. Beschrijvend, zonder matching op marktregime. Dagvensters overlappen.</p>
-  </EvidenceChart>;
+  const bounds=selected.flatMap(r=>[r.mean_pct,r.lo_pct,r.hi_pct]).filter(Number.isFinite);
+  const domain=[Math.floor(Math.min(0,...bounds))-1,Math.ceil(Math.max(0,...bounds))+1];
+  return <><p className="lab-fine">Gemiddeld SOL-verloop vanaf instapslot (dag 0). Gelijke schalen; 95%-bootstrapband waar voldoende waarnemingen beschikbaar zijn. Beschrijvend, zonder matching op marktregime. Dagvensters overlappen.</p>
+    <div className="lab-event-comparison">{[...new Set(selected.map(r=>r.group))].map((group,index)=>{
+      const sourceRows=selected.filter(r=>r.group===group);
+      const display=sourceRows.map(r=>({day:r.day,"Koerspad (%)":r.mean_pct,"Ondergrens (%)":r.lo_pct,"Bovengrens (%)":r.hi_pct}));
+      const hasBand=sourceRows.some(r=>r.lo_pct!=null);
+      const [chart]=chartConfigEntries({id:`sol-event-path-${index}`,title:`${group} · n=${sourceRows[0].n}`,rows:display,
+        spec:{type:"line",x:"day",y:"Koerspad (%)",yDomain:domain,stackable:false,valueDecimals:1,
+          ...(hasBand?{uncertainty:{lower:"Ondergrens (%)",upper:"Bovengrens (%)",style:"band",label:"95% block-bootstrapband"}}:{})}});
+      return <EvidenceChart key={group} {...chart} queryId="event_paths" sourceRows={sourceRows} height={230} variant="plain"/>;
+    })}</div></>;
 }
 
 function MethodPage({meta,quality,checks,evaluations,forecasts}) {

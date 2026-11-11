@@ -64,7 +64,8 @@ jobs:
             --branch "${GITHUB_REF_NAME}" \
             --retries 10 \
             --sleep-seconds 10
-          curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" | grep -q 'sol-signals-timeline'
+          curl -fsSL "https://jwblank.github.io/solana-dashboard/?verify=${GITHUB_SHA}" -o /tmp/live-dashboard.html
+          grep -q 'sol-signals-timeline' /tmp/live-dashboard.html
           curl -fsSL "https://jwblank.github.io/solana-dashboard/data/lab_snapshot.json?verify=${GITHUB_SHA}" >/dev/null
           curl -fsSL "https://jwblank.github.io/solana-dashboard/data/overview.json?verify=${GITHUB_SHA}" >/dev/null
           curl -fsSL "https://jwblank.github.io/solana-dashboard/data/overview_history.json?verify=${GITHUB_SHA}" >/dev/null

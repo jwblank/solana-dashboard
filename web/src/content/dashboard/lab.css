@@ -1,3 +1,4 @@
+.lab-event-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
 .lab-page { --data-app-layout-intent:user-requested; --data-app-content-width:1240px; max-width:1240px; margin-inline:auto; padding-block:14px 40px; }
 .lab-intro { display:flex; justify-content:space-between; align-items:start; gap:24px; margin-bottom:18px; }
 .lab-question { font-size:21px; line-height:1.35; font-weight:600; letter-spacing:-.35px; margin:0 0 8px; max-width:740px; }
@@ -80,6 +81,7 @@
 .lab-empty { color:var(--secondary); padding:24px 0; font-size:13px; }
 @media(max-width:1050px) { .lab-research-grid { grid-template-columns:1fr; } .lab-direction-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; } .lab-evidence-empty { padding-block:4px; } }
 @media(max-width:700px) {
+  .lab-event-comparison { grid-template-columns:1fr; }
   .lab-intro { display:block; } .lab-close { text-align:left; margin-top:14px; } .lab-close strong { font-size:22px; }
   .lab-question { font-size:18px; } .lab-status-band { display:block; } .lab-status-band>div { margin-bottom:10px; }
   .lab-hypotheses,.lab-method-grid,.lab-lower-grid,.lab-about-grid { grid-template-columns:1fr; }
