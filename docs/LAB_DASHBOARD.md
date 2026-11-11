@@ -1,5 +1,30 @@
 # Publiek onderzoek naar SOL-signalen
 
+## Ontleding van de blauwe score
+
+De sectie onder de koersgrafiek koppelt dezelfde inspectiedag aan vijf gewogen
+bijdragen en elf marktvariabelen. De gestapelde strook, som, geregistreerde
+bovengrens en oorspronkelijke eindscore maken begrenzingen zichtbaar. De
+historische compositiegrafiek volgt dezelfde tijdperiode als de koersgrafiek.
+Een klik op een van de grafieken of de dagkeuze wijzigt de inspectie.
+
+De volledige opbouw komt uitsluitend uit het runarchief met hetzelfde
+publicatietijdstip, datadag en dezelfde eindscore. Het archief wordt op hash
+gecontroleerd; de gewogen som na begrenzing moet binnen 0,03 punt aansluiten
+op de opgeslagen eindscore (afronding). Voor oudere dagen zijn aantal en
+gelijkenis soms uit opgeslagen analogieën te herleiden; deze bijdragen staan
+expliciet als reconstructie aangeduid. Ontbrekende datakwaliteit, testkwaliteit
+en vaste stabiliteitsinvoer worden niet teruggevuld. De oorspronkelijke
+blauwe lijn blijft volledig; het gestapelde vlak bevat alleen complete dagen.
+
+Marktmetingen komen bij een exact passend runarchief uit de opgeslagen
+modelinvoer, inclusief controle van de Parquet-hash. Anders uit de eerste beschikbare Parquet-run voor dezelfde
+datadag, uiterlijk op het eerste publicatietijdstip. Ontbrekende waarden
+blijven leeg, ook in minigrafieken. De gewichten zijn de gedocumenteerde
+analogiegewichten, genormaliseerd bij volledige invoer; het zijn geen gewichten
+van de blauwe score of causale effecten. Alle presentatieproducten zijn
+afgeleid en veranderen de primaire datasets en modellen niet.
+
 De hoofdpagina stelt één vraag: voegen de vastgelegde kandidaten informatie toe
 aan dezelfde SOL/BTC-koersbasis, voor zowel stijging als daling? Een zichtbaar
 verband tussen twee lijnen beantwoordt die vraag niet zelfstandig.

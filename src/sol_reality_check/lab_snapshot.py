@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from sol_reality_check.blue_explainer import explain_blue
 from sol_reality_check.config import ROOT
 from sol_reality_check.ledger import read_jsonl
 from sol_reality_check.research_monitor import build_inputs, load_protocol, prediction_sources
@@ -379,6 +380,42 @@ def build_lab_snapshot(root: Path = ROOT) -> dict[str, Any]:
             ),
         },
     }
+    blue, market, components = explain_blue(root, history, predictions)
+    for key, rows, label, files in [
+        (
+            "blue_breakdown",
+            blue,
+            "Oorspronkelijke opbouw en begrenzingen",
+            ["data/research/runs.jsonl", "data/ledger/predictions.jsonl"],
+        ),
+        (
+            "market_features",
+            market,
+            "Elf oorspronkelijke marktvariabelen",
+            ["data/curated/signaalonderzoek.parquet", "config/indicators.yml"],
+        ),
+        (
+            "blue_components",
+            components,
+            "Vijf gewogen scoreonderdelen",
+            ["src/sol_reality_check/analytics.py"],
+        ),
+    ]:
+        q[key] = {
+            "rows": rows,
+            "source": source(
+                label,
+                files,
+                [],
+                [
+                    "Dezelfde eerste publicatie als de hoofdlijn; "
+                    "latere runs worden niet teruggeplaatst.",
+                    "Ontbrekende details blijven leeg. "
+                    "Herleide deelbijdragen zijn expliciet gereconstrueerd.",
+                    "Alleen dagen met volledige opgeslagen opbouw krijgen een gestapeld vlak.",
+                ],
+            ),
+        }
     return native(
         {
             "id": APP_ID,
