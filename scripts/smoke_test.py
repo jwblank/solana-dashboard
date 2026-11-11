@@ -1,7 +1,11 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-html = (ROOT / "site/index.html").read_text(encoding="utf-8")
+modern = (ROOT / "site/index.html").read_text(encoding="utf-8")
+for marker in ["sol-signals-timeline", "Methode & data", "Over het onderzoek"]:
+    if marker not in modern:
+        raise SystemExit(f"Missing research dashboard marker: {marker}")
+html = (ROOT / "site/legacy.html").read_text(encoding="utf-8")
 for tab in [
     "Actueel",
     "Prijs",

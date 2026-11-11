@@ -7,7 +7,7 @@ from sol_reality_check.pipeline import build_outputs
 def test_site_contains_required_tabs(monkeypatch):
     monkeypatch.setenv("APP_MODE", "demo")
     build_outputs("demo")
-    html = Path("site/index.html").read_text(encoding="utf-8")
+    html = Path("site/legacy.html").read_text(encoding="utf-8")
     required_text = [
         "Actueel",
         "Prijs",

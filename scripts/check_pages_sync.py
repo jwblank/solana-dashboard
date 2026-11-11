@@ -16,6 +16,8 @@ from prepare_pages_artifact import prepare
 
 CHECK_FILES = [
     "index.html",
+    "legacy.html",
+    "data/lab_snapshot.json",
     "app.js",
     "research.js",
     "styles.css",

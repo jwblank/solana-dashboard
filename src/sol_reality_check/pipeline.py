@@ -841,7 +841,12 @@ def build_outputs(mode: str) -> dict[str, Any]:
     if mode == "production":
         archive_run(ROOT, dashboard, df, source_status, cfg, ind)
         record_shadow_quality(ROOT, df, ind["analog_features"], dashboard, source_status)
-        generate_research_monitor(ROOT)
+        research = generate_research_monitor(ROOT)
+        from sol_reality_check.lab_snapshot import export_lab_snapshot
+        from sol_reality_check.research_note import research_note
+
+        write_json(ROOT / "site/data/research_note.json", research_note(research))
+        export_lab_snapshot(ROOT)
     return dashboard
 
 
