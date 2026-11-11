@@ -2,6 +2,7 @@ import React,{useMemo,useState} from "react";
 import {DataComponent,DataTable,EvidenceChart,Section,SegmentedControl,Dropdown,Switch,
   useDataApp,useDashboardTabs,chartConfigEntries} from "../../data-app-public.jsx";
 import {Timeline} from "./Timeline.jsx";
+import {BlueScore} from "./BlueScore.jsx";
 import {date,direction,evaluationRows,featureValue,money,number,percent,sampleMarks,scopeHistory} from "./model.js";
 import "./lab.css";
 
@@ -25,9 +26,11 @@ export function DashboardContent() {
   const [range,setRange]=useState("all");
   const [showAll,setShowAll]=useState(false);
   const [selectedId,setSelectedId]=useState(null);
+  const [inspectionDate,setInspectionDate]=useState(null);
   const candidate=candidates.find(c=>c.candidate_id===candidateId)||candidates[0];
   const tab=activeTabId||"onderzoek";
   const visibleHistory=useMemo(()=>scopeHistory(history,range),[history,range]);
+  const effectiveInspectionDate=visibleHistory.some(r=>r.date===inspectionDate)?inspectionDate:visibleHistory.at(-1)?.date;
   const scopedForecasts=forecasts.filter(r=>r.candidate_id===candidate?.candidate_id && r.phase===phase);
   const visibleForecasts=scopedForecasts.filter(r=>r.mark_time>=(visibleHistory[0]?.close_time||0));
   const marks=sampleMarks(visibleForecasts,showAll);
@@ -59,14 +62,16 @@ export function DashboardContent() {
           <div className="lab-plot-controls"><Dropdown label="KPI" showLabel value={candidate.candidate_id}
             choices={candidates.map(c=>c.candidate_id)} choiceLabels={Object.fromEntries(candidates.map(c=>[c.candidate_id,c.name]))} onChange={setCandidateId}/>
             <SegmentedControl label="Grafiekperiode" options={rangeOptions} value={range} onChange={setRange} size="compact"/></div>
-          <Timeline history={visibleHistory} candidate={candidate} marks={marks} selected={selected} onSelect={r=>setSelectedId(r.forecast_id)}/>
+          <Timeline history={visibleHistory} candidate={candidate} marks={marks} selected={selected} onSelect={r=>{setSelectedId(r.forecast_id);setInspectionDate(r.date);}} inspectionDate={effectiveInspectionDate} onInspect={setInspectionDate}/>
           <div className="lab-chart-footer"><span>Alle lijnen zijn waarnemingen. Blauwe band: geselecteerd meetvenster.</span>
             <Switch label="Alle markeringen" checked={showAll} onChange={setShowAll} size="compact"/></div>
           <p className="lab-fine">{marks.length} van {visibleForecasts.filter(r=>r.model_available).length} modelmarkeringen getoond{marks.length<visibleForecasts.filter(r=>r.model_available).length?" · vaste selectie zonder overlappende meetvensters":""}. Statistiek gebruikt de hele gekozen toetsperiode.</p>
           <ForecastDetail row={selected} phase={phase}/>
+          <a className="blue-jump" href="#blue-score-explainer">Ontleed de oorspronkelijke blauwe score ↓</a>
         </DataComponent>
         <EvidencePanel evaluations={phaseMetrics} meta={meta} phase={phase}/>
       </div>
+      <BlueScore rows={reviewedRows('blue_breakdown')} features={reviewedRows('market_features')} definitions={reviewedRows('blue_components')} history={visibleHistory} selectedDate={effectiveInspectionDate} onSelect={setInspectionDate} timeDomain={[visibleHistory[0]?.close_time,Math.max(visibleHistory.at(-1)?.published_time||0,visibleHistory.at(-1)?.close_time||0,selected?.exit_time||0)]}/>
       <DataComponent id="sol-hypotheses" queryId="candidates" kind="custom" title="Drie vastgelegde hypotheses" variant="plain" sourceRows={candidates} displayRows={candidates}>
         <div className="lab-hypotheses">{candidates.map(c=><button type="button" key={c.candidate_id} className="lab-hypothesis" data-selected={c.candidate_id===candidate.candidate_id} onClick={()=>setCandidateId(c.candidate_id)}>
           <span className="lab-family">{c.family}</span><div><b>{c.name}</b><strong>{featureValue(c)}</strong></div><p>{c.hypothesis}</p>
@@ -90,7 +95,7 @@ export function DashboardContent() {
             {key:"baseline_probability_up",label:"Koersbasis",renderCell:v=>percent(v)},
             {key:"sol_return",label:"SOL daarna",renderCell:v=>v==null?"Open":percent(v)},
             {key:"relative_return",label:"SOL minus BTC",renderCell:v=>percent(v)},
-          ]} label="Voorspellingen en uitkomsten" rowKey="forecast_id" onRowSelect={r=>{setRange("all");setShowAll(true);setSelectedId(r.forecast_id);}} rowActionLabel={()=>"Toon meetvenster in de koersgrafiek"}/>
+          ]} label="Voorspellingen en uitkomsten" rowKey="forecast_id" onRowSelect={r=>{setRange("all");setShowAll(true);setSelectedId(r.forecast_id);setInspectionDate(r.date);}} rowActionLabel={()=>"Toon meetvenster in de koersgrafiek"}/>
         </DataComponent>
       </details>
     </>}

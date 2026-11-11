@@ -27,3 +27,16 @@ export function evaluationRows(evaluations,phase) {
     low:row.brier_improvement_ci95[0],high:row.brier_improvement_ci95[1],
   }));
 }
+
+export function blueScoreChange(current,previous,definitions){
+  if(!previous) return 'De eerste opgeslagen waarneming in dit bereik.';
+  const delta=current.score-previous.score;
+  if(current.raw_score!=null && previous.raw_score!=null){
+    const capNow=current.raw_score-current.score, capBefore=previous.raw_score-previous.score;
+    if(Math.abs(capNow-capBefore)>.05 && Math.abs(capNow-capBefore)>Math.abs(delta)*.5)
+      return `De begrenzing veranderde de scorebijdrage met ${number(-(capNow-capBefore),2)} punten; verandering van de eindscore: ${number(delta,2)} punten.`;
+    const differences=definitions.map(c=>({label:c.label,delta:current[c.key+'_points']-previous[c.key+'_points']})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+    return Math.abs(delta)<.005?'De eindscore bleef gelijk aan de vorige waarneming.':`${differences[0].label} veranderde het meest: ${number(differences[0].delta,2)} gewogen punten. De totale eindscore veranderde ${number(delta,2)} punten.`;
+  }
+  return `Eindscore ${delta>=0?'+':''}${number(delta,2)} punten versus ${date(previous.date)}. De volledige oude opbouw ontbreekt; de oorzaak is niet vast te stellen. ${current.ceiling!=null?`Geregistreerde bovengrens: ${current.ceiling}.`:''}`;
+}

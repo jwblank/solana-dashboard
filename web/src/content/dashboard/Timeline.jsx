@@ -4,7 +4,7 @@ import {date,money,number,direction} from "./model.js";
 // A coupled price/KPI chart needs two independent y-scales, true event timestamps,
 // a shared cursor and forecast registration marks. No artificial OHLC bars,
 // interpolated market quotes or backwards-shifted signals are constructed.
-export function Timeline({history,candidate,marks,selected,onSelect}) {
+export function Timeline({history,candidate,marks,selected,onSelect,inspectionDate,onInspect}) {
   const ref=useRef(null);
   const [width,setWidth]=useState(800);
   const [active,setActive]=useState(null);
@@ -41,6 +41,7 @@ export function Timeline({history,candidate,marks,selected,onSelect}) {
   const tickCount=width<500?3:5;
   const ticks=Array.from({length:tickCount},(_,i)=>start+(end-start)*i/(tickCount-1));
   const nearest=(t,field)=>history.reduce((a,b)=>Math.abs(b[field]-t)<Math.abs(a[field]-t)?b:a,history[0]);
+  const inspected=history.find(r=>r.date===inspectionDate);
   function hover(event) {
     const bounds=event.currentTarget.getBoundingClientRect();
     const t=start+Math.max(0,Math.min(1,(event.clientX-bounds.left-left)/plotWidth))*(end-start);
@@ -49,7 +50,7 @@ export function Timeline({history,candidate,marks,selected,onSelect}) {
   return <div ref={ref} className="lab-timeline" data-chart-interaction-root data-reviewed-rows>
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} role="img"
       aria-label={`SOL-dagslot en ${candidate.name}, op dezelfde tijdas met eigen schalen`}
-      onPointerMove={hover} onPointerLeave={()=>setActive(null)}>
+      onPointerMove={hover} onPointerLeave={()=>setActive(null)} onClick={event=>{const bounds=event.currentTarget.getBoundingClientRect();const t=start+Math.max(0,Math.min(1,(event.clientX-bounds.left-left)/plotWidth))*(end-start);onInspect?.(nearest(t,'published_time').date);}}>
       {selectedStart!=null && selectedEnd>selectedStart && <rect x={x(selectedStart)} y="53" width={Math.max(1,x(selectedEnd)-x(selectedStart))} height="278" fill="var(--lab-window)"/>}
       {[0,1,2,3].map(i=>{
         const v=low+(high-low)*i/3;
@@ -66,6 +67,7 @@ export function Timeline({history,candidate,marks,selected,onSelect}) {
       {marks.map(mark=><line key={mark.forecast_id} x1={x(mark.mark_time)} x2={x(mark.mark_time)} y1="43" y2="326" className="lab-forecast-line" data-selected={mark.forecast_id===selected?.forecast_id}/>) }
       {ticks.map((t,i)=><text key={t} x={x(t)} y="351" textAnchor={i===0?"start":i===ticks.length-1?"end":"middle"} className="lab-axis">{date(new Date(t).toISOString())}</text>)}
       {active && <line x1={x(active.t)} x2={x(active.t)} y1="54" y2="327" className="lab-cursor"/>}
+      {inspected && <line x1={x(inspected.published_time)} x2={x(inspected.published_time)} y1="54" y2="327" className="lab-cursor"/>}
     </svg>
     <div className="lab-mark-track" aria-label="Voorspellingen op hun vastgelegde tijdstip">
       {marks.map((mark,i)=><button key={mark.forecast_id} type="button"
