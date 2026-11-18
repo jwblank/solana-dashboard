@@ -115,17 +115,23 @@ function ForecastDetail({row,phase}) {
 
 function EvidencePanel({evaluations,meta,phase}) {
   const scored=evaluations.some(r=>r.scored_n>0);
+  const chartRows=evaluations.filter(row=>{
+    const value=row["Brier-verschil"];
+    return [row.low,value,row.high].every(Number.isFinite) && row.low<=value && value<=row.high;
+  }).map(r=>({name:r.name,"Brier-verschil":r["Brier-verschil"],low:r.low,high:r.high}));
+  const chartNames=new Set(chartRows.map(row=>row.name));
   const body=<>
     {!scored && <div className="lab-evidence-empty"><span className="lab-status-dot"/><b>Meetvensters lopen</b><p>De eerste nieuwe uitkomsten zijn nog niet beschikbaar.</p><dl><dt>Verwachte eerste 7-daagse uitkomst</dt><dd>{date(meta.first_maturity)}</dd></dl></div>}
     {scored && <p className="lab-fine">Van de werkelijke stijgings- en dalingsweken correct herkend:</p>}
     <div className="lab-direction-list" data-reviewed-rows>{evaluations.map(row=><div key={row.candidate_id}>
       <b>{row.name}</b><span>Stijging: {formatCount(row.up_correct_n,row.actual_up_n)}</span><span>Daling: {formatCount(row.down_correct_n,row.actual_down_n)}</span>
       <small>{row.scored_n} modeluitkomsten · {row.nonoverlap_n} niet-overlappende vensters</small>
+      {row.scored_n>0 && !chartNames.has(row.name) && <small>Brier-verschil: {number(row["Brier-verschil"],3)} · {row.low==null && row.high==null ? "nog geen 95%-interval" : "interval niet grafisch beschikbaar"}</small>}
     </div>)}</div>
+    {scored && !chartRows.length && <p className="lab-fine">De grafiek verschijnt zodra er een bruikbaar 95%-interval is. Positief Brier-verschil betekent minder kansfout dan de koersbasis.</p>}
     <p className="lab-fine">Dagvensters overlappen. Niet-overlap garandeert geen onafhankelijkheid. {phase==='reconstructed'?"Historische intervallen zijn niet voor kandidaatselectie gecorrigeerd.":"Beoordeel meerwaarde met het interval, de aantallen en vervolgmetingen."}</p>
   </>;
-  if(!scored) return <DataComponent id="sol-predictive-evidence" queryId="evaluations" kind="custom" title="Voorspelkracht · 7 dagen" variant="card" sourceRows={evaluations} displayRows={evaluations} className="lab-evidence">{body}</DataComponent>;
-  const chartRows=evaluations.map(r=>({name:r.name,"Brier-verschil":r["Brier-verschil"],low:r.low,high:r.high}));
+  if(!chartRows.length) return <DataComponent id="sol-predictive-evidence" queryId="evaluations" kind="custom" title="Voorspelkracht · 7 dagen" variant="card" sourceRows={evaluations} displayRows={evaluations} className="lab-evidence">{body}</DataComponent>;
   const [chart]=chartConfigEntries({id:"sol-predictive-evidence",title:"Meerwaarde versus koersbasis",rows:chartRows,
     spec:{type:"horizontalBar",x:"Brier-verschil",y:"name",showValues:true,valueDecimals:3,showLegend:false,
       uncertainty:{lower:"low",upper:"high",style:"bars",label:"95%-interval per kandidaat"}}});
