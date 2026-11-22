@@ -13,6 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -50,9 +51,15 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - uses: actions/upload-pages-artifact@v3
+      - id: upload_pages
++        uses: actions/upload-pages-artifact@v3
         with:
           path: .pages-artifact
+      - name: Wait for Pages artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.upload_pages.outputs.artifact_id }}
+        run: bash scripts/wait_for_pages_artifact.sh
       - id: deployment
         uses: actions/deploy-pages@v4
       - name: Verify live Pages deployment

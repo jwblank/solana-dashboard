@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
   pages: write
   id-token: write
@@ -97,10 +98,18 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - if: steps.schedule_gate.outputs.run_update == 'true'
+        uses: actions/upload-pages-artifact@v3
+      - id: upload_pages
+        if: steps.schedule_gate.outputs.run_update == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: .pages-artifact
+      - name: Wait for Pages artifact
+        if: steps.schedule_gate.outputs.run_update == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.upload_pages.outputs.artifact_id }}
+        run: bash scripts/wait_for_pages_artifact.sh
       - id: deployment
         if: steps.schedule_gate.outputs.run_update == 'true'
         uses: actions/deploy-pages@v4
