@@ -1903,7 +1903,7 @@
       "path": "./data/research_shadow_quality.jsonl"
     }
   ],
-  "generated_at_utc": "2026-11-22T12:41:32Z",
+  "generated_at_utc": "2026-11-22T16:06:12Z",
   "limitations": [
     "Experimentele modelkansen zijn nog niet prospectief gevalideerd.",
     "Dagelijkse weekuitkomsten overlappen. Het aantal losse vensters staat apart.",
@@ -49827,6 +49827,35 @@
       "original_quality": 55,
       "payload_sha256": "e1cce841c77ef7eeab47f104caafb9dbad4f41beabadf07043705195219cf026",
       "run_at_utc": "2026-11-22T12:39:11Z"
+    },
+    {
+      "alternative_caps": [
+        "Voorspelkwaliteit ≤ 0"
+      ],
+      "alternative_quality": 55,
+      "data_cutoff_utc": "2026-11-21T23:59:59Z",
+      "definition_id": "calendar-balanced-quality-v1",
+      "evaluation": {
+        "available": true,
+        "brier_benchmark": 0.24528281334649782,
+        "brier_score": 0.2597149725274725,
+        "brier_skill": -0.05883885211552564,
+        "from": "2026-05-11",
+        "prediction_count": 182,
+        "through": "2026-11-08",
+        "weekdays_n": [
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26
+        ]
+      },
+      "original_quality": 55,
+      "payload_sha256": "8ef2eba680cdd6e0d323ed572291d7be81c5ba39dfaeaf17ce736f92879b939c",
+      "run_at_utc": "2026-11-22T16:04:21Z"
     }
   ],
   "source_policy": "Eerste vastgelegde prediction per datadag, inclusief bewaarde parallelle publicaties. Bron-ID én bronhash identificeren de oorspronkelijke versie. De live prediction-ledger blijft ongewijzigd; geen prijsinterpolatie.",
