@@ -98,7 +98,6 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-        uses: actions/upload-pages-artifact@v3
       - id: upload_pages
         if: steps.schedule_gate.outputs.run_update == 'true'
         uses: actions/upload-pages-artifact@v3
