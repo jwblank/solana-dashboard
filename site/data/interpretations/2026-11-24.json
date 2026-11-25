@@ -1,0 +1,170 @@
+{
+  "analysis_text": "Kort beeld: SOL staat rond $69.31 en het dashboard geeft een huidige sterkte van 45/100. De dashboardlezing is: Gemengd marktbeeld.\n\nWat trekt omhoog?: De belangrijkste verhouding zit tussen koerskracht 43/100, gebruik 56/100, kapitaalstromen 36/100 en breedte in ecosysteem 48/100. Als koerskracht sterker is dan gebruik en kapitaalstromen, loopt de markt mogelijk vooruit op bredere bevestiging; als gebruik en kapitaalstromen meebewegen, wordt het beeld steviger.\n\nWat houdt tegen?: De dashboardblokken lopen niet altijd gelijk, waardoor het beeld genuanceerd blijft.\n\nHoe stevig is dit?: De onderbouwing is 82/100. Onderbouwing betekent hoe stevig de actuele conclusie historisch en datatechnisch onderbouwd is; bij beperkt onderbouwde data moet het signaal voorzichtig gelezen worden.\n\nConclusie: De historische vergelijking gebruikt 40 vergelijkbare dagen; daarvan was 47.5% positief, met een mediaan rendement van -0.4%. Dit is een gestructureerde dataduiding van de actuele Solana-context, geen financieel advies.",
+  "data_cutoff_utc": "2026-11-24T23:59:59Z",
+  "date": "2026-11-24",
+  "footer_note": "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de automatische analyse niet beschikbaar of niet geldig was. Dit is geen beleggingsadvies.",
+  "generated_at_utc": "2026-11-25T18:32:53Z",
+  "input_snapshot": {
+    "analog_count": 40,
+    "analog_median_return": "-0.4%",
+    "analog_positive_frequency": "47.5%",
+    "backtest_7d": {
+      "brier_skill": "0.041",
+      "calibration_error": "0.034",
+      "directional_accuracy": "48.1%",
+      "prediction_count": 131
+    },
+    "block_weights": {
+      "capital": "20%",
+      "ecosystem_breadth": "10%",
+      "network_usage": "25%",
+      "price_strength": "45%"
+    },
+    "capital": "36/100",
+    "capital_components": [
+      {
+        "label": "Stablecoins 30d",
+        "score": "36/100",
+        "value": "-7.7%",
+        "weight": "55% binnen kapitaalblok"
+      },
+      {
+        "label": "TVL 30d",
+        "score": "37/100",
+        "value": "-19.5%",
+        "weight": "45% binnen kapitaalblok"
+      },
+      {
+        "label": "Schaalduiding",
+        "score": "36/100",
+        "value": "Relatief",
+        "weight": "Uitleg"
+      }
+    ],
+    "capital_summary": "Kapitaalstromen zijn zwak ten opzichte van de eigen historie.",
+    "data_cutoff_utc": "2026-11-24T23:59:59Z",
+    "data_freshness": [
+      {
+        "label": "Update-run",
+        "value": "2026-11-25T18:32:53Z"
+      },
+      {
+        "label": "Data t/m",
+        "value": "2026-11-24T23:59:59Z"
+      },
+      {
+        "label": "Historie",
+        "value": "2023-01-25 t/m 2026-11-24"
+      },
+      {
+        "label": "Records",
+        "value": "1400"
+      },
+      {
+        "label": "Prijsreparaties",
+        "value": "0"
+      },
+      {
+        "label": "Prijsconsensus",
+        "value": "SOL: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen; BTC: CCXT consensus + Coinbase gap fill, 1020 rijen, min 2 bronnen"
+      },
+      {
+        "label": "Analoge dagen",
+        "value": "40"
+      },
+      {
+        "label": "Ecosysteem tokens",
+        "value": "25"
+      },
+      {
+        "label": "RPC samples",
+        "value": "3"
+      }
+    ],
+    "data_quality_summary": "1400 historische records van 2023-01-25 t/m 2026-11-24. Laatste dagdata-cutoff: 2026-11-24T23:59:59Z. Update-run: 2026-11-25T18:32:53Z.",
+    "data_warnings": [
+      "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
+    ],
+    "ecosystem_breadth": "48/100",
+    "evidence_label": "sterk onderbouwd",
+    "evidence_quality": "82/100",
+    "historical_summary": "Historische frequentie: 47.5% positief na 7 dagen. Mediaan -0.4%; midden 80% liep van -12.5% tot 12.2%.",
+    "market_signal": "45/100",
+    "market_signal_label": "neutraal of gemengd",
+    "network_components": [
+      {
+        "label": "DEX-volume 7d/30d",
+        "score": "53/100",
+        "value": "6.97x",
+        "weight": "60% binnen gebruik"
+      },
+      {
+        "label": "Fees 7d/30d",
+        "score": "44/100",
+        "value": "6.17x",
+        "weight": "40% binnen gebruik"
+      },
+      {
+        "label": "RPC-context",
+        "score": "96/100",
+        "value": "96/100; 2.720,2 TPS",
+        "weight": "15% correctie op gebruik"
+      },
+      {
+        "label": "Breedte in ecosysteem",
+        "score": "48/100",
+        "value": "44.0% positief 7d; 25 tokens",
+        "weight": "10% van eindscore"
+      },
+      {
+        "label": "Gevalideerde basis",
+        "score": "49/100",
+        "value": "49/100",
+        "weight": "85% van gebruik"
+      }
+    ],
+    "network_summary": "Gebruik is rond normaal tot licht positief. Breedte in ecosysteem: 44.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -1.1%.",
+    "network_usage": "56/100",
+    "price_components": [
+      {
+        "label": "SOL 7 dagen",
+        "score": "41/100",
+        "value": "-7.4%",
+        "weight": "20% binnen prijsblok"
+      },
+      {
+        "label": "SOL 30 dagen",
+        "score": "32/100",
+        "value": "-31.3%",
+        "weight": "15% binnen prijsblok"
+      },
+      {
+        "label": "Relatief vs BTC 7d",
+        "score": "54/100",
+        "value": "0.5%",
+        "weight": "30% binnen prijsblok"
+      },
+      {
+        "label": "Afstand tot 50d trend",
+        "score": "33/100",
+        "value": "-25.3%",
+        "weight": "20% binnen prijsblok"
+      }
+    ],
+    "price_strength": "43/100",
+    "price_summary": "SOL blijft qua koers achter; prijs bevestigt de onderliggende data nog niet.",
+    "regime_title": "Gemengd marktbeeld",
+    "sol_price": "$69.31",
+    "updated_at_utc": "2026-11-25T18:32:53Z"
+  },
+  "intro": "De huidige sterkte staat op 45/100 (neutraal of gemengd) en de onderbouwing op 82/100 (sterk onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-11-24T23:59:59Z.",
+  "llm_called_at_utc": "2026-11-25T18:33:55Z",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "provider": "Hugging Face Inference Providers",
+  "schema_version": "1.0",
+  "status": "fallback_error",
+  "title": "Gemengd marktbeeld",
+  "warnings": [
+    "400 Client Error: Bad Request for url: https://router.huggingface.co/v1/chat/completions"
+  ]
+}

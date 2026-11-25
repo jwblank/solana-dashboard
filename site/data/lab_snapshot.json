@@ -1,7 +1,7 @@
 {
   "buildStatus": "complete",
   "filters": [],
-  "generatedAt": "2026-11-24T19:28:58Z",
+  "generatedAt": "2026-11-25T18:32:53Z",
   "id": "dashboard:5955feb0-e9b2-4727-8d30-7b0abd38ffba",
   "queries": {
     "blue_breakdown": {
@@ -4925,6 +4925,40 @@
           "stability": 70.0,
           "stability_points": 14.0,
           "stability_provenance": "Oorspronkelijk opgeslagen"
+        },
+        {
+          "analog_count": 40,
+          "analog_similarity": 81.67,
+          "analog_similarity_points": 8.167,
+          "analog_similarity_provenance": "Oorspronkelijk opgeslagen",
+          "ceiling": null,
+          "complete": true,
+          "data_quality": 92.0,
+          "data_quality_points": 23.0,
+          "data_quality_provenance": "Oorspronkelijk opgeslagen",
+          "date": "2026-11-24",
+          "input_file": "data/research/inputs/a1a6e010d5e9d2f96954ab023a3e576cdece645852544b8fb6e478f544ccc5b6.json.gz",
+          "input_sha256": "a1a6e010d5e9d2f96954ab023a3e576cdece645852544b8fb6e478f544ccc5b6",
+          "median_similarity": 81.67,
+          "out_of_sample_quality": 71.24,
+          "out_of_sample_quality_points": 21.371999999999996,
+          "out_of_sample_quality_provenance": "Oorspronkelijk opgeslagen",
+          "prediction_id": "2026-11-24__method-v1.0.0",
+          "published_at": "2026-11-25T18:32:53Z",
+          "published_time": 1795631573000,
+          "raw_score": 81.539,
+          "reasons": [
+            "Breedte in ecosysteem telt beperkt mee en is nog experimenteel.",
+            "RPC-netwerkcontext telt alleen actueel mee, niet in de backtest."
+          ],
+          "sample_adequacy": 100.0,
+          "sample_adequacy_points": 15.0,
+          "sample_adequacy_provenance": "Oorspronkelijk opgeslagen",
+          "score": 81.54,
+          "source_sha256": "796f246f96854657574a07c22ae37419a96f395195607543503378d8f9287fa6",
+          "stability": 70.0,
+          "stability_points": 14.0,
+          "stability_provenance": "Oorspronkelijk opgeslagen"
         }
       ],
       "source": {
@@ -5039,7 +5073,7 @@
         },
         {
           "candidate_id": "network-weakness-v1",
-          "current_value": 54.47,
+          "current_value": 56.48,
           "definition": "De netwerkscore uit een componentsnapshot die bij de eerste officiële publicatie al beschikbaar was, is lager dan 50.",
           "family": "Netwerkgebruik",
           "field": "network_score",
@@ -5087,21 +5121,21 @@
     "evaluations": {
       "rows": [
         {
-          "accuracy": 0.5714285714285714,
+          "accuracy": 0.5333333333333333,
           "active_mean_relative": null,
           "active_mean_sol": null,
           "active_n": 0,
           "active_negative_n": 0,
           "active_nonoverlap_n": 0,
           "active_uplift": null,
-          "actual_down_n": 9,
+          "actual_down_n": 10,
           "actual_up_n": 5,
-          "always_down_brier": 0.35714285714285715,
-          "always_up_brier": 0.6428571428571428,
-          "balanced_accuracy": 0.48888888888888893,
-          "baseline_brier": 0.26161741854264076,
-          "brier": 0.25955341224441497,
-          "brier_improvement": 0.0020640062982257824,
+          "always_down_brier": 0.3333333333333333,
+          "always_up_brier": 0.6666666666666667,
+          "balanced_accuracy": 0.44999999999999996,
+          "baseline_brier": 0.2657170936991479,
+          "brier": 0.27034242223866495,
+          "brier_improvement": -0.004625328539517006,
           "brier_improvement_ci95": [
             null,
             null
@@ -5130,9 +5164,9 @@
             },
             {
               "from": 0.6,
-              "n": 1,
+              "n": 2,
               "observed": 0.0,
-              "predicted": 0.6290286710699303,
+              "predicted": 0.6390865779395509,
               "through": 0.8
             },
             {
@@ -5146,37 +5180,37 @@
           "candidate_id": "blue-duration-v1",
           "coinflip_brier": 0.25,
           "down_correct_n": 7,
-          "down_recall": 0.7777777777777778,
+          "down_recall": 0.7,
           "horizon_days": 1,
           "inactive_mean_sol": null,
           "inactive_n": 0,
-          "matured_n": 14,
+          "matured_n": 15,
           "name": "Duur van hoge blauwe scores",
-          "nonoverlap_n": 14,
+          "nonoverlap_n": 15,
           "pending_n": 2,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 14,
+          "registered_n": 17,
+          "scored_n": 15,
           "unscored_matured_n": 0,
           "up_correct_n": 1,
           "up_recall": 0.2
         },
         {
-          "accuracy": 0.6666666666666666,
+          "accuracy": 0.6153846153846154,
           "active_mean_relative": null,
           "active_mean_sol": null,
           "active_n": 0,
           "active_negative_n": 0,
           "active_nonoverlap_n": 0,
           "active_uplift": null,
-          "actual_down_n": 8,
+          "actual_down_n": 9,
           "actual_up_n": 4,
-          "always_down_brier": 0.3333333333333333,
-          "always_up_brier": 0.6666666666666667,
-          "balanced_accuracy": 0.5,
-          "baseline_brier": 0.2582243357416713,
-          "brier": 0.258110650562587,
-          "brier_improvement": 0.0001136851790843237,
+          "always_down_brier": 0.3076923076923077,
+          "always_up_brier": 0.6923076923076923,
+          "balanced_accuracy": 0.4444444444444444,
+          "baseline_brier": 0.25567089897656625,
+          "brier": 0.2581800805017174,
+          "brier_improvement": -0.0025091815251511505,
           "brier_improvement_ci95": [
             null,
             null
@@ -5194,6 +5228,81 @@
               "n": 1,
               "observed": 1.0,
               "predicted": 0.2729399332369842,
+              "through": 0.4
+            },
+            {
+              "from": 0.4,
+              "n": 1,
+              "observed": 0.0,
+              "predicted": 0.508933433536531,
+              "through": 0.6
+            },
+            {
+              "from": 0.6,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 0.8
+            },
+            {
+              "from": 0.8,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 1
+            }
+          ],
+          "candidate_id": "blue-duration-v1",
+          "coinflip_brier": 0.25,
+          "down_correct_n": 8,
+          "down_recall": 0.8888888888888888,
+          "horizon_days": 3,
+          "inactive_mean_sol": null,
+          "inactive_n": 0,
+          "matured_n": 13,
+          "name": "Duur van hoge blauwe scores",
+          "nonoverlap_n": 5,
+          "pending_n": 4,
+          "phase": "prospective",
+          "registered_n": 17,
+          "scored_n": 13,
+          "unscored_matured_n": 0,
+          "up_correct_n": 0,
+          "up_recall": 0.0
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "active_mean_relative": null,
+          "active_mean_sol": null,
+          "active_n": 0,
+          "active_negative_n": 0,
+          "active_nonoverlap_n": 0,
+          "active_uplift": null,
+          "actual_down_n": 8,
+          "actual_up_n": 1,
+          "always_down_brier": 0.1111111111111111,
+          "always_up_brier": 0.8888888888888888,
+          "balanced_accuracy": 0.5,
+          "baseline_brier": 0.10642998466734195,
+          "brier": 0.10762857839882393,
+          "brier_improvement": -0.0011985937314819832,
+          "brier_improvement_ci95": [
+            null,
+            null
+          ],
+          "calibration": [
+            {
+              "from": 0,
+              "n": 9,
+              "observed": 0.1111111111111111,
+              "predicted": 0.04419940829591024,
+              "through": 0.2
+            },
+            {
+              "from": 0.2,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
               "through": 0.4
             },
             {
@@ -5222,91 +5331,16 @@
           "coinflip_brier": 0.25,
           "down_correct_n": 8,
           "down_recall": 1.0,
-          "horizon_days": 3,
-          "inactive_mean_sol": null,
-          "inactive_n": 0,
-          "matured_n": 12,
-          "name": "Duur van hoge blauwe scores",
-          "nonoverlap_n": 4,
-          "pending_n": 4,
-          "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 12,
-          "unscored_matured_n": 0,
-          "up_correct_n": 0,
-          "up_recall": 0.0
-        },
-        {
-          "accuracy": 0.875,
-          "active_mean_relative": null,
-          "active_mean_sol": null,
-          "active_n": 0,
-          "active_negative_n": 0,
-          "active_nonoverlap_n": 0,
-          "active_uplift": null,
-          "actual_down_n": 7,
-          "actual_up_n": 1,
-          "always_down_brier": 0.125,
-          "always_up_brier": 0.875,
-          "balanced_accuracy": 0.5,
-          "baseline_brier": 0.11956416840344856,
-          "brier": 0.12091138417020347,
-          "brier_improvement": -0.001347215766754913,
-          "brier_improvement_ci95": [
-            null,
-            null
-          ],
-          "calibration": [
-            {
-              "from": 0,
-              "n": 8,
-              "observed": 0.125,
-              "predicted": 0.04510418108228262,
-              "through": 0.2
-            },
-            {
-              "from": 0.2,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.4
-            },
-            {
-              "from": 0.4,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.6
-            },
-            {
-              "from": 0.6,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.8
-            },
-            {
-              "from": 0.8,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 1
-            }
-          ],
-          "candidate_id": "blue-duration-v1",
-          "coinflip_brier": 0.25,
-          "down_correct_n": 7,
-          "down_recall": 1.0,
           "horizon_days": 7,
           "inactive_mean_sol": null,
           "inactive_n": 0,
-          "matured_n": 8,
+          "matured_n": 9,
           "name": "Duur van hoge blauwe scores",
           "nonoverlap_n": 2,
           "pending_n": 8,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 8,
+          "registered_n": 17,
+          "scored_n": 9,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": 0.0
@@ -5319,14 +5353,14 @@
           "active_negative_n": 0,
           "active_nonoverlap_n": 0,
           "active_uplift": null,
-          "actual_down_n": 1,
+          "actual_down_n": 2,
           "actual_up_n": 0,
           "always_down_brier": 0.0,
           "always_up_brier": 1.0,
           "balanced_accuracy": null,
-          "baseline_brier": 0.0006807048647275158,
-          "brier": 0.0092946881249907,
-          "brier_improvement": -0.008613983260263185,
+          "baseline_brier": 0.0006524484540655852,
+          "brier": 0.008786991175935073,
+          "brier_improvement": -0.008134542721869488,
           "brier_improvement_ci95": [
             null,
             null
@@ -5334,9 +5368,9 @@
           "calibration": [
             {
               "from": 0,
-              "n": 1,
+              "n": 2,
               "observed": 0.0,
-              "predicted": 0.09640896288722693,
+              "predicted": 0.09369979501237416,
               "through": 0.2
             },
             {
@@ -5370,18 +5404,18 @@
           ],
           "candidate_id": "blue-duration-v1",
           "coinflip_brier": 0.25,
-          "down_correct_n": 1,
+          "down_correct_n": 2,
           "down_recall": 1.0,
           "horizon_days": 14,
           "inactive_mean_sol": null,
           "inactive_n": 0,
-          "matured_n": 1,
+          "matured_n": 2,
           "name": "Duur van hoge blauwe scores",
           "nonoverlap_n": 1,
           "pending_n": 15,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 1,
+          "registered_n": 17,
+          "scored_n": 2,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": null
@@ -5687,21 +5721,21 @@
           "up_recall": 1.0
         },
         {
-          "accuracy": 0.5714285714285714,
+          "accuracy": 0.5333333333333333,
           "active_mean_relative": 0.0162394187252749,
           "active_mean_sol": 0.004266233484416275,
           "active_n": 3,
           "active_negative_n": 2,
           "active_nonoverlap_n": 3,
-          "active_uplift": 0.021238725145018372,
-          "actual_down_n": 9,
+          "active_uplift": 0.022569694181641824,
+          "actual_down_n": 10,
           "actual_up_n": 5,
-          "always_down_brier": 0.35714285714285715,
-          "always_up_brier": 0.6428571428571428,
-          "balanced_accuracy": 0.48888888888888893,
-          "baseline_brier": 0.26161741854264076,
-          "brier": 0.2645934448885533,
-          "brier_improvement": -0.00297602634591257,
+          "always_down_brier": 0.3333333333333333,
+          "always_up_brier": 0.6666666666666667,
+          "balanced_accuracy": 0.44999999999999996,
+          "baseline_brier": 0.2657170936991479,
+          "brier": 0.2685511373181411,
+          "brier_improvement": -0.0028340436189931845,
           "brier_improvement_ci95": [
             null,
             null
@@ -5723,9 +5757,9 @@
             },
             {
               "from": 0.4,
-              "n": 9,
-              "observed": 0.3333333333333333,
-              "predicted": 0.4500087527400185,
+              "n": 10,
+              "observed": 0.3,
+              "predicted": 0.4619252589353332,
               "through": 0.6
             },
             {
@@ -5746,37 +5780,37 @@
           "candidate_id": "blue-blocks-falling-v1",
           "coinflip_brier": 0.25,
           "down_correct_n": 7,
-          "down_recall": 0.7777777777777778,
+          "down_recall": 0.7,
           "horizon_days": 1,
-          "inactive_mean_sol": -0.016972491660602097,
-          "inactive_n": 11,
-          "matured_n": 14,
+          "inactive_mean_sol": -0.01830346069722555,
+          "inactive_n": 12,
+          "matured_n": 15,
           "name": "Minder nieuwe blauwe blokken",
-          "nonoverlap_n": 14,
+          "nonoverlap_n": 15,
           "pending_n": 2,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 14,
+          "registered_n": 17,
+          "scored_n": 15,
           "unscored_matured_n": 0,
           "up_correct_n": 1,
           "up_recall": 0.2
         },
         {
-          "accuracy": 0.6666666666666666,
+          "accuracy": 0.6923076923076923,
           "active_mean_relative": 0.04059500028446483,
           "active_mean_sol": -0.017375118544565266,
           "active_n": 3,
           "active_negative_n": 1,
           "active_nonoverlap_n": 1,
-          "active_uplift": 0.030487229303815647,
-          "actual_down_n": 8,
+          "active_uplift": 0.0266548669563352,
+          "actual_down_n": 9,
           "actual_up_n": 4,
-          "always_down_brier": 0.3333333333333333,
-          "always_up_brier": 0.6666666666666667,
+          "always_down_brier": 0.3076923076923077,
+          "always_up_brier": 0.6923076923076923,
           "balanced_accuracy": 0.5,
-          "baseline_brier": 0.2582243357416713,
-          "brier": 0.25596754760631263,
-          "brier_improvement": 0.002256788135358668,
+          "baseline_brier": 0.25567089897656625,
+          "brier": 0.2514464542856635,
+          "brier_improvement": 0.004224444690902802,
           "brier_improvement_ci95": [
             null,
             null
@@ -5794,6 +5828,81 @@
               "n": 1,
               "observed": 1.0,
               "predicted": 0.23826194564369116,
+              "through": 0.4
+            },
+            {
+              "from": 0.4,
+              "n": 1,
+              "observed": 0.0,
+              "predicted": 0.4440645611145674,
+              "through": 0.6
+            },
+            {
+              "from": 0.6,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 0.8
+            },
+            {
+              "from": 0.8,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 1
+            }
+          ],
+          "candidate_id": "blue-blocks-falling-v1",
+          "coinflip_brier": 0.25,
+          "down_correct_n": 9,
+          "down_recall": 1.0,
+          "horizon_days": 3,
+          "inactive_mean_sol": -0.04402998550090047,
+          "inactive_n": 10,
+          "matured_n": 13,
+          "name": "Minder nieuwe blauwe blokken",
+          "nonoverlap_n": 5,
+          "pending_n": 4,
+          "phase": "prospective",
+          "registered_n": 17,
+          "scored_n": 13,
+          "unscored_matured_n": 0,
+          "up_correct_n": 0,
+          "up_recall": 0.0
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "active_mean_relative": 0.03391579704886738,
+          "active_mean_sol": -0.032298083150966196,
+          "active_n": 3,
+          "active_negative_n": 2,
+          "active_nonoverlap_n": 1,
+          "active_uplift": 0.06992352155403905,
+          "actual_down_n": 8,
+          "actual_up_n": 1,
+          "always_down_brier": 0.1111111111111111,
+          "always_up_brier": 0.8888888888888888,
+          "balanced_accuracy": 0.5,
+          "baseline_brier": 0.10642998466734195,
+          "brier": 0.10782485700475881,
+          "brier_improvement": -0.0013948723374168797,
+          "brier_improvement_ci95": [
+            null,
+            null
+          ],
+          "calibration": [
+            {
+              "from": 0,
+              "n": 9,
+              "observed": 0.1111111111111111,
+              "predicted": 0.030510894549821546,
+              "through": 0.2
+            },
+            {
+              "from": 0.2,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
               "through": 0.4
             },
             {
@@ -5822,91 +5931,16 @@
           "coinflip_brier": 0.25,
           "down_correct_n": 8,
           "down_recall": 1.0,
-          "horizon_days": 3,
-          "inactive_mean_sol": -0.047862347848380914,
-          "inactive_n": 9,
-          "matured_n": 12,
-          "name": "Minder nieuwe blauwe blokken",
-          "nonoverlap_n": 4,
-          "pending_n": 4,
-          "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 12,
-          "unscored_matured_n": 0,
-          "up_correct_n": 0,
-          "up_recall": 0.0
-        },
-        {
-          "accuracy": 0.875,
-          "active_mean_relative": 0.048196453910892445,
-          "active_mean_sol": -0.011567880950653753,
-          "active_n": 2,
-          "active_negative_n": 1,
-          "active_nonoverlap_n": 1,
-          "active_uplift": 0.0906537237543515,
-          "actual_down_n": 7,
-          "actual_up_n": 1,
-          "always_down_brier": 0.125,
-          "always_up_brier": 0.875,
-          "balanced_accuracy": 0.5,
-          "baseline_brier": 0.11956416840344856,
-          "brier": 0.12119256886190567,
-          "brier_improvement": -0.0016284004584571213,
-          "brier_improvement_ci95": [
-            null,
-            null
-          ],
-          "calibration": [
-            {
-              "from": 0,
-              "n": 8,
-              "observed": 0.125,
-              "predicted": 0.030610000850887262,
-              "through": 0.2
-            },
-            {
-              "from": 0.2,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.4
-            },
-            {
-              "from": 0.4,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.6
-            },
-            {
-              "from": 0.6,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.8
-            },
-            {
-              "from": 0.8,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 1
-            }
-          ],
-          "candidate_id": "blue-blocks-falling-v1",
-          "coinflip_brier": 0.25,
-          "down_correct_n": 7,
-          "down_recall": 1.0,
           "horizon_days": 7,
           "inactive_mean_sol": -0.10222160470500526,
           "inactive_n": 6,
-          "matured_n": 8,
+          "matured_n": 9,
           "name": "Minder nieuwe blauwe blokken",
           "nonoverlap_n": 2,
           "pending_n": 8,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 8,
+          "registered_n": 17,
+          "scored_n": 9,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": 0.0
@@ -5919,14 +5953,14 @@
           "active_negative_n": 0,
           "active_nonoverlap_n": 0,
           "active_uplift": null,
-          "actual_down_n": 1,
+          "actual_down_n": 2,
           "actual_up_n": 0,
           "always_down_brier": 0.0,
           "always_up_brier": 1.0,
           "balanced_accuracy": null,
-          "baseline_brier": 0.0006807048647275158,
-          "brier": 0.0009533968096011597,
-          "brier_improvement": -0.0002726919448736439,
+          "baseline_brier": 0.0006524484540655852,
+          "brier": 0.0009083045733488462,
+          "brier_improvement": -0.000255856119283261,
           "brier_improvement_ci95": [
             null,
             null
@@ -5934,9 +5968,9 @@
           "calibration": [
             {
               "from": 0,
-              "n": 1,
+              "n": 2,
               "observed": 0.0,
-              "predicted": 0.030877124373897898,
+              "predicted": 0.030128799907085856,
               "through": 0.2
             },
             {
@@ -5970,18 +6004,18 @@
           ],
           "candidate_id": "blue-blocks-falling-v1",
           "coinflip_brier": 0.25,
-          "down_correct_n": 1,
+          "down_correct_n": 2,
           "down_recall": 1.0,
           "horizon_days": 14,
-          "inactive_mean_sol": -0.16947587162318178,
-          "inactive_n": 1,
-          "matured_n": 1,
+          "inactive_mean_sol": -0.16684990121284032,
+          "inactive_n": 2,
+          "matured_n": 2,
           "name": "Minder nieuwe blauwe blokken",
           "nonoverlap_n": 1,
           "pending_n": 15,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 1,
+          "registered_n": 17,
+          "scored_n": 2,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": null
@@ -6287,21 +6321,21 @@
           "up_recall": 0.75
         },
         {
-          "accuracy": 0.5714285714285714,
+          "accuracy": 0.5333333333333333,
           "active_mean_relative": 0.007525729103647363,
           "active_mean_sol": -0.011934740106750288,
           "active_n": 8,
           "active_negative_n": 5,
           "active_nonoverlap_n": 8,
-          "active_uplift": 0.0011353910531450347,
-          "actual_down_n": 9,
+          "active_uplift": 0.003974532330314775,
+          "actual_down_n": 10,
           "actual_up_n": 5,
-          "always_down_brier": 0.35714285714285715,
-          "always_up_brier": 0.6428571428571428,
-          "balanced_accuracy": 0.48888888888888893,
-          "baseline_brier": 0.26161741854264076,
-          "brier": 0.2707726296947746,
-          "brier_improvement": -0.009155211152133833,
+          "always_down_brier": 0.3333333333333333,
+          "always_up_brier": 0.6666666666666667,
+          "balanced_accuracy": 0.44999999999999996,
+          "baseline_brier": 0.2657170936991479,
+          "brier": 0.2721765943202991,
+          "brier_improvement": -0.006459500621151226,
           "brier_improvement_ci95": [
             null,
             null
@@ -6323,9 +6357,9 @@
             },
             {
               "from": 0.4,
-              "n": 6,
-              "observed": 0.3333333333333333,
-              "predicted": 0.4992478474261895,
+              "n": 7,
+              "observed": 0.2857142857142857,
+              "predicted": 0.5051002783376847,
               "through": 0.6
             },
             {
@@ -6346,37 +6380,37 @@
           "candidate_id": "network-weakness-v1",
           "coinflip_brier": 0.25,
           "down_correct_n": 7,
-          "down_recall": 0.7777777777777778,
+          "down_recall": 0.7,
           "horizon_days": 1,
-          "inactive_mean_sol": -0.013070131159895323,
-          "inactive_n": 6,
-          "matured_n": 14,
+          "inactive_mean_sol": -0.015909272437065063,
+          "inactive_n": 7,
+          "matured_n": 15,
           "name": "Zwak netwerkgebruik",
-          "nonoverlap_n": 14,
+          "nonoverlap_n": 15,
           "pending_n": 2,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 14,
+          "registered_n": 17,
+          "scored_n": 15,
           "unscored_matured_n": 0,
           "up_correct_n": 1,
           "up_recall": 0.2
         },
         {
-          "accuracy": 0.6666666666666666,
+          "accuracy": 0.6923076923076923,
           "active_mean_relative": 0.013994306557243033,
           "active_mean_sol": -0.04740762883766582,
           "active_n": 7,
           "active_negative_n": 4,
           "active_nonoverlap_n": 3,
-          "active_uplift": -0.017201011956573167,
-          "actual_down_n": 8,
+          "active_uplift": -0.02064566070782586,
+          "actual_down_n": 9,
           "actual_up_n": 4,
-          "always_down_brier": 0.3333333333333333,
-          "always_up_brier": 0.6666666666666667,
+          "always_down_brier": 0.3076923076923077,
+          "always_up_brier": 0.6923076923076923,
           "balanced_accuracy": 0.5,
-          "baseline_brier": 0.2582243357416713,
-          "brier": 0.2566539922278803,
-          "brier_improvement": 0.0015703435137909758,
+          "baseline_brier": 0.25567089897656625,
+          "brier": 0.25269014030757475,
+          "brier_improvement": 0.0029807586689915237,
           "brier_improvement_ci95": [
             null,
             null
@@ -6394,6 +6428,81 @@
               "n": 1,
               "observed": 1.0,
               "predicted": 0.2643337680217188,
+              "through": 0.4
+            },
+            {
+              "from": 0.4,
+              "n": 1,
+              "observed": 0.0,
+              "predicted": 0.4529060799590878,
+              "through": 0.6
+            },
+            {
+              "from": 0.6,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 0.8
+            },
+            {
+              "from": 0.8,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
+              "through": 1
+            }
+          ],
+          "candidate_id": "network-weakness-v1",
+          "coinflip_brier": 0.25,
+          "down_correct_n": 9,
+          "down_recall": 1.0,
+          "horizon_days": 3,
+          "inactive_mean_sol": -0.02676196812983996,
+          "inactive_n": 6,
+          "matured_n": 13,
+          "name": "Zwak netwerkgebruik",
+          "nonoverlap_n": 5,
+          "pending_n": 4,
+          "phase": "prospective",
+          "registered_n": 17,
+          "scored_n": 13,
+          "unscored_matured_n": 0,
+          "up_correct_n": 0,
+          "up_recall": 0.0
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "active_mean_relative": 0.03447002058714293,
+          "active_mean_sol": -0.06258777212068098,
+          "active_n": 7,
+          "active_negative_n": 6,
+          "active_nonoverlap_n": 1,
+          "active_uplift": 0.07346696429840069,
+          "actual_down_n": 8,
+          "actual_up_n": 1,
+          "always_down_brier": 0.1111111111111111,
+          "always_up_brier": 0.8888888888888888,
+          "balanced_accuracy": 0.5,
+          "baseline_brier": 0.10642998466734195,
+          "brier": 0.10661917635103078,
+          "brier_improvement": -0.00018919168368883573,
+          "brier_improvement_ci95": [
+            null,
+            null
+          ],
+          "calibration": [
+            {
+              "from": 0,
+              "n": 9,
+              "observed": 0.1111111111111111,
+              "predicted": 0.029772129837690533,
+              "through": 0.2
+            },
+            {
+              "from": 0.2,
+              "n": 0,
+              "observed": null,
+              "predicted": null,
               "through": 0.4
             },
             {
@@ -6422,91 +6531,16 @@
           "coinflip_brier": 0.25,
           "down_correct_n": 8,
           "down_recall": 1.0,
-          "horizon_days": 3,
-          "inactive_mean_sol": -0.030206616881092652,
-          "inactive_n": 5,
-          "matured_n": 12,
-          "name": "Zwak netwerkgebruik",
-          "nonoverlap_n": 4,
-          "pending_n": 4,
-          "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 12,
-          "unscored_matured_n": 0,
-          "up_correct_n": 0,
-          "up_recall": 0.0
-        },
-        {
-          "accuracy": 0.875,
-          "active_mean_relative": 0.039322610130863876,
-          "active_mean_sol": -0.06072598621552929,
-          "active_n": 6,
-          "active_negative_n": 5,
-          "active_nonoverlap_n": 1,
-          "active_uplift": 0.07532875020355237,
-          "actual_down_n": 7,
-          "actual_up_n": 1,
-          "always_down_brier": 0.125,
-          "always_up_brier": 0.875,
-          "balanced_accuracy": 0.5,
-          "baseline_brier": 0.11956416840344856,
-          "brier": 0.11977972805644832,
-          "brier_improvement": -0.0002155596529997649,
-          "brier_improvement_ci95": [
-            null,
-            null
-          ],
-          "calibration": [
-            {
-              "from": 0,
-              "n": 8,
-              "observed": 0.125,
-              "predicted": 0.02892684551256442,
-              "through": 0.2
-            },
-            {
-              "from": 0.2,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.4
-            },
-            {
-              "from": 0.4,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.6
-            },
-            {
-              "from": 0.6,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 0.8
-            },
-            {
-              "from": 0.8,
-              "n": 0,
-              "observed": null,
-              "predicted": null,
-              "through": 1
-            }
-          ],
-          "candidate_id": "network-weakness-v1",
-          "coinflip_brier": 0.25,
-          "down_correct_n": 7,
-          "down_recall": 1.0,
           "horizon_days": 7,
           "inactive_mean_sol": -0.13605473641908167,
           "inactive_n": 2,
-          "matured_n": 8,
+          "matured_n": 9,
           "name": "Zwak netwerkgebruik",
           "nonoverlap_n": 2,
           "pending_n": 8,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 8,
+          "registered_n": 17,
+          "scored_n": 9,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": 0.0
@@ -6519,14 +6553,14 @@
           "active_negative_n": 0,
           "active_nonoverlap_n": 0,
           "active_uplift": null,
-          "actual_down_n": 1,
+          "actual_down_n": 2,
           "actual_up_n": 0,
           "always_down_brier": 0.0,
           "always_up_brier": 1.0,
           "balanced_accuracy": null,
-          "baseline_brier": 0.0006807048647275158,
-          "brier": 0.0012177874385077767,
-          "brier_improvement": -0.0005370825737802609,
+          "baseline_brier": 0.0006524484540655852,
+          "brier": 0.0011590918397472367,
+          "brier_improvement": -0.0005066433856816515,
           "brier_improvement_ci95": [
             null,
             null
@@ -6534,9 +6568,9 @@
           "calibration": [
             {
               "from": 0,
-              "n": 1,
+              "n": 2,
               "observed": 0.0,
-              "predicted": 0.03489681129426837,
+              "predicted": 0.034034516108802836,
               "through": 0.2
             },
             {
@@ -6570,18 +6604,18 @@
           ],
           "candidate_id": "network-weakness-v1",
           "coinflip_brier": 0.25,
-          "down_correct_n": 1,
+          "down_correct_n": 2,
           "down_recall": 1.0,
           "horizon_days": 14,
-          "inactive_mean_sol": -0.16947587162318178,
-          "inactive_n": 1,
-          "matured_n": 1,
+          "inactive_mean_sol": -0.16684990121284032,
+          "inactive_n": 2,
+          "matured_n": 2,
           "name": "Zwak netwerkgebruik",
           "nonoverlap_n": 1,
           "pending_n": 15,
           "phase": "prospective",
-          "registered_n": 16,
-          "scored_n": 1,
+          "registered_n": 17,
+          "scored_n": 2,
           "unscored_matured_n": 0,
           "up_correct_n": 0,
           "up_recall": null
@@ -6933,7 +6967,7 @@
           "hi_pct": null,
           "lo_pct": null,
           "mean_pct": 0.0,
-          "n": 2,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6942,8 +6976,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": 1.6784119232083061,
-          "n": 2,
+          "mean_pct": 0.42662334844162747,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6952,8 +6986,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": 3.0625625766414477,
-          "n": 2,
+          "mean_pct": 1.131931612581897,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6962,8 +6996,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": 1.6474933686280835,
-          "n": 2,
+          "mean_pct": -1.7375118544565267,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6972,8 +7006,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": -1.723909622722114,
-          "n": 2,
+          "mean_pct": -3.3105476568824157,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6982,8 +7016,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": -3.6447593150930158,
-          "n": 2,
+          "mean_pct": -4.426910505983547,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -6992,8 +7026,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": -2.3410934249104285,
-          "n": 2,
+          "mean_pct": -2.967554494696867,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -7002,8 +7036,8 @@
           "group": "Regel actief",
           "hi_pct": null,
           "lo_pct": null,
-          "mean_pct": -1.1567880950653753,
-          "n": 2,
+          "mean_pct": -3.2298083150966197,
+          "n": 3,
           "phase": "prospective"
         },
         {
@@ -7020,8 +7054,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 1,
           "group": "Overige meetdagen",
-          "hi_pct": -1.1189970433073813,
-          "lo_pct": -4.442812918982906,
+          "hi_pct": -0.58537124121468,
+          "lo_pct": -4.509198824514417,
           "mean_pct": -2.7809049811451434,
           "n": 6,
           "phase": "prospective"
@@ -7030,8 +7064,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 2,
           "group": "Overige meetdagen",
-          "hi_pct": -3.1791337701732334,
-          "lo_pct": -6.838657694602185,
+          "hi_pct": -2.5594598734577296,
+          "lo_pct": -7.655340340288575,
           "mean_pct": -5.17344237743552,
           "n": 6,
           "phase": "prospective"
@@ -7040,8 +7074,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 3,
           "group": "Overige meetdagen",
-          "hi_pct": -3.6867971555641588,
-          "lo_pct": -9.367054440418569,
+          "hi_pct": -2.5073060623533667,
+          "lo_pct": -10.460268286333688,
           "mean_pct": -6.6513410042474295,
           "n": 6,
           "phase": "prospective"
@@ -7050,8 +7084,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 4,
           "group": "Overige meetdagen",
-          "hi_pct": -5.381511590972366,
-          "lo_pct": -11.12760307859515,
+          "hi_pct": -3.423724835751981,
+          "lo_pct": -12.590441229074994,
           "mean_pct": -8.254557334783758,
           "n": 6,
           "phase": "prospective"
@@ -7060,8 +7094,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 5,
           "group": "Overige meetdagen",
-          "hi_pct": -6.227628746385952,
-          "lo_pct": -12.230166477791393,
+          "hi_pct": -4.947926240016822,
+          "lo_pct": -13.37831578164951,
           "mean_pct": -9.228897612088673,
           "n": 6,
           "phase": "prospective"
@@ -7070,8 +7104,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 6,
           "group": "Overige meetdagen",
-          "hi_pct": -7.747928397463137,
-          "lo_pct": -11.712249743853693,
+          "hi_pct": -7.063298504818855,
+          "lo_pct": -12.429118585013796,
           "mean_pct": -9.730089070658416,
           "n": 6,
           "phase": "prospective"
@@ -7080,8 +7114,8 @@
           "candidate_id": "blue-blocks-falling-v1",
           "day": 7,
           "group": "Overige meetdagen",
-          "hi_pct": -8.22450571416476,
-          "lo_pct": -12.259476646291375,
+          "hi_pct": -7.687123171891036,
+          "lo_pct": -12.747803730952057,
           "mean_pct": -10.222160470500526,
           "n": 6,
           "phase": "prospective"
@@ -7253,77 +7287,77 @@
           "hi_pct": 0.0,
           "lo_pct": 0.0,
           "mean_pct": 0.0,
-          "n": 6,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 1,
           "group": "Regel actief",
-          "hi_pct": 0.6995419842084978,
-          "lo_pct": -3.817683377094414,
-          "mean_pct": -1.5590706964429581,
-          "n": 6,
+          "hi_pct": 0.8385534405280624,
+          "lo_pct": -4.1046614347422,
+          "mean_pct": -1.6330539971070683,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 2,
           "group": "Regel actief",
-          "hi_pct": -0.5523475278960503,
-          "lo_pct": -5.960459903922621,
-          "mean_pct": -3.1663300318738408,
-          "n": 6,
+          "hi_pct": 0.6292944581892541,
+          "lo_pct": -6.795900751315395,
+          "mean_pct": -3.103901500968607,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 3,
           "group": "Regel actief",
-          "hi_pct": -1.148425798940117,
-          "lo_pct": -7.062374153187221,
-          "mean_pct": -4.1129696476233875,
-          "n": 6,
+          "hi_pct": -0.8315710066348727,
+          "lo_pct": -9.45578193918733,
+          "mean_pct": -4.740762883766582,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 4,
           "group": "Regel actief",
-          "hi_pct": -1.7502260237250673,
-          "lo_pct": -6.780193000446605,
-          "mean_pct": -4.5938640675620865,
-          "n": 6,
+          "hi_pct": -1.1804001650646259,
+          "lo_pct": -8.623169263076157,
+          "mean_pct": -4.863858304367934,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 5,
           "group": "Regel actief",
-          "hi_pct": -3.1502671403417857,
-          "lo_pct": -7.234880297436315,
-          "mean_pct": -5.192573718889051,
-          "n": 6,
+          "hi_pct": -2.4287109442598043,
+          "lo_pct": -8.230958775865698,
+          "mean_pct": -5.306665028728416,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 6,
           "group": "Regel actief",
-          "hi_pct": -4.207819516310827,
-          "lo_pct": -6.896444506675503,
-          "mean_pct": -5.48923014484938,
-          "n": 6,
+          "hi_pct": -3.3127377056765765,
+          "lo_pct": -7.303221580999429,
+          "mean_pct": -5.307979643338003,
+          "n": 7,
           "phase": "prospective"
         },
         {
           "candidate_id": "network-weakness-v1",
           "day": 7,
           "group": "Regel actief",
-          "hi_pct": -4.042829165289132,
-          "lo_pct": -8.102368077816726,
-          "mean_pct": -6.072598621552929,
-          "n": 6,
+          "hi_pct": -3.437155550932537,
+          "lo_pct": -9.052871987551061,
+          "mean_pct": -6.258777212068098,
+          "n": 7,
           "phase": "prospective"
         },
         {
@@ -22184,13 +22218,13 @@
         },
         {
           "active": null,
-          "actual_direction": null,
-          "baseline_brier": null,
+          "actual_direction": "down",
+          "baseline_brier": 0.0013565147784890593,
           "baseline_probability_up": 0.036830894348210706,
-          "brier": null,
-          "btc_return": null,
+          "brier": 0.0013661322277876056,
+          "btc_return": -0.07911297087640834,
           "candidate_id": "blue-duration-v1",
-          "correct": null,
+          "correct": true,
           "date": "2026-11-16",
           "entry_date": "2026-11-17",
           "entry_time": 1794959999000,
@@ -22210,23 +22244,23 @@
           "probability_up": 0.03696122600493124,
           "published_at_utc": "2026-11-17T17:31:12Z",
           "recorded_at_utc": "2026-11-17T17:33:01Z",
-          "relative_return": null,
+          "relative_return": 0.00535448332481725,
           "rule_direction": null,
-          "settled_at_utc": null,
-          "sol_return": null,
+          "settled_at_utc": "2026-11-25T18:34:20Z",
+          "sol_return": -0.07375848755159109,
           "source_prediction_id": "2026-11-16__method-v1.0.0",
           "source_sha256": "e3a482bc35fa43d324cc8ecae6f27e9cc733e754b7bacc1b154c1385768e0d90",
           "unavailable_reason": null
         },
         {
           "active": true,
-          "actual_direction": null,
-          "baseline_brier": null,
+          "actual_direction": "down",
+          "baseline_brier": 0.0013565147784890593,
           "baseline_probability_up": 0.036830894348210706,
-          "brier": null,
-          "btc_return": null,
+          "brier": 0.0008831621475840056,
+          "btc_return": -0.07911297087640834,
           "candidate_id": "blue-blocks-falling-v1",
-          "correct": null,
+          "correct": true,
           "date": "2026-11-16",
           "entry_date": "2026-11-17",
           "entry_time": 1794959999000,
@@ -22246,23 +22280,23 @@
           "probability_up": 0.0297180441412958,
           "published_at_utc": "2026-11-17T17:31:12Z",
           "recorded_at_utc": "2026-11-17T17:33:01Z",
-          "relative_return": null,
+          "relative_return": 0.00535448332481725,
           "rule_direction": "down",
-          "settled_at_utc": null,
-          "sol_return": null,
+          "settled_at_utc": "2026-11-25T18:34:20Z",
+          "sol_return": -0.07375848755159109,
           "source_prediction_id": "2026-11-16__method-v1.0.0",
           "source_sha256": "e3a482bc35fa43d324cc8ecae6f27e9cc733e754b7bacc1b154c1385768e0d90",
           "unavailable_reason": null
         },
         {
           "active": true,
-          "actual_direction": null,
-          "baseline_brier": null,
+          "actual_direction": "down",
+          "baseline_brier": 0.0013565147784890593,
           "baseline_probability_up": 0.036830894348210706,
-          "brier": null,
-          "btc_return": null,
+          "brier": 0.0013347627076904618,
+          "btc_return": -0.07911297087640834,
           "candidate_id": "network-weakness-v1",
-          "correct": null,
+          "correct": true,
           "date": "2026-11-16",
           "entry_date": "2026-11-17",
           "entry_time": 1794959999000,
@@ -22282,10 +22316,10 @@
           "probability_up": 0.036534404438699444,
           "published_at_utc": "2026-11-17T17:31:12Z",
           "recorded_at_utc": "2026-11-17T17:33:01Z",
-          "relative_return": null,
+          "relative_return": 0.00535448332481725,
           "rule_direction": "down",
-          "settled_at_utc": null,
-          "sol_return": null,
+          "settled_at_utc": "2026-11-25T18:34:20Z",
+          "sol_return": -0.07375848755159109,
           "source_prediction_id": "2026-11-16__method-v1.0.0",
           "source_sha256": "e3a482bc35fa43d324cc8ecae6f27e9cc733e754b7bacc1b154c1385768e0d90",
           "unavailable_reason": null
@@ -23044,6 +23078,114 @@
           "sol_return": null,
           "source_prediction_id": "2026-11-23__method-v1.0.0",
           "source_sha256": "e9a5721d1d5f7b36cc0f6a798ca38bae0860235884e32d0682a6cb09c29f228a",
+          "unavailable_reason": null
+        },
+        {
+          "active": null,
+          "actual_direction": null,
+          "baseline_brier": null,
+          "baseline_probability_up": 0.09200683524909878,
+          "brier": null,
+          "btc_return": null,
+          "candidate_id": "blue-duration-v1",
+          "correct": null,
+          "date": "2026-11-24",
+          "entry_date": "2026-11-25",
+          "entry_time": 1795651199000,
+          "exit_date": "2026-12-02",
+          "exit_time": 1796255999000,
+          "feature_value": 0.5,
+          "forecast_id": "sol-direction-research-v1__blue-duration-v1__2026-11-24__method-v1.0.0__7d",
+          "forecast_sha256": "a444dee06e33ad05c8fbd59b6aead8fbe9728450fbac057fb094e381b9180b3b",
+          "horizon_days": 7,
+          "mark_at": "2026-11-25T18:34:20Z",
+          "mark_time": 1795631660000,
+          "method_version": "1.0.0",
+          "model_available": true,
+          "outcome_after_utc": "2026-12-03T00:00:00Z",
+          "phase": "prospective",
+          "predicted_direction": "down",
+          "probability_up": 0.10432500712565193,
+          "published_at_utc": "2026-11-25T18:32:53Z",
+          "recorded_at_utc": "2026-11-25T18:34:20Z",
+          "relative_return": null,
+          "rule_direction": null,
+          "settled_at_utc": null,
+          "sol_return": null,
+          "source_prediction_id": "2026-11-24__method-v1.0.0",
+          "source_sha256": "796f246f96854657574a07c22ae37419a96f395195607543503378d8f9287fa6",
+          "unavailable_reason": null
+        },
+        {
+          "active": false,
+          "actual_direction": null,
+          "baseline_brier": null,
+          "baseline_probability_up": 0.09200683524909878,
+          "brier": null,
+          "btc_return": null,
+          "candidate_id": "blue-blocks-falling-v1",
+          "correct": null,
+          "date": "2026-11-24",
+          "entry_date": "2026-11-25",
+          "entry_time": 1795651199000,
+          "exit_date": "2026-12-02",
+          "exit_time": 1796255999000,
+          "feature_value": 0.0,
+          "forecast_id": "sol-direction-research-v1__blue-blocks-falling-v1__2026-11-24__method-v1.0.0__7d",
+          "forecast_sha256": "a096117e99a665152d1a5960e106196a8d447916a3f7ac1b38e98f4a4d09e65c",
+          "horizon_days": 7,
+          "mark_at": "2026-11-25T18:34:20Z",
+          "mark_time": 1795631660000,
+          "method_version": "1.0.0",
+          "model_available": true,
+          "outcome_after_utc": "2026-12-03T00:00:00Z",
+          "phase": "prospective",
+          "predicted_direction": "down",
+          "probability_up": 0.08781748068273106,
+          "published_at_utc": "2026-11-25T18:32:53Z",
+          "recorded_at_utc": "2026-11-25T18:34:20Z",
+          "relative_return": null,
+          "rule_direction": null,
+          "settled_at_utc": null,
+          "sol_return": null,
+          "source_prediction_id": "2026-11-24__method-v1.0.0",
+          "source_sha256": "796f246f96854657574a07c22ae37419a96f395195607543503378d8f9287fa6",
+          "unavailable_reason": null
+        },
+        {
+          "active": false,
+          "actual_direction": null,
+          "baseline_brier": null,
+          "baseline_probability_up": 0.09200683524909878,
+          "brier": null,
+          "btc_return": null,
+          "candidate_id": "network-weakness-v1",
+          "correct": null,
+          "date": "2026-11-24",
+          "entry_date": "2026-11-25",
+          "entry_time": 1795651199000,
+          "exit_date": "2026-12-02",
+          "exit_time": 1796255999000,
+          "feature_value": 0.0,
+          "forecast_id": "sol-direction-research-v1__network-weakness-v1__2026-11-24__method-v1.0.0__7d",
+          "forecast_sha256": "445b79d7306707719f9dcdf528526a1e5ca54733a3f27165ac1ad5e5a89bcdcd",
+          "horizon_days": 7,
+          "mark_at": "2026-11-25T18:34:20Z",
+          "mark_time": 1795631660000,
+          "method_version": "1.0.0",
+          "model_available": true,
+          "outcome_after_utc": "2026-12-03T00:00:00Z",
+          "phase": "prospective",
+          "predicted_direction": "down",
+          "probability_up": 0.0795458837560819,
+          "published_at_utc": "2026-11-25T18:32:53Z",
+          "recorded_at_utc": "2026-11-25T18:34:20Z",
+          "relative_return": null,
+          "rule_direction": null,
+          "settled_at_utc": null,
+          "sol_return": null,
+          "source_prediction_id": "2026-11-24__method-v1.0.0",
+          "source_sha256": "796f246f96854657574a07c22ae37419a96f395195607543503378d8f9287fa6",
           "unavailable_reason": null
         }
       ],
@@ -25659,6 +25801,24 @@
           "sol_close": 71.94,
           "source_sha256": "e9a5721d1d5f7b36cc0f6a798ca38bae0860235884e32d0682a6cb09c29f228a",
           "strength_score": 46.16
+        },
+        {
+          "blue_blocks_change": 1.0,
+          "blue_duration": 50.0,
+          "btc_close": 59740.87,
+          "close_at": "2026-11-24T23:59:59Z",
+          "close_time": 1795564799000,
+          "components_at": "2026-11-25T18:32:53Z",
+          "date": "2026-11-24",
+          "network_score": 56.48,
+          "prediction_id": "2026-11-24__method-v1.0.0",
+          "price_method": "Coinbase herstelbron",
+          "published_at": "2026-11-25T18:32:53Z",
+          "published_time": 1795631573000,
+          "quality_score": 81.54,
+          "sol_close": 69.57,
+          "source_sha256": "796f246f96854657574a07c22ae37419a96f395195607543503378d8f9287fa6",
+          "strength_score": 45.44
         }
       ],
       "source": {
@@ -47722,6 +47882,160 @@
           "unit": "%",
           "value": -0.10898762715075772,
           "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-slot / slot 7 dagen eerder − 1.",
+          "feature": "sol_return_7d",
+          "group": "Koers & marktpositie",
+          "label": "SOL · 7 dagen",
+          "normalized_weight": 0.10416666666666667,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.07375848755159109,
+          "weight": 1.0
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-slot / slot 30 dagen eerder − 1.",
+          "feature": "sol_return_30d",
+          "group": "Koers & marktpositie",
+          "label": "SOL · 30 dagen",
+          "normalized_weight": 0.10416666666666667,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.3127531364220094,
+          "weight": 1.0
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-rendement minus BTC-rendement over 7 dagen.",
+          "feature": "relative_strength_btc_7d",
+          "group": "Koers & marktpositie",
+          "label": "SOL minus BTC · 7 dagen",
+          "normalized_weight": 0.125,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "pp",
+          "value": 0.00535448332481725,
+          "weight": 1.2
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-rendement minus BTC-rendement over 30 dagen.",
+          "feature": "relative_strength_btc_30d",
+          "group": "Koers & marktpositie",
+          "label": "SOL minus BTC · 30 dagen",
+          "normalized_weight": 0.10416666666666667,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "pp",
+          "value": -0.05901811834152393,
+          "weight": 1.0
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-slot / gemiddelde van 50 dagsloten − 1.",
+          "feature": "price_vs_sma50",
+          "group": "Koers & marktpositie",
+          "label": "Afstand tot 50-daagse trend",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.25338856633863116,
+          "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "Standaardafwijking van 30 dagelijkse log-rendementen × √365. Geen richtingssignaal.",
+          "feature": "realized_volatility_30d",
+          "group": "Koers & marktpositie",
+          "label": "Volatiliteit · 30 dagen",
+          "normalized_weight": 0.0625,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": 0.6513537085292268,
+          "weight": 0.6
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "SOL-slot / hoogste dagslot over 90 dagen − 1.",
+          "feature": "drawdown_90d",
+          "group": "Koers & marktpositie",
+          "label": "Afstand tot 90-daagse top",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.4303144448083853,
+          "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "7-daags volumetotaal / gemiddeld dagvolume over 30 dagen. Bij constant volume circa 7×.",
+          "feature": "dex_volume_ratio_7d_30d",
+          "group": "Netwerkactiviteit",
+          "label": "DEX-handelsactiviteit",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "×",
+          "value": 6.967319852316049,
+          "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "7-daags feetotaal / gemiddelde dagelijkse fees over 30 dagen. Bij constante fees circa 7×.",
+          "feature": "fees_ratio_7d_30d",
+          "group": "Netwerkactiviteit",
+          "label": "Netwerkfees",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "×",
+          "value": 6.171141779742727,
+          "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "Verandering in vastgelegde DeFi-dollarwaarde over 30 dagen; inclusief prijseffecten.",
+          "feature": "tvl_change_30d",
+          "group": "Kapitaal & liquiditeit",
+          "label": "TVL · 30 dagen",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.1953410240598844,
+          "weight": 0.8
+        },
+        {
+          "date": "2026-11-24",
+          "definition": "Verandering in stablecoin-dollarvoorraad op Solana over 30 dagen; geen gemeten SOL-koopstroom.",
+          "feature": "stablecoin_change_30d",
+          "group": "Kapitaal & liquiditeit",
+          "label": "Stablecoins · 30 dagen",
+          "normalized_weight": 0.08333333333333334,
+          "provenance": "Exacte modelinvoer uit geverifieerd runarchief",
+          "published_at": "2026-11-25T18:32:53Z",
+          "source_run_at": "2026-11-25T18:32:53Z",
+          "unit": "%",
+          "value": -0.07716742810254851,
+          "weight": 0.8
         }
       ],
       "source": {
@@ -47761,7 +48075,7 @@
             "sha256": "e5c55778ddd107030c04047ca2295caa4152d84856bc98e3ffb32e48241b50f8",
             "verified": true
           },
-          "data_cutoff": "2026-11-23",
+          "data_cutoff": "2026-11-24",
           "downloads": [
             {
               "name": "definitions.jsonl",
@@ -47789,12 +48103,12 @@
             }
           ],
           "first_date": "2026-07-04",
-          "first_maturity": "2026-11-25T00:00:00Z",
-          "forward_days": 16,
-          "generated_at": "2026-11-24T19:28:58Z",
-          "history_days": 143,
-          "last_close": 71.94,
-          "last_date": "2026-11-23",
+          "first_maturity": "2026-11-26T00:00:00Z",
+          "forward_days": 17,
+          "generated_at": "2026-11-25T18:32:53Z",
+          "history_days": 144,
+          "last_close": 69.57,
+          "last_date": "2026-11-24",
           "legacy_events": [
             {
               "btc_entry_price": 81837.69,
@@ -47886,24 +48200,24 @@
             {
               "benchmark": "Gemiddeld 7-daags SOL-rendement minus controledagen",
               "ci95": [
-                -0.0420834628,
-                0.1582307116
+                -0.0405732412,
+                0.1589421478
               ],
-              "control_mean": 0.0030321539,
-              "control_window_n": 61,
+              "control_mean": 0.0017935951,
+              "control_window_n": 62,
               "early_split": {
-                "estimate": 0.0901646988,
+                "estimate": 0.0914032575,
                 "event_n": 3
               },
               "economic_threshold": 0.02,
               "economically_relevant": true,
-              "estimate": 0.0502225037,
+              "estimate": 0.0514610624,
               "event_mean": 0.0532546576,
               "evidence_scope": "retrospective_exploratory",
               "independent_event_n": 5,
               "label": "SOL-rendementsuplift (7d)",
               "late_split": {
-                "estimate": -0.009690789,
+                "estimate": -0.0084522302,
                 "event_n": 2
               },
               "metric_id": "sol_uplift_7d",
@@ -47911,7 +48225,7 @@
                 null,
                 null
               ],
-              "prospective_control_n": 1,
+              "prospective_control_n": 2,
               "prospective_estimate": null,
               "prospective_event_n": 0,
               "retrospective_event_n": 5,
@@ -47920,24 +48234,24 @@
             {
               "benchmark": "Gemiddeld SOL-minus-BTC rendement minus controledagen",
               "ci95": [
-                -0.017055886,
-                0.0396691731
+                -0.0169871405,
+                0.0396111816
               ],
-              "control_mean": -0.0022712554,
-              "control_window_n": 61,
+              "control_mean": -0.0021482596,
+              "control_window_n": 62,
               "early_split": {
-                "estimate": 0.0104483879,
+                "estimate": 0.0103253921,
                 "event_n": 3
               },
               "economic_threshold": null,
               "economically_relevant": null,
-              "estimate": 0.0109324306,
+              "estimate": 0.0108094348,
               "event_mean": 0.0086611752,
               "evidence_scope": "retrospective_exploratory",
               "independent_event_n": 5,
               "label": "BTC-relatieve uplift (7d)",
               "late_split": {
-                "estimate": 0.0116584946,
+                "estimate": 0.0115354988,
                 "event_n": 2
               },
               "metric_id": "btc_relative_uplift_7d",
@@ -47945,7 +48259,7 @@
                 null,
                 null
               ],
-              "prospective_control_n": 1,
+              "prospective_control_n": 2,
               "prospective_estimate": null,
               "prospective_event_n": 0,
               "retrospective_event_n": 5,
@@ -47954,24 +48268,24 @@
             {
               "benchmark": "Aandeel positieve events minus positieve controledagen",
               "ci95": [
-                -0.3245901639,
-                0.606557377
+                -0.3,
+                0.6129032258
               ],
-              "control_mean": 0.4426229508,
-              "control_window_n": 61,
+              "control_mean": 0.435483871,
+              "control_window_n": 62,
               "early_split": {
-                "estimate": 0.2240437158,
+                "estimate": 0.2311827957,
                 "event_n": 3
               },
               "economic_threshold": null,
               "economically_relevant": null,
-              "estimate": 0.1573770492,
+              "estimate": 0.164516129,
               "event_mean": 0.6,
               "evidence_scope": "retrospective_exploratory",
               "independent_event_n": 5,
               "label": "Directionele uplift (7d)",
               "late_split": {
-                "estimate": 0.0573770492,
+                "estimate": 0.064516129,
                 "event_n": 2
               },
               "metric_id": "directional_uplift_7d",
@@ -47979,7 +48293,7 @@
                 null,
                 null
               ],
-              "prospective_control_n": 1,
+              "prospective_control_n": 2,
               "prospective_estimate": null,
               "prospective_event_n": 0,
               "retrospective_event_n": 5,
@@ -48001,21 +48315,21 @@
             "retrospective_mature_event_n": 5,
             "statistical_confirmation": false
           },
-          "live_check": 69.26,
+          "live_check": 69.31,
           "llm": {
-            "analysis_text": "Kort beeld: SOL staat rond $69.26 en het dashboard geeft een huidige sterkte van 46/100. De dashboardlezing is: Gemengd marktbeeld.\n\nWat trekt omhoog?: De belangrijkste verhouding zit tussen koerskracht 49/100, gebruik 54/100, kapitaalstromen 34/100 en breedte in ecosysteem 35/100. Als koerskracht sterker is dan gebruik en kapitaalstromen, loopt de markt mogelijk vooruit op bredere bevestiging; als gebruik en kapitaalstromen meebewegen, wordt het beeld steviger.\n\nWat houdt tegen?: De dashboardblokken lopen niet altijd gelijk, waardoor het beeld genuanceerd blijft.\n\nHoe stevig is dit?: De onderbouwing is 76/100. Onderbouwing betekent hoe stevig de actuele conclusie historisch en datatechnisch onderbouwd is; bij beperkt onderbouwde data moet het signaal voorzichtig gelezen worden.\n\nConclusie: De historische vergelijking gebruikt 40 vergelijkbare dagen; daarvan was 40.0% positief, met een mediaan rendement van -2.6%. Dit is een gestructureerde dataduiding van de actuele Solana-context, geen financieel advies.",
-            "data_cutoff_utc": "2026-11-23T23:59:59Z",
+            "analysis_text": "Kort beeld: SOL staat rond $69.31 en het dashboard geeft een huidige sterkte van 45/100. De dashboardlezing is: Gemengd marktbeeld.\n\nWat trekt omhoog?: De belangrijkste verhouding zit tussen koerskracht 43/100, gebruik 56/100, kapitaalstromen 36/100 en breedte in ecosysteem 48/100. Als koerskracht sterker is dan gebruik en kapitaalstromen, loopt de markt mogelijk vooruit op bredere bevestiging; als gebruik en kapitaalstromen meebewegen, wordt het beeld steviger.\n\nWat houdt tegen?: De dashboardblokken lopen niet altijd gelijk, waardoor het beeld genuanceerd blijft.\n\nHoe stevig is dit?: De onderbouwing is 82/100. Onderbouwing betekent hoe stevig de actuele conclusie historisch en datatechnisch onderbouwd is; bij beperkt onderbouwde data moet het signaal voorzichtig gelezen worden.\n\nConclusie: De historische vergelijking gebruikt 40 vergelijkbare dagen; daarvan was 47.5% positief, met een mediaan rendement van -0.4%. Dit is een gestructureerde dataduiding van de actuele Solana-context, geen financieel advies.",
+            "data_cutoff_utc": "2026-11-24T23:59:59Z",
             "footer_note": "Fallbacktekst: automatisch opgesteld uit vaste regels omdat de automatische analyse niet beschikbaar of niet geldig was. Dit is geen beleggingsadvies.",
-            "generated_at_utc": "2026-11-24T19:28:58Z",
+            "generated_at_utc": "2026-11-25T18:32:53Z",
             "input_snapshot": {
               "analog_count": 40,
-              "analog_median_return": "-2.6%",
-              "analog_positive_frequency": "40.0%",
+              "analog_median_return": "-0.4%",
+              "analog_positive_frequency": "47.5%",
               "backtest_7d": {
-                "brier_skill": "0.002",
-                "calibration_error": "0.005",
-                "directional_accuracy": "48.8%",
-                "prediction_count": 129
+                "brier_skill": "0.041",
+                "calibration_error": "0.034",
+                "directional_accuracy": "48.1%",
+                "prediction_count": 131
               },
               "block_weights": {
                 "capital": "20%",
@@ -48023,41 +48337,41 @@
                 "network_usage": "25%",
                 "price_strength": "45%"
               },
-              "capital": "34/100",
+              "capital": "36/100",
               "capital_components": [
                 {
                   "label": "Stablecoins 30d",
-                  "score": "32/100",
-                  "value": "-10.9%",
+                  "score": "36/100",
+                  "value": "-7.7%",
                   "weight": "55% binnen kapitaalblok"
                 },
                 {
                   "label": "TVL 30d",
                   "score": "37/100",
-                  "value": "-19.8%",
+                  "value": "-19.5%",
                   "weight": "45% binnen kapitaalblok"
                 },
                 {
                   "label": "Schaalduiding",
-                  "score": "34/100",
+                  "score": "36/100",
                   "value": "Relatief",
                   "weight": "Uitleg"
                 }
               ],
               "capital_summary": "Kapitaalstromen zijn zwak ten opzichte van de eigen historie.",
-              "data_cutoff_utc": "2026-11-23T23:59:59Z",
+              "data_cutoff_utc": "2026-11-24T23:59:59Z",
               "data_freshness": [
                 {
                   "label": "Update-run",
-                  "value": "2026-11-24T19:28:58Z"
+                  "value": "2026-11-25T18:32:53Z"
                 },
                 {
                   "label": "Data t/m",
-                  "value": "2026-11-23T23:59:59Z"
+                  "value": "2026-11-24T23:59:59Z"
                 },
                 {
                   "label": "Historie",
-                  "value": "2023-01-24 t/m 2026-11-23"
+                  "value": "2023-01-25 t/m 2026-11-24"
                 },
                 {
                   "label": "Records",
@@ -48084,85 +48398,85 @@
                   "value": "3"
                 }
               ],
-              "data_quality_summary": "1400 historische records van 2023-01-24 t/m 2026-11-23. Laatste dagdata-cutoff: 2026-11-23T23:59:59Z. Update-run: 2026-11-24T19:28:58Z.",
+              "data_quality_summary": "1400 historische records van 2023-01-25 t/m 2026-11-24. Laatste dagdata-cutoff: 2026-11-24T23:59:59Z. Update-run: 2026-11-25T18:32:53Z.",
               "data_warnings": [
                 "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
               ],
-              "ecosystem_breadth": "35/100",
+              "ecosystem_breadth": "48/100",
               "evidence_label": "sterk onderbouwd",
-              "evidence_quality": "76/100",
-              "historical_summary": "Historische frequentie: 40.0% positief na 7 dagen. Mediaan -2.6%; midden 80% liep van -15.1% tot 11.1%.",
-              "market_signal": "46/100",
+              "evidence_quality": "82/100",
+              "historical_summary": "Historische frequentie: 47.5% positief na 7 dagen. Mediaan -0.4%; midden 80% liep van -12.5% tot 12.2%.",
+              "market_signal": "45/100",
               "market_signal_label": "neutraal of gemengd",
               "network_components": [
                 {
                   "label": "DEX-volume 7d/30d",
                   "score": "53/100",
-                  "value": "7.00x",
+                  "value": "6.97x",
                   "weight": "60% binnen gebruik"
                 },
                 {
                   "label": "Fees 7d/30d",
-                  "score": "45/100",
-                  "value": "6.22x",
+                  "score": "44/100",
+                  "value": "6.17x",
                   "weight": "40% binnen gebruik"
                 },
                 {
                   "label": "RPC-context",
-                  "score": "81/100",
-                  "value": "81/100; 2.156,9 TPS",
+                  "score": "96/100",
+                  "value": "96/100; 2.720,2 TPS",
                   "weight": "15% correctie op gebruik"
                 },
                 {
                   "label": "Breedte in ecosysteem",
-                  "score": "35/100",
-                  "value": "32.0% positief 7d; 25 tokens",
+                  "score": "48/100",
+                  "value": "44.0% positief 7d; 25 tokens",
                   "weight": "10% van eindscore"
                 },
                 {
                   "label": "Gevalideerde basis",
-                  "score": "50/100",
-                  "value": "50/100",
+                  "score": "49/100",
+                  "value": "49/100",
                   "weight": "85% van gebruik"
                 }
               ],
-              "network_summary": "Gebruik is rond normaal tot licht positief. Breedte in ecosysteem: 32.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -2.4%.",
-              "network_usage": "54/100",
+              "network_summary": "Gebruik is rond normaal tot licht positief. Breedte in ecosysteem: 44.0% van de gevolgde Solana-tokens staat 7 dagen positief; mediaan rendement -1.1%.",
+              "network_usage": "56/100",
               "price_components": [
                 {
                   "label": "SOL 7 dagen",
-                  "score": "53/100",
-                  "value": "0.6%",
+                  "score": "41/100",
+                  "value": "-7.4%",
                   "weight": "20% binnen prijsblok"
                 },
                 {
                   "label": "SOL 30 dagen",
-                  "score": "33/100",
-                  "value": "-29.6%",
+                  "score": "32/100",
+                  "value": "-31.3%",
                   "weight": "15% binnen prijsblok"
                 },
                 {
                   "label": "Relatief vs BTC 7d",
-                  "score": "67/100",
-                  "value": "6.2%",
+                  "score": "54/100",
+                  "value": "0.5%",
                   "weight": "30% binnen prijsblok"
                 },
                 {
                   "label": "Afstand tot 50d trend",
-                  "score": "34/100",
-                  "value": "-23.6%",
+                  "score": "33/100",
+                  "value": "-25.3%",
                   "weight": "20% binnen prijsblok"
                 }
               ],
-              "price_strength": "49/100",
-              "price_summary": "Koerskracht is gemengd: nog geen overtuigende koersbevestiging.",
+              "price_strength": "43/100",
+              "price_summary": "SOL blijft qua koers achter; prijs bevestigt de onderliggende data nog niet.",
               "regime_title": "Gemengd marktbeeld",
-              "sol_price": "$69.26",
-              "updated_at_utc": "2026-11-24T19:28:58Z"
+              "sol_price": "$69.31",
+              "updated_at_utc": "2026-11-25T18:32:53Z"
             },
-            "interpretation_date": "2026-11-23",
-            "intro": "De huidige sterkte staat op 46/100 (neutraal of gemengd) en de onderbouwing op 76/100 (sterk onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-11-23T23:59:59Z.",
-            "llm_called_at_utc": "2026-11-24T19:30:46Z",
+            "interpretation_date": "2026-11-24",
+            "intro": "De huidige sterkte staat op 45/100 (neutraal of gemengd) en de onderbouwing op 82/100 (sterk onderbouwd). Deze duiding gebruikt de dashboardwaarden tot 2026-11-24T23:59:59Z.",
+            "llm_called_at_utc": "2026-11-25T18:33:55Z",
             "method_version": "1.0.0",
             "model": "Qwen/Qwen2.5-7B-Instruct",
             "provider": "Hugging Face Inference Providers",
@@ -48173,8 +48487,8 @@
               "400 Client Error: Bad Request for url: https://router.huggingface.co/v1/chat/completions"
             ]
           },
-          "mature_forward_days": 8,
-          "price_difference_pct": 3.73,
+          "mature_forward_days": 9,
+          "price_difference_pct": 0.37,
           "price_warning": true,
           "price_warnings": [
             "CCXT-prijsconsensus viel terug op Coinbase voor een asset."
@@ -48251,28 +48565,28 @@
             "uncertainty_policy": "Gepaarde moving-block bootstrap van Brier-verbetering, bloklengte max(7,horizon), 2000 trekkingen, seed 20261109. Pas een interval bij minstens 20 uitkomsten en 3 niet-overlappende vensters; geen selectiecorrectie voor historische reconstructies.",
             "version": "1.0.0"
           },
-          "research_generated_at": "2026-11-24T19:31:37Z",
+          "research_generated_at": "2026-11-25T18:34:20Z",
           "research_note": {
-            "generated_at": "2026-11-24T19:31:37Z",
+            "generated_at": "2026-11-25T18:34:20Z",
             "model": null,
             "policy": "LLM kiest uitsluitend een vooraf gecontroleerde formulering; geen eigen claims.",
             "status": "fixed_wording_provider_unavailable",
             "text": "Er zijn nieuwe uitkomsten beschikbaar. Beoordeel de meerwaarde tegenover de koersbasis samen met de onzekerheidsmarge en de aantallen per richting."
           },
-          "research_runs": 163,
+          "research_runs": 164,
           "shadow_quality": [
             {
               "alternative_caps": [
                 "Voorspelkwaliteit ≤ 0"
               ],
               "alternative_quality": 55,
-              "data_cutoff_utc": "2026-11-23T23:59:59Z",
+              "data_cutoff_utc": "2026-11-24T23:59:59Z",
               "definition_id": "calendar-balanced-quality-v1",
               "evaluation": {
                 "available": true,
                 "brier_benchmark": 0.24579629134845435,
-                "brier_score": 0.2636195054945055,
-                "brier_skill": -0.07251213616068775,
+                "brier_score": 0.2660164835164835,
+                "brier_skill": -0.08226402464048532,
                 "from": "2026-05-18",
                 "prediction_count": 182,
                 "through": "2026-11-15",
@@ -48286,9 +48600,9 @@
                   26
                 ]
               },
-              "original_quality": 75.94,
-              "payload_sha256": "7ee9cc0448c84610e4c3d9f4b26535f7a32f891dd4519541e0962ed5076a6059",
-              "run_at_utc": "2026-11-24T19:28:58Z"
+              "original_quality": 81.54,
+              "payload_sha256": "d04775acda605767e60f715fde45e68597556352f914014cf284fe16c1b152d2",
+              "run_at_utc": "2026-11-25T18:32:53Z"
             }
           ],
           "source_policy": "Eerste vastgelegde prediction per datadag, inclusief bewaarde parallelle publicaties. Bron-ID én bronhash identificeren de oorspronkelijke versie. De live prediction-ledger blijft ongewijzigd; geen prijsinterpolatie.",
@@ -48300,7 +48614,7 @@
             },
             {
               "capped_n": 0,
-              "n": 20,
+              "n": 21,
               "weekday": "Dinsdag"
             },
             {
@@ -48363,99 +48677,99 @@
       "rows": [
         {
           "asset": "BTC",
-          "close": 59826.03,
-          "date": "2026-11-24",
+          "close": 59471.78,
+          "date": "2026-11-25",
           "deviation_pct": 0.0,
           "exchange": "coinbase",
           "method": "Coinbase herstelbron",
           "status": "succesvol gebruikt als herstelbron",
           "symbol": "BTC-USD",
           "used": true,
-          "used_close": 59826.03
+          "used_close": 59471.78
         },
         {
           "asset": "BTC",
-          "close": 61214.3,
-          "date": "2026-11-24",
-          "deviation_pct": 0.043,
+          "close": 59741.2,
+          "date": "2026-11-25",
+          "deviation_pct": 0.073,
           "exchange": "kraken",
           "method": "Coinbase herstelbron",
           "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
           "symbol": "BTC/USD",
           "used": false,
-          "used_close": 59826.03
+          "used_close": 59471.78
         },
         {
           "asset": "BTC",
-          "close": 61267.4,
-          "date": "2026-11-24",
-          "deviation_pct": 0.043,
+          "close": 59827.9,
+          "date": "2026-11-25",
+          "deviation_pct": 0.073,
           "exchange": "kucoin",
           "method": "Coinbase herstelbron",
           "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
           "symbol": "BTC/USDT",
           "used": false,
-          "used_close": 59826.03
+          "used_close": 59471.78
         },
         {
           "asset": "BTC",
           "close": null,
-          "date": "2026-11-24",
+          "date": "2026-11-25",
           "deviation_pct": null,
           "exchange": "okx",
           "method": "Coinbase herstelbron",
           "status": "niet beschikbaar: geen prijs op consensusdag",
           "symbol": "BTC/USDT",
           "used": false,
-          "used_close": 59826.03
+          "used_close": 59471.78
         },
         {
           "asset": "SOL",
-          "close": 69.27,
-          "date": "2026-11-24",
+          "close": 69.16,
+          "date": "2026-11-25",
           "deviation_pct": 0.0,
           "exchange": "coinbase",
           "method": "Coinbase herstelbron",
           "status": "succesvol gebruikt als herstelbron",
           "symbol": "SOL-USD",
           "used": true,
-          "used_close": 69.27
+          "used_close": 69.16
         },
         {
           "asset": "SOL",
-          "close": 71.95,
-          "date": "2026-11-24",
-          "deviation_pct": 0.063,
+          "close": 69.59,
+          "date": "2026-11-25",
+          "deviation_pct": 0.072,
           "exchange": "kraken",
           "method": "Coinbase herstelbron",
           "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
           "symbol": "SOL/USD",
           "used": false,
-          "used_close": 69.27
+          "used_close": 69.16
         },
         {
           "asset": "SOL",
-          "close": 72.04,
-          "date": "2026-11-24",
-          "deviation_pct": 0.063,
+          "close": 69.69,
+          "date": "2026-11-25",
+          "deviation_pct": 0.072,
           "exchange": "kucoin",
           "method": "Coinbase herstelbron",
           "status": "succesvol geladen; niet gebruikt voor eindprijs door CCXT-historiegat",
           "symbol": "SOL/USDT",
           "used": false,
-          "used_close": 69.27
+          "used_close": 69.16
         },
         {
           "asset": "SOL",
           "close": null,
-          "date": "2026-11-24",
+          "date": "2026-11-25",
           "deviation_pct": null,
           "exchange": "okx",
           "method": "Coinbase herstelbron",
           "status": "niet beschikbaar: geen prijs op consensusdag",
           "symbol": "SOL/USDT",
           "used": false,
-          "used_close": 69.27
+          "used_close": 69.16
         }
       ],
       "source": {
@@ -48516,7 +48830,7 @@
         },
         {
           "coverage": "25 ecosysteemtokens",
-          "last_success_at_utc": "2026-11-24T19:28:58Z",
+          "last_success_at_utc": "2026-11-25T18:32:53Z",
           "name": "CoinGecko",
           "role": "Liveprijs en breedte in ecosysteem",
           "status": "Succesvol",
@@ -48525,7 +48839,7 @@
         },
         {
           "coverage": "3 performance samples",
-          "last_success_at_utc": "2026-11-24T19:28:58Z",
+          "last_success_at_utc": "2026-11-25T18:32:53Z",
           "name": "Solana RPC",
           "role": "Actuele netwerkcontext",
           "status": "Succesvol",
